@@ -1,9 +1,11 @@
+<p align="center"><b>🇬🇧 English</b> &nbsp;·&nbsp; <a href="README.it.md"><b>🇮🇹 Leggi in italiano</b></a></p>
+
 # Mouse Macro Stocazz Superpower
 
 **Record your mouse once, replay it as many times as you like, without losing clicks.**
 A small desktop app for Windows and Linux, in English and Italian.
 
-**v0.14 beta · powered by hcok** · [Italiano](README.it.md) · [Download](#download) · [Build](docs/BUILD.md) · [Validation](COLLAUDO.md)
+**v0.14 beta · powered by hcok** · [Download](#download) · [Build](docs/BUILD.md) · [Validation](COLLAUDO.md)
 
 <p>
 <img src="docs/screenshots/main-en.png" width="300" alt="Main window">

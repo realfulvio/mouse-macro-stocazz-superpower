@@ -1,9 +1,11 @@
+<p align="center"><a href="README.md"><b>🇬🇧 Read in English</b></a> &nbsp;·&nbsp; <b>🇮🇹 Italiano</b></p>
+
 # Mouse Macro Stocazz Superpower
 
 **Registra il mouse una volta, riproducilo quante volte vuoi, senza perdere click.**
 Un piccolo programma per Windows e Linux, in italiano e in inglese.
 
-**v0.14 beta · powered by hcok** · [English](README.md) · [Download](#download) · [Compilazione](docs/BUILD.md) · [Collaudo](COLLAUDO.md)
+**v0.14 beta · powered by hcok** · [Download](#download) · [Compilazione](docs/BUILD.md) · [Collaudo](COLLAUDO.md)
 
 <p>
 <img src="docs/screenshots/main-it.png" width="300" alt="Finestra principale">
