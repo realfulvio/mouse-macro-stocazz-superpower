@@ -22,7 +22,9 @@ jobs:
         run: python -m unittest discover -v
       - name: Build IT/EN
         run: python build_release.py
-      - name: Self-test the executables
+      - name: Build the portable package
+        run: python build_portable.py
+      - name: Self-test the executables and the portable package
         shell: pwsh
         run: |
           foreach ($l in 'IT', 'EN') {
@@ -30,10 +32,19 @@ jobs:
             Get-Content "report-$l.json"
             if ($p.ExitCode -ne 0) { throw "Self-test $l failed" }
           }
+          $portable = Resolve-Path 'build/portable/MouseMacroStocazzSuperpower'
+          foreach ($entry in 'main.py', 'main_en.py') {
+            $report = Join-Path $PWD "portable-$entry.json"
+            $p = Start-Process (Join-Path $portable 'Mouse Macro Stocazz Superpower.exe') -ArgumentList "app\$entry", '--self-test', "`"$report`"" -WorkingDirectory $portable -PassThru -Wait
+            Get-Content $report
+            if ($p.ExitCode -ne 0) { throw "Portable self-test $entry failed" }
+          }
       - uses: actions/upload-artifact@v4
         with:
           name: windows
-          path: dist/windows/MouseMacroStocazzSuperpower-*.exe
+          path: |
+            dist/windows/MouseMacroStocazzSuperpower-*.exe
+            dist/windows/MouseMacroStocazzSuperpower-Windows-Portable.zip
           if-no-files-found: error
 
   linux:

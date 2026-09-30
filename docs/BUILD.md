@@ -24,6 +24,28 @@ embeds the Flet web client (without the unused Pyodide runtime) and the fonts in
 Open/Save use the native Windows dialogs (`macro/win_dialogs.py`), because the Flet file
 picker in a browser window cannot return file paths.
 
+### Portable package (recommended for Windows)
+
+```powershell
+& .\.venv_win\Scripts\python.exe build_portable.py
+```
+
+Output: `dist/windows/MouseMacroStocazzSuperpower-Windows-Portable.zip`. It contains no new
+executable code, so Smart App Control has nothing unknown to block:
+
+- `Mouse Macro Stocazz Superpower.exe` and `... (English).exe`: copies of the official
+  `pythonw.exe`, still signed by the Python Software Foundation. Started without arguments,
+  Python imports `app/sitecustomize.py` (`portable_sitecustomize.py`), which starts the app;
+- `python/`: the official Python embeddable package from python.org (same version as the
+  Python running the build) and, in `python/lib`, the dependencies installed from PyPI wheels;
+  unused optional native modules (httptools, watchfiles, PyYAML) and Flet's Pyodide runtime
+  are removed;
+- `app/`: the program's sources and assets.
+
+`.cmd`/`.bat` launchers are not an option: Smart App Control blocks them when they come from
+the internet ("dangerous file extension from the web"). Internal paths are kept short because
+File Explorer cannot extract zip entries longer than 260 characters.
+
 ## Linux
 
 ```bash

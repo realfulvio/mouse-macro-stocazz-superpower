@@ -38,6 +38,24 @@ ma le build successive, identiche salvo le modifiche sopra, sono state bloccate
 il risultato cambia da una build all'altra. Senza firma digitale la compatibilità con Smart App
 Control non è garantita.
 
+**Versione portatile** (`build_portable.py`): Python ufficiale firmato, librerie di PyPI e
+sorgenti `.py`, nessun eseguibile nuovo. Provata su questo PC con Smart App Control attivo,
+nel caso reale: zip marcato come scaricato da Internet, estratto in Download con lo stesso
+motore di Esplora file (tutti i 1.211 file marcati "da Internet"):
+
+| Prova | Risultato |
+| --- | --- |
+| Doppio clic su `Mouse Macro Stocazz Superpower.exe` / `(English).exe` | Finestra IT ed EN aperte, nessun blocco nel registro CodeIntegrity |
+| `--self-test` IT ed EN | Tutti i controlli superati |
+| Carica macro (finestra nativa) | Macro caricata: 20 eventi, 1,29 s |
+| Salva macro (finestra nativa) | File scritto, eventi identici all'originale |
+| Registrazione con F9 da tastiera | 18 eventi, 1 click, 1,15 s |
+| Riproduzione con F10, N volte = 2, Attesa pagina attiva | "Riproduzione terminata", nessuna fermata per pagina non pronta |
+| Chiusura della finestra | Programma terminato |
+
+Prima prova con avvio tramite file `.cmd`: bloccato da Smart App Control ("estensione di file
+pericolosa dal web"), per questo i file da cliccare sono copie rinominate di `pythonw.exe`.
+
 Le schermate in `docs/screenshots` mostrano la versione finale (150 ms, Attesa pagina nella
 schermata principale), avviata dai sorgenti con lo stesso avvio in finestra Edge, perché su
 questo PC la build finale viene bloccata da Smart App Control. La build Linux della v0.14 viene compilata e testata da GitHub Actions su

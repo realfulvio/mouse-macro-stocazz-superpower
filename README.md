@@ -52,30 +52,35 @@ So this app was built around two ideas:
 
 Get the latest version from the [Releases page](../../releases/latest):
 
-| System | English | Italiano |
+| System | Download | How to start |
 | --- | --- | --- |
-| Windows 10/11 (64-bit) | `MouseMacroStocazzSuperpower-Windows-EN.exe` | `MouseMacroStocazzSuperpower-Windows-IT.exe` |
-| Linux x86_64 | `MouseMacroStocazzSuperpower-Linux-EN.tar.gz` | `MouseMacroStocazzSuperpower-Linux-IT.tar.gz` |
+| **Windows 10/11 (recommended)** | `MouseMacroStocazzSuperpower-Windows-Portable.zip` | Extract it, then double-click `Mouse Macro Stocazz Superpower.exe` (Italian) or `Mouse Macro Stocazz Superpower (English).exe` |
+| Windows, single file | `MouseMacroStocazzSuperpower-Windows-EN.exe` / `-IT.exe` | Double-click (may be blocked by Smart App Control, see below) |
+| Linux x86_64 | `MouseMacroStocazzSuperpower-Linux-EN.tar.gz` / `-IT.tar.gz` | Extract and run |
 
-`SHA256SUMS.txt` in each release lets you verify the files. Nothing to install: the
-Windows `.exe` is a single file you can run from anywhere.
+`SHA256SUMS.txt` in each release lets you verify the files. Nothing to install.
 
-### Windows: first launch
+### Windows: why the portable version
 
-The executables are not code-signed, so the first time Windows may show
-**"Windows protected your PC"** (SmartScreen): click **More info → Run anyway**.
+**Smart App Control** (Windows 11) blocks programs that Microsoft's cloud does not know,
+unless they are code-signed. This project's own executables are not signed yet, so on a PC
+with Smart App Control **on** the single-file `.exe` may be blocked ("An Application Control
+policy has blocked this file"): the verdict can even differ from one build to the next.
 
-**Smart App Control** (Windows 11): earlier versions opened their window through Flet's
-own `flet.exe`, an unsigned helper that Smart App Control always blocks. Since v0.14 the
-interface is shown in a **Microsoft Edge window in app mode** (no address bar, no tabs: it
-looks like a normal program), so that helper is gone. The executable itself, however, is still
-unsigned: on a PC with Smart App Control **on**, Windows asks Microsoft's cloud about it and may
-still block it (`An Application Control policy has blocked this file`). Code signing is planned;
-until then, on those PCs the only option is to turn Smart App Control off. The interface is served only to this computer (`127.0.0.1`, on a
-random secret path), everything it needs is loaded locally, and closing the window closes the program.
+The **portable version** avoids the problem: it contains no new executable code. The two files
+you double-click are the official `pythonw.exe` from python.org, renamed (the Python Software
+Foundation signature does not depend on the file name); all the other binaries are the official,
+signed Python ones plus standard libraries from PyPI; the program itself is plain `.py` files.
+It was tested on Windows 11 with Smart App Control on, downloaded from the internet and
+extracted with File Explorer: no blocks. It shows the Python icon because it *is* Python.
 
-PCs managed by a company or school may block any unapproved program regardless: in that
-case ask the administrator.
+The interface opens in a **Microsoft Edge window in app mode** (no address bar, no tabs: it
+looks like a normal program window). It is served only to this computer (`127.0.0.1`, on a
+random secret path), everything it needs is included, and closing the window closes the program.
+
+The first time, SmartScreen may show **"Windows protected your PC"** for the single-file `.exe`:
+click **More info → Run anyway**. PCs managed by a company or school may block any unapproved
+program regardless: in that case ask the administrator.
 
 ### Linux
 
@@ -105,7 +110,7 @@ Use **Save macro** to reuse a recording on the following days.
 
 | Version | Date | Highlights |
 | --- | --- | --- |
-| v0.14 beta | 30/09/2026 | Minimum click 150 ms (was 50); *Wait for page* on by default, on the main screen, ignoring the horse's picture around the button; Edge app window instead of the unsigned `flet.exe`; native Windows open/save dialogs; fonts bundled for offline use; 38 MB instead of 64 MB; MIT licence; automated builds |
+| v0.14 beta | 30/09/2026 | Minimum click 150 ms (was 50); *Wait for page* on by default, on the main screen, ignoring the horse's picture around the button; **portable version** that works with Smart App Control; Edge app window instead of the unsigned `flet.exe`; native Windows open/save dialogs; fonts bundled for offline use; 38 MB instead of 64 MB; MIT licence; automated builds |
 | — | 30/09/2026 | Linux: F9/F10 shortcuts and tab closing |
 | [v0.13 beta](../../releases/tag/v0.13-beta) | 30/09/2026 | English version; safer load/save; self-test diagnostics; Windows and Linux builds |
 | v0.4 | 30/09/2026 | First reliable Windows build: DPI awareness, minimum pause between clicks, global shortcuts, *Wait for page*, *Close tab* |

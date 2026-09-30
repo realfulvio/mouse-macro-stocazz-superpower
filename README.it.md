@@ -54,32 +54,38 @@ Il programma è costruito attorno a due idee:
 
 Scarica l'ultima versione dalla [pagina delle release](../../releases/latest):
 
-| Sistema | Italiano | English |
+| Sistema | File | Come si avvia |
 | --- | --- | --- |
-| Windows 10/11 (64 bit) | `MouseMacroStocazzSuperpower-Windows-IT.exe` | `MouseMacroStocazzSuperpower-Windows-EN.exe` |
-| Linux x86_64 | `MouseMacroStocazzSuperpower-Linux-IT.tar.gz` | `MouseMacroStocazzSuperpower-Linux-EN.tar.gz` |
+| **Windows 10/11 (consigliato)** | `MouseMacroStocazzSuperpower-Windows-Portable.zip` | Estrai lo zip, poi doppio clic su `Mouse Macro Stocazz Superpower.exe` (italiano) o `Mouse Macro Stocazz Superpower (English).exe` |
+| Windows, file singolo | `MouseMacroStocazzSuperpower-Windows-IT.exe` / `-EN.exe` | Doppio clic (può essere bloccato da Smart App Control, vedi sotto) |
+| Linux x86_64 | `MouseMacroStocazzSuperpower-Linux-IT.tar.gz` / `-EN.tar.gz` | Estrai e avvia |
 
-In ogni release c'è `SHA256SUMS.txt` per verificare i file. Non serve installare niente:
-l'`.exe` per Windows è un file unico che si avvia da qualsiasi cartella.
+In ogni release c'è `SHA256SUMS.txt` per verificare i file. Non serve installare niente.
 
-### Windows: il primo avvio
+### Windows: perché la versione portatile
 
-Gli eseguibili non sono firmati digitalmente, quindi la prima volta Windows può mostrare
-**"PC protetto da Windows"** (SmartScreen): clicca **Ulteriori informazioni → Esegui comunque**.
+**Smart App Control** (Windows 11) blocca i programmi che il cloud di Microsoft non conosce, a
+meno che siano firmati digitalmente. Gli eseguibili di questo progetto non sono ancora firmati,
+quindi su un PC con Smart App Control **attivo** l'`.exe` singolo può essere bloccato ("Un
+criterio di controllo dell'applicazione ha bloccato il file"): il verdetto può cambiare perfino
+da una build all'altra.
 
-**Smart App Control** (Windows 11): le versioni precedenti aprivano la finestra con `flet.exe`,
-un programma di supporto di Flet non firmato che Smart App Control blocca sempre. Dalla v0.14
-l'interfaccia compare in una **finestra di Microsoft Edge in modalità app** (senza barra degli
-indirizzi né schede: sembra un programma normale), quindi quel file non c'è più. L'eseguibile
-però non è ancora firmato: su un PC con Smart App Control **attivo**, Windows chiede un parere al
-cloud di Microsoft e può comunque bloccarlo ("Un criterio di controllo dell'applicazione ha
-bloccato il file"). La firma digitale è prevista; fino ad allora, su quei PC l'unica soluzione è
-disattivare Smart App Control. L'interfaccia è visibile
-solo da questo computer (`127.0.0.1`, su un percorso segreto casuale), tutto ciò che le serve
-è incluso nel programma, e chiudendo la finestra si chiude anche il programma.
+La **versione portatile** evita il problema perché non contiene nessun eseguibile nuovo. I due
+file da cliccare sono il `pythonw.exe` ufficiale di python.org, solo rinominato (la firma della
+Python Software Foundation non dipende dal nome del file); tutti gli altri binari sono quelli
+ufficiali e firmati di Python più librerie standard di PyPI; il programma vero e proprio sono file
+`.py`. È stata provata su Windows 11 con Smart App Control attivo, scaricata da Internet ed
+estratta con Esplora file: nessun blocco. Ha l'icona di Python perché *è* Python.
 
-I PC gestiti da un'azienda o da una scuola possono bloccare comunque qualsiasi programma non
-approvato: in quel caso bisogna chiedere all'amministratore.
+L'interfaccia compare in una **finestra di Microsoft Edge in modalità app** (senza barra degli
+indirizzi né schede: sembra una normale finestra di programma). È visibile solo da questo
+computer (`127.0.0.1`, su un percorso segreto casuale), tutto ciò che le serve è incluso, e
+chiudendo la finestra si chiude anche il programma.
+
+La prima volta, per l'`.exe` singolo SmartScreen può mostrare **"PC protetto da Windows"**:
+clicca **Ulteriori informazioni → Esegui comunque**. I PC gestiti da un'azienda o da una scuola
+possono bloccare comunque qualsiasi programma non approvato: in quel caso bisogna chiedere
+all'amministratore.
 
 ### Linux
 
@@ -110,7 +116,7 @@ successivi.
 
 | Versione | Data | Novità principali |
 | --- | --- | --- |
-| v0.14 beta | 30/09/2026 | Click minimo di 150 ms (prima 50); *Attesa pagina* attiva di base, nella schermata principale, senza badare alla foto del cavallo attorno al pulsante; finestra Edge invece di `flet.exe` non firmato; finestre Apri/Salva native di Windows; font inclusi per l'uso offline; 38 MB invece di 64; licenza MIT; compilazione automatica |
+| v0.14 beta | 30/09/2026 | Click minimo di 150 ms (prima 50); *Attesa pagina* attiva di base, nella schermata principale, senza badare alla foto del cavallo attorno al pulsante; **versione portatile** che funziona con Smart App Control; finestra Edge invece di `flet.exe` non firmato; finestre Apri/Salva native di Windows; font inclusi per l'uso offline; 38 MB invece di 64; licenza MIT; compilazione automatica |
 | — | 30/09/2026 | Linux: tasti F9/F10 e chiusura delle schede |
 | [v0.13 beta](../../releases/tag/v0.13-beta) | 30/09/2026 | Versione inglese; carica/salva più sicuri; diagnostica integrata; build Windows e Linux |
 | v0.4 | 30/09/2026 | Prima build Windows affidabile: DPI awareness, pausa minima tra i click, tasti rapidi globali, *Attesa pagina*, *Chiudi scheda* |
