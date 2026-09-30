@@ -1,3 +1,5 @@
-flet[desktop]==1.0.3
+flet==1.0.3
+flet-web==1.0.3; sys_platform == "win32"
+flet-desktop==1.0.3; sys_platform == "linux"
 evdev>=1.6.1; sys_platform == "linux"
 pynput>=1.7.6; sys_platform == "win32"

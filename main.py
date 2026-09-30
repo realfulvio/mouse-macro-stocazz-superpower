@@ -3,6 +3,8 @@ riproduce con precisione, all'infinito o per un tempo/numero di ripetizioni scel
 Funziona su Linux (X11/Wayland, via evdev/uinput) e su Windows (via pynput)."""
 from __future__ import annotations
 
+import asyncio
+import os
 import random
 import threading
 import time
@@ -25,7 +27,7 @@ FIELD_BG = "#241226"
 TEXT_MUTED = "#CBB3C9"
 DANGER = "#D6357C"
 SUCCESS = "#3FA66B"
-VERSION = "v0.13 beta"
+VERSION = "v0.14 beta"
 
 
 def main(page: ft.Page, language: str = "it"):
@@ -39,8 +41,11 @@ def main(page: ft.Page, language: str = "it"):
     page.window.icon = "icon.ico"
     page.padding = 0
     page.bgcolor = BG_TOP
+    # Font inclusi negli asset (licenza OFL, vedi assets/fonts): funzionano anche
+    # offline. PonyEmoji è Noto Color Emoji ridotto al solo 🐴.
     page.fonts = {
-        "Outfit": "https://fonts.gstatic.com/s/outfit/v11/QGYyz_MVSrGYuFEspgzsQ.ttf",
+        "Outfit": "fonts/Outfit.ttf",
+        "PonyEmoji": "fonts/PonyEmoji.ttf",
     }
     page.theme = ft.Theme(font_family="Outfit")
 
@@ -563,6 +568,31 @@ def main(page: ft.Page, language: str = "it"):
     save_picker = ft.FilePicker()
     load_picker = ft.FilePicker()
     page.services.extend([save_picker, load_picker])
+    # Su Windows l'interfaccia gira nella finestra di Edge (vedi app_launcher.py):
+    # lì il FilePicker non restituisce percorsi, quindi si usano i dialoghi nativi.
+    native_dialogs = platform == "windows" and bool(getattr(page, "web", False))
+
+    async def ask_save_path() -> str | None:
+        title = translate("Salva macro", language)
+        if native_dialogs:
+            from macro.win_dialogs import ask_save_path as win_ask_save_path
+            return await asyncio.to_thread(win_ask_save_path, title, "macro.mmr")
+        return await save_picker.save_file(
+            dialog_title=title, file_name="macro.mmr",
+            file_type=ft.FilePickerFileType.CUSTOM, allowed_extensions=["mmr"],
+        )
+
+    async def ask_open_path() -> str | None:
+        title = translate("Carica macro", language)
+        if native_dialogs:
+            from macro.win_dialogs import ask_open_path as win_ask_open_path
+            return await asyncio.to_thread(win_ask_open_path, title)
+        files = await load_picker.pick_files(
+            dialog_title=title, allow_multiple=False,
+            file_type=ft.FilePickerFileType.CUSTOM,
+            allowed_extensions=["mmr", "json"],
+        )
+        return files[0].path if files else None
 
     async def save_macro(e):
         if state["recording"] or state["playing"]:
@@ -573,10 +603,7 @@ def main(page: ft.Page, language: str = "it"):
             set_status("Nessuna macro", "Registra o carica una macro prima di salvarla.")
             return
         try:
-            path = await save_picker.save_file(
-                dialog_title=translate("Salva macro", language), file_name="macro.mmr",
-                file_type=ft.FilePickerFileType.CUSTOM, allowed_extensions=["mmr"],
-            )
+            path = await ask_save_path()
             if not path:
                 return
             # Rispetta esattamente il percorso confermato nella finestra nativa.
@@ -590,17 +617,13 @@ def main(page: ft.Page, language: str = "it"):
             set_status("Macro in uso", "Ferma la registrazione o riproduzione prima di caricare.")
             return
         try:
-            files = await load_picker.pick_files(
-                dialog_title=translate("Carica macro", language), allow_multiple=False,
-                file_type=ft.FilePickerFileType.CUSTOM,
-                allowed_extensions=["mmr", "json"],
-            )
-            if not files:
+            path = await ask_open_path()
+            if not path:
                 return
             if state["recording"] or state["playing"]:
                 set_status("Macro in uso", "Ferma la registrazione o riproduzione prima di caricare.")
                 return
-            loaded = Macro.load(files[0].path)
+            loaded = Macro.load(path)
             if loaded.platform != platform:
                 set_status("Macro non compatibile", f"Questa macro è stata registrata su {loaded.platform}. "
                            f"Registrala di nuovo su {platform}: i movimenti vengono salvati in modo diverso.")
@@ -612,7 +635,7 @@ def main(page: ft.Page, language: str = "it"):
             has_events = bool(loaded.events)
             btn_play.opacity = 1.0 if has_events else 0.4
             btn_save.disabled = not has_events
-            set_status("Macro caricata", f"{len(loaded.events)} eventi da {files[0].name}")
+            set_status("Macro caricata", f"{len(loaded.events)} eventi da {os.path.basename(path)}")
         except Exception as ex:
             set_status("Errore nel caricamento", str(ex))
 
@@ -938,7 +961,7 @@ def main(page: ft.Page, language: str = "it"):
     # seed fissa, così il layout non "salta" a ogni riavvio dell'app).
     def pony(top=None, left=None, right=None, bottom=None, size=20, angle_deg=0.0, flip=False, op=0.16):
         return ft.Text(
-            "🐴", size=size, opacity=op,
+            "🐴", size=size, opacity=op, font_family="PonyEmoji",
             top=top, left=left, right=right, bottom=bottom,
             rotate=ft.Rotate(angle=angle_deg * 3.14159265 / 180),
             scale=ft.Scale(scale_x=-1 if flip else 1),
@@ -1043,4 +1066,5 @@ if __name__ == "__main__":
     if len(sys.argv) == 3 and sys.argv[1] == '--self-test':
         from macro.diagnostics import self_test
         raise SystemExit(self_test(sys.argv[2]))
-    ft.run(main)
+    from app_launcher import run
+    run(main)

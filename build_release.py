@@ -1,23 +1,25 @@
-"""Build native IT/EN desktop binaries, including the matching Flet client."""
+"""Build native IT/EN binaries for the current OS.
+
+Windows: the Flet interface is served locally and shown in an Edge app window
+(see app_launcher.py), so the unsigned Flet desktop client is NOT bundled; the
+Flet web client files are embedded instead, without the unused Pyodide runtime.
+Linux: the matching official Flet desktop client is embedded.
+"""
 from __future__ import annotations
 
 import hashlib
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import urllib.request
 
 
-def main():
-    if sys.platform not in ('win32', 'linux'):
-        raise SystemExit('Build on Windows or Linux using its native Python environment.')
-    root = Path(__file__).resolve().parent
-    os.chdir(root)
+def linux_flet_client(root: Path) -> Path:
     import flet_desktop
     from flet_desktop.version import version
 
-    system = 'Windows' if sys.platform == 'win32' else 'Linux'
     artifact = flet_desktop.get_artifact_filename()
     vendor = root / 'vendor'
     vendor.mkdir(exist_ok=True)
@@ -31,7 +33,37 @@ def main():
             temporary.replace(archive)
         finally:
             temporary.unlink(missing_ok=True)
+    return archive
+
+
+def windows_web_client(root: Path) -> Path:
+    import flet_web
+
+    source = Path(flet_web.__file__).resolve().parent / 'web'
+    stage = root / 'build' / 'flet_web_client'
+    shutil.rmtree(stage, ignore_errors=True)
+    shutil.copytree(source, stage, ignore=shutil.ignore_patterns('pyodide', '*.symbols', '*.map'))
+    return stage
+
+
+def main():
+    if sys.platform not in ('win32', 'linux'):
+        raise SystemExit('Build on Windows or Linux using its native Python environment.')
+    root = Path(__file__).resolve().parent
+    os.chdir(root)
+
+    system = 'Windows' if sys.platform == 'win32' else 'Linux'
     output = root / 'dist' / system.lower()
+    if system == 'Windows':
+        client = windows_web_client(root)
+        client_args = ['--add-data', f'{client}{os.pathsep}flet_web/web',
+                       '--collect-submodules', 'flet_web', '--collect-submodules', 'uvicorn',
+                       '--hidden-import', 'macro.win_dialogs']
+    else:
+        client = linux_flet_client(root)
+        client_args = ['--add-data', f'{client}{os.pathsep}flet_desktop/app',
+                       '--hidden-import', 'flet_desktop', '--hidden-import', 'flet_desktop.version']
+
     for language, entrypoint in [('IT', 'main.py'), ('EN', 'main_en.py')]:
         name = f'MouseMacroStocazzSuperpower-{system}-{language}'
         args = [sys.executable, '-m', 'PyInstaller', '--noconfirm', '--onefile', '--windowed',
@@ -39,15 +71,14 @@ def main():
                 '--workpath', str(root / 'build' / system.lower() / language),
                 '--specpath', str(root / 'build'), '--paths', str(root),
                 '--add-data', f'{root / "assets"}{os.pathsep}assets',
-                '--add-data', f'{archive}{os.pathsep}flet_desktop/app',
-                '--collect-data', 'flet', '--hidden-import', 'flet_desktop']
+                '--collect-data', 'flet'] + client_args
         if system == 'Windows':
-            args += ['--icon', str(root / 'assets' / 'icon.ico'), '--version-file', str(root / 'version_info.txt'),
-                     '--hidden-import', 'flet_desktop.win_taskbar', '--hidden-import', 'flet_desktop.version']
+            args += ['--icon', str(root / 'assets' / 'icon.ico'), '--version-file', str(root / 'version_info.txt')]
         else:
-            args += ['--strip', '--hidden-import', 'evdev', '--hidden-import', 'flet_desktop.version']
+            args += ['--strip', '--hidden-import', 'evdev']
         args.append(str(root / entrypoint))
         subprocess.run(args, check=True)
+
     checksums = []
     for binary in sorted(output.glob('MouseMacroStocazzSuperpower-*')):
         if binary.is_file():
