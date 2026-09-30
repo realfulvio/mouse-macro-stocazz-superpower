@@ -36,3 +36,18 @@ def list_mice():
     from .linux_backend import list_mice as _list_mice
 
     return _list_mice()
+
+
+HOTKEY_RECORD = 1
+HOTKEY_PLAY = 2
+HOTKEY_EMERGENCY = 3
+
+
+def make_hotkeys(on_hotkey):
+    if sys.platform == "win32":
+        from .windows_backend import GlobalHotkeys
+
+        return GlobalHotkeys(on_hotkey)
+    from .linux_backend import GlobalHotkeys
+
+    return GlobalHotkeys(on_hotkey)

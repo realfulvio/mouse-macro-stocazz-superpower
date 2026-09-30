@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import select
 import threading
+import time
+from typing import Callable
 
 from evdev import InputDevice, UInput, ecodes, list_devices
 
@@ -25,6 +27,10 @@ from .events import (
 )
 
 VIRTUAL_DEVICE_NAME = "MouseMacroStudio Virtual Mouse"
+
+HOTKEY_RECORD = 1
+HOTKEY_PLAY = 2
+HOTKEY_EMERGENCY = 3
 
 
 def list_mice() -> list[tuple[str, str]]:
@@ -138,7 +144,10 @@ class LinuxRecorder:
 
 
 _CAPABILITIES = {
-    ecodes.EV_KEY: [ecodes.BTN_LEFT, ecodes.BTN_RIGHT, ecodes.BTN_MIDDLE],
+    ecodes.EV_KEY: [
+        ecodes.BTN_LEFT, ecodes.BTN_RIGHT, ecodes.BTN_MIDDLE,
+        ecodes.KEY_LEFTCTRL, ecodes.KEY_W,
+    ],
     ecodes.EV_REL: [ecodes.REL_X, ecodes.REL_Y, ecodes.REL_WHEEL],
 }
 
@@ -151,6 +160,18 @@ class LinuxPlayer:
         if self._ui is None:
             self._ui = UInput(_CAPABILITIES, name=VIRTUAL_DEVICE_NAME)
         return self._ui
+
+    def close_tab(self) -> None:
+        """Invia Ctrl+W alla finestra in primo piano (il browser): chiude la scheda
+        corrente e il browser passa alla successiva. Genera eventi hardware a livello uinput."""
+        ui = self._ensure()
+        ui.write(ecodes.EV_KEY, ecodes.KEY_LEFTCTRL, 1)
+        ui.write(ecodes.EV_KEY, ecodes.KEY_W, 1)
+        ui.syn()
+        time.sleep(0.03)
+        ui.write(ecodes.EV_KEY, ecodes.KEY_W, 0)
+        ui.write(ecodes.EV_KEY, ecodes.KEY_LEFTCTRL, 0)
+        ui.syn()
 
     def apply_event(self, evt: MacroEvent) -> None:
         ui = self._ensure()
@@ -192,3 +213,97 @@ class LinuxPlayer:
         if self._ui is not None:
             self._ui.close()
             self._ui = None
+
+
+class GlobalHotkeys:
+    """F9 / F10 / Ctrl+Alt+F11 funzionanti a livello globale di sistema tramite evdev,
+    senza richiedere il focus sulla finestra dell'applicazione."""
+
+    def __init__(self, on_hotkey: Callable[[int], None]):
+        self._on_hotkey = on_hotkey
+        self._thread: threading.Thread | None = None
+        self._stop = threading.Event()
+        self._devices: list[InputDevice] = []
+        self.failed: list[str] = []
+
+    def start(self) -> None:
+        self._stop.clear()
+        self._devices = []
+        for path in list_devices():
+            try:
+                dev = InputDevice(path)
+                if dev.name == VIRTUAL_DEVICE_NAME:
+                    dev.close()
+                    continue
+                caps = dev.capabilities()
+                keys = caps.get(ecodes.EV_KEY, [])
+                if ecodes.KEY_F9 in keys and ecodes.KEY_F10 in keys:
+                    self._devices.append(dev)
+                else:
+                    dev.close()
+            except OSError:
+                continue
+
+        if not self._devices:
+            self.failed = ["F9", "F10", "Ctrl+Alt+F11"]
+            return
+
+        self._thread = threading.Thread(target=self._run, daemon=True)
+        self._thread.start()
+
+    def _run(self) -> None:
+        ctrl_down = False
+        alt_down = False
+        fds = {dev.fd: dev for dev in self._devices}
+        try:
+            while not self._stop.is_set():
+                r, _, _ = select.select(list(fds.keys()), [], [], 0.2)
+                if not r:
+                    continue
+                for fd in r:
+                    dev = fds.get(fd)
+                    if not dev:
+                        continue
+                    try:
+                        for ev in dev.read():
+                            if ev.type != ecodes.EV_KEY:
+                                continue
+                            if ev.code in (ecodes.KEY_LEFTCTRL, ecodes.KEY_RIGHTCTRL):
+                                ctrl_down = (ev.value != 0)
+                            elif ev.code in (ecodes.KEY_LEFTALT, ecodes.KEY_RIGHTALT):
+                                alt_down = (ev.value != 0)
+                            elif ev.value == 1:
+                                if ev.code == ecodes.KEY_F9:
+                                    try:
+                                        self._on_hotkey(HOTKEY_RECORD)
+                                    except Exception:
+                                        pass
+                                elif ev.code == ecodes.KEY_F10:
+                                    try:
+                                        self._on_hotkey(HOTKEY_PLAY)
+                                    except Exception:
+                                        pass
+                                elif ev.code == ecodes.KEY_F11 and ctrl_down and alt_down:
+                                    try:
+                                        self._on_hotkey(HOTKEY_EMERGENCY)
+                                    except Exception:
+                                        pass
+                    except OSError:
+                        fds.pop(fd, None)
+                        try:
+                            dev.close()
+                        except Exception:
+                            pass
+        finally:
+            for dev in list(fds.values()):
+                try:
+                    dev.close()
+                except Exception:
+                    pass
+            self._devices = []
+
+    def stop(self) -> None:
+        self._stop.set()
+        if self._thread:
+            self._thread.join(timeout=1.0)
+            self._thread = None

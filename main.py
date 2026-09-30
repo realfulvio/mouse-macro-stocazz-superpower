@@ -310,7 +310,7 @@ def main(page: ft.Page, language: str = "it"):
     def hint(text: str):
         return ft.Text(text, size=10, color=TEXT_MUTED)
 
-    # --- Browser: chiusura scheda a fine giro (solo Windows) ---
+    # --- Browser: chiusura scheda a fine giro ---
     tab_switch = ft.Switch(value=False, active_color=ACCENT_1)
     browser_section = ft.Column(
         [
@@ -331,7 +331,6 @@ def main(page: ft.Page, language: str = "it"):
             ),
         ],
         spacing=10,
-        visible=(platform == "windows"),
     )
 
     # --- Attesa pagina (solo Windows): prima di ogni click confronta il punto dello
@@ -466,13 +465,11 @@ def main(page: ft.Page, language: str = "it"):
     settings_summary = ft.Text("", size=11, color=TEXT_MUTED, expand=True)
 
     def refresh_settings_summary(e=None):
-        settings_summary.value = (
-            f"Chiusura schede: {'ON' if tab_switch.value else 'OFF'} · "
-            f"Attesa pagina: {'ON' if sync_switch.value else 'OFF'} · "
-            f"Tempi: {'variabili' if variation_switch.value else 'fissi'}"
-        )
-        if platform == "linux":
-            settings_summary.value = f"Tempi: {'variabili' if variation_switch.value else 'fissi'}"
+        parts = [f"Chiusura schede: {'ON' if tab_switch.value else 'OFF'}"]
+        if platform == "windows":
+            parts.append(f"Attesa pagina: {'ON' if sync_switch.value else 'OFF'}")
+        parts.append(f"Tempi: {'variabili' if variation_switch.value else 'fissi'}")
+        settings_summary.value = " · ".join(parts)
         if e is not None:
             page.update()
 
@@ -825,7 +822,7 @@ def main(page: ft.Page, language: str = "it"):
                 return ok
 
         between_cycles = None
-        if platform == "windows" and tab_switch.value:
+        if tab_switch.value:
             def between_cycles():
                 player.close_tab()
                 # tempo per far comparire la scheda successiva
@@ -873,11 +870,9 @@ def main(page: ft.Page, language: str = "it"):
             state["stop_event"].set()
 
     global_hotkeys = None
-    if platform == "windows":
-        # Su Windows sono globali: funzionano anche col focus sul browser, così si può
-        # fermare la registrazione senza tornare sull'app (e senza registrare quel click).
-        from macro.windows_backend import (
-            HOTKEY_EMERGENCY, HOTKEY_PLAY, HOTKEY_RECORD, GlobalHotkeys,
+    try:
+        from macro.backend import (
+            HOTKEY_EMERGENCY, HOTKEY_PLAY, HOTKEY_RECORD, make_hotkeys,
         )
 
         def on_hotkey(hk_id: int):
@@ -888,18 +883,24 @@ def main(page: ft.Page, language: str = "it"):
             elif hk_id == HOTKEY_EMERGENCY:
                 emergency_stop()
 
-        global_hotkeys = GlobalHotkeys(on_hotkey)
+        global_hotkeys = make_hotkeys(on_hotkey)
         global_hotkeys.start()
         if global_hotkeys.failed:
-            hotkey_info.value = (
-                f"Tasti già usati da un altro programma: {', '.join(global_hotkeys.failed)} "
-                "(funzionano solo con la finestra dell'app attiva)."
-            )
+            if platform == "linux":
+                hotkey_info.value = "Su Linux F9/F10 e lo stop di emergenza funzionano quando questa finestra è attiva."
+            else:
+                hotkey_info.value = (
+                    f"Tasti già usati da un altro programma: {', '.join(global_hotkeys.failed)} "
+                    "(funzionano solo con la finestra dell'app attiva)."
+                )
         else:
             hotkey_info.value = (
                 "F9 registra/stop · F10 riproduci/stop · Ctrl+Alt+F11 stop di emergenza — "
                 "funzionano anche dal browser"
             )
+    except Exception:
+        if platform == "linux":
+            hotkey_info.value = "Su Linux F9/F10 e lo stop di emergenza funzionano quando questa finestra è attiva."
 
     def on_keyboard(e: ft.KeyboardEvent):
         if global_hotkeys is not None and not global_hotkeys.failed:
@@ -929,7 +930,6 @@ def main(page: ft.Page, language: str = "it"):
     page.on_close = cleanup
 
     if platform == "linux":
-        hotkey_info.value = "Su Linux F9/F10 e lo stop di emergenza funzionano quando questa finestra è attiva."
         refresh_devices()
 
     # ================= Cavallini decorativi (sfondo) =================

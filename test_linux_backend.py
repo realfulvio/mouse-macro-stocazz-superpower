@@ -61,6 +61,41 @@ class LinuxBackendTests(unittest.TestCase):
             player.close()
             virtual.return_value.close.assert_called_once()
 
+    def test_close_tab_writes_ctrl_w_press_and_release(self):
+        e = backend.ecodes
+        with patch.object(backend, 'UInput') as virtual:
+            player = backend.LinuxPlayer()
+            player.close_tab()
+            writes = [c.args for c in virtual.return_value.write.call_args_list]
+            self.assertIn((e.EV_KEY, e.KEY_LEFTCTRL, 1), writes)
+            self.assertIn((e.EV_KEY, e.KEY_W, 1), writes)
+            self.assertIn((e.EV_KEY, e.KEY_W, 0), writes)
+            self.assertIn((e.EV_KEY, e.KEY_LEFTCTRL, 0), writes)
+            player.close()
+
+    def test_global_hotkeys_dispatch_and_stop(self):
+        e = backend.ecodes
+        dispatched = []
+        fake_dev = MagicMock()
+        fake_dev.name = "Real Keyboard"
+        fake_dev.capabilities.return_value = {e.EV_KEY: [e.KEY_F9, e.KEY_F10, e.KEY_F11]}
+        fake_dev.fd = 42
+
+        # Simulate F9 press
+        fake_dev.read.return_value = [self.event(e.EV_KEY, e.KEY_F9, 1, 100.0)]
+
+        with patch.object(backend, 'list_devices', return_value=['/dev/input/test_kbd']), \
+             patch.object(backend, 'InputDevice', return_value=fake_dev), \
+             patch.object(backend.select, 'select', return_value=([42], [], [])):
+            gh = backend.GlobalHotkeys(lambda hk: dispatched.append(hk))
+            gh.start()
+            self.assertEqual(gh.failed, [])
+            # Let the run loop process the event
+            import time
+            time.sleep(0.05)
+            gh.stop()
+            self.assertIn(backend.HOTKEY_RECORD, dispatched)
+
 
 if __name__ == '__main__':
     unittest.main()
