@@ -80,17 +80,24 @@ def _compute_scaled_times(events: list[MacroEvent], options: PlaybackOptions) ->
 
 
 def _enforce_min_click_hold(events: list[MacroEvent], scaled: list[float], min_hold: float) -> None:
-    """Allunga, se necessario, la distanza tra un evento di pressione e il corrispondente
-    rilascio dello stesso tasto fino a min_hold, spostando in avanti (in-place) quel
-    rilascio e tutti gli eventi successivi. Così un click resta sempre "vedibile" da chi
-    lo riceve, anche quando la velocità di riproduzione lo comprimerebbe sotto la soglia."""
+    """Garantisce, spostando in avanti (in-place) l'evento e tutti i successivi, che:
+    - tra la pressione e il rilascio dello stesso tasto passino almeno min_hold secondi;
+    - tra un rilascio e la pressione successiva (di qualsiasi tasto) passino almeno
+      min_hold secondi.
+    Così, anche accelerando molto, ogni click resta "vedibile" da chi lo riceve e due
+    click consecutivi non vengono fusi o scartati (tipica causa di click persi)."""
     if min_hold <= 0:
         return
     down_time: dict[str, float] = {}
+    last_up: float | None = None
     shift = 0.0
     for i, evt in enumerate(events):
         scaled[i] += shift
         if evt.kind in BUTTON_OF_DOWN:
+            if last_up is not None and (scaled[i] - last_up) < min_hold:
+                extra = min_hold - (scaled[i] - last_up)
+                scaled[i] += extra
+                shift += extra
             down_time[BUTTON_OF_DOWN[evt.kind]] = scaled[i]
         elif evt.kind in BUTTON_OF_UP:
             t0 = down_time.pop(BUTTON_OF_UP[evt.kind], None)
@@ -98,6 +105,13 @@ def _enforce_min_click_hold(events: list[MacroEvent], scaled: list[float], min_h
                 extra = min_hold - (scaled[i] - t0)
                 scaled[i] += extra
                 shift += extra
+            last_up = scaled[i]
+
+
+class PlaybackEnd(Enum):
+    DONE = "done"
+    STOPPED = "stopped"
+    SYNC_TIMEOUT = "sync_timeout"
 
 
 def play(
@@ -107,27 +121,38 @@ def play(
     release_held: Callable[[set[str]], None],
     progress: Callable[[PlaybackStatus], None] | None,
     stop_event: threading.Event,
-) -> None:
+    wait_ready: Callable[[MacroEvent], bool] | None = None,
+    between_cycles: Callable[[], None] | None = None,
+) -> PlaybackEnd:
     """Riproduce la sequenza di eventi rispettando le opzioni di ripetizione/velocità.
 
     apply_event: esegue un singolo evento tramite il backend di sistema.
     release_held: rilascia i tasti eventualmente rimasti "premuti" se la riproduzione
                   viene interrotta a metà (evita di lasciare il mouse in uno stato bloccato).
+    wait_ready: se presente, viene chiamata prima di ogni pressione di tasto e blocca
+                finché la destinazione non è pronta (False = timeout, la riproduzione si
+                ferma). Il tempo atteso sposta in avanti tutti gli eventi successivi.
+    between_cycles: se presente, viene chiamata tra un giro e il successivo (mai dopo
+                    l'ultimo), es. per passare alla scheda successiva del browser.
     """
     events = list(events)
     if not events:
-        return
+        return PlaybackEnd.DONE
 
     scaled_times = _compute_scaled_times(events, options)
-    cycle_seconds = scaled_times[-1]
+    # stessa distanza minima anche tra l'ultimo evento di un giro e il primo del successivo
+    cycle_seconds = scaled_times[-1] + max(0.0, options.min_click_hold_seconds)
 
     start = time.perf_counter()
     held: set[str] = set()
     loop = 0
+    extra_delay = 0.0
+    end = PlaybackEnd.DONE
 
     try:
-        while True:
+        while end == PlaybackEnd.DONE:
             if stop_event.is_set():
+                end = PlaybackEnd.STOPPED
                 break
             if options.mode == LoopMode.DURATION and (time.perf_counter() - start) >= options.duration_seconds:
                 break
@@ -137,14 +162,18 @@ def play(
             loop_start_offset = loop * cycle_seconds
 
             for evt, relative in zip(events, scaled_times):
-                if stop_event.is_set():
+                target = start + loop_start_offset + relative + extra_delay
+                if not _wait_until(lambda: target, stop_event):
+                    end = PlaybackEnd.STOPPED
                     break
 
-                target = start + loop_start_offset + relative
-
-                ok = _wait_until(lambda: target, stop_event)
-                if not ok:
-                    break
+                if wait_ready is not None and evt.kind in BUTTON_OF_DOWN:
+                    before = time.perf_counter()
+                    ready = wait_ready(evt)
+                    extra_delay += time.perf_counter() - before
+                    if not ready:
+                        end = PlaybackEnd.STOPPED if stop_event.is_set() else PlaybackEnd.SYNC_TIMEOUT
+                        break
 
                 apply_event(evt)
                 if evt.kind in BUTTON_OF_DOWN:
@@ -152,12 +181,25 @@ def play(
                 elif evt.kind in BUTTON_OF_UP:
                     held.discard(BUTTON_OF_UP[evt.kind])
 
+            if end != PlaybackEnd.DONE:
+                break
+
             loop += 1
             if progress is not None:
                 progress(PlaybackStatus(completed_loops=loop, elapsed_seconds=time.perf_counter() - start))
 
-            if options.mode == LoopMode.REPEAT_COUNT and loop >= options.repeat_count:
-                break
+            if between_cycles is not None and not stop_event.is_set():
+                if options.mode == LoopMode.REPEAT_COUNT:
+                    another = loop < options.repeat_count
+                elif options.mode == LoopMode.DURATION:
+                    another = (time.perf_counter() - start) < options.duration_seconds
+                else:
+                    another = True
+                if another:
+                    before = time.perf_counter()
+                    between_cycles()
+                    extra_delay += time.perf_counter() - before
     finally:
         if held:
             release_held(held)
+    return end

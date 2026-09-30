@@ -1,4 +1,8 @@
 .venv/
+.venv_win/
 __pycache__/
 *.pyc
 *.mmr
+build/
+dist/
+vendor/

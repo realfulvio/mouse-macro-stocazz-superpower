@@ -10,8 +10,8 @@ import time
 import flet as ft
 
 from macro.backend import current_platform, list_mice, make_player, make_recorder
-from macro.engine import LoopMode, PlaybackOptions, PlaybackStatus, play
-from macro.events import Macro, MacroEvent
+from macro.engine import LoopMode, PlaybackEnd, PlaybackOptions, PlaybackStatus, play
+from macro.events import BUTTON_OF_DOWN, LEFT_DOWN, Macro, MacroEvent
 
 # Palette viola-prugna di sfondo, rosa
 # come colore principale, verde/giallo per gli stati, cavallini come decorazione).
@@ -25,16 +25,16 @@ FIELD_BG = "#241226"
 TEXT_MUTED = "#CBB3C9"
 DANGER = "#D6357C"
 SUCCESS = "#3FA66B"
-VERSION = "v0.3 beta"
+VERSION = "v0.4 beta"
 
 
 def main(page: ft.Page):
     page.title = "Mouse Macro Stocazz Superpower"
     page.theme_mode = ft.ThemeMode.DARK
     page.window.width = 560
-    page.window.height = 800
+    page.window.height = 900
     page.window.min_width = 480
-    page.window.min_height = 720
+    page.window.min_height = 640
     page.window.icon = "icon.ico"
     page.padding = 0
     page.bgcolor = BG_TOP
@@ -74,6 +74,52 @@ def main(page: ft.Page):
         spacing=2,
     )
 
+    def help_step(n: str, text: str):
+        return ft.Row(
+            [
+                ft.Container(
+                    content=ft.Text(n, size=12, weight=ft.FontWeight.W_800, color=ft.Colors.WHITE),
+                    width=24, height=24, border_radius=12, bgcolor=ACCENT_1,
+                    alignment=ft.Alignment.CENTER,
+                ),
+                ft.Text(text, size=13, expand=True),
+            ],
+            spacing=10, vertical_alignment=ft.CrossAxisAlignment.START,
+        )
+
+    help_dialog = ft.AlertDialog(
+        modal=False,
+        title=ft.Text("Come si usa"),
+        content=ft.Column(
+            [
+                help_step("1", "Apri nel browser tutte le schede dei cavalli da gestire e mettiti sulla prima."),
+                help_step("2", "Premi F9 (funziona anche dal browser) e fai a mano i compiti su quel cavallo, "
+                               "con calma e con la pagina già caricata."),
+                help_step("3", "Premi F9 per fermare. Se usi l'opzione \"A fine giro chiudi la scheda\", "
+                               "non chiudere la scheda durante la registrazione: lo farà il programma."),
+                help_step("4", "In \"Ripetizione\" scegli \"N volte\" e metti quante schede hai aperto."),
+                help_step("5", "Torna sulla prima scheda da fare e premi F10. Per fermare: F10, "
+                               "oppure Ctrl+Alt+F11 in emergenza."),
+                ft.Container(height=4),
+                ft.Text("Per non sbagliare i click", size=13, weight=ft.FontWeight.W_700),
+                ft.Text(
+                    "• Non spostare, ridimensionare o zoomare il browser tra registrazione e riproduzione.\n"
+                    "• Durante la riproduzione non toccare il mouse.\n"
+                    "• Registra sempre con le pagine già caricate.\n"
+                    "• Salva la macro (\"Salva macro\") per riusarla i giorni successivi.",
+                    size=12,
+                ),
+            ],
+            tight=True, spacing=10, width=420, scroll=ft.ScrollMode.AUTO,
+        ),
+        actions=[ft.TextButton("Ho capito", on_click=lambda e: page.pop_dialog())],
+    )
+
+    help_button = ft.IconButton(
+        ft.Icons.HELP_OUTLINE_ROUNDED, icon_color=TEXT_MUTED, tooltip="Come si usa",
+        on_click=lambda e: page.show_dialog(help_dialog),
+    )
+
     header = ft.Container(
         content=ft.Row(
             [
@@ -84,6 +130,7 @@ def main(page: ft.Page):
                 ),
                 title,
                 ft.Container(expand=True),
+                help_button,
                 rec_dot,
             ],
             spacing=14,
@@ -168,7 +215,16 @@ def main(page: ft.Page):
     row_count = ft.Row([num_count, ft.Text("volte", size=12, color=TEXT_MUTED)], spacing=8, visible=False)
     row_duration = ft.Row([num_minutes, ft.Text("minuti", size=12, color=TEXT_MUTED)], spacing=8, visible=False)
 
+    LOOP_HINTS = {
+        "infinite": "Ripete la macro finché non la fermi con F10.",
+        "count": "Ripete la macro il numero di volte indicato. Con le schede dei cavalli: "
+                 "metti quante schede hai aperto (un giro = un cavallo).",
+        "duration": "Continua a ripetere per i minuti indicati; il giro in corso viene sempre finito.",
+    }
+    loop_hint = ft.Text(LOOP_HINTS["infinite"], size=10, color=TEXT_MUTED)
+
     def select_loop(mode: str):
+        loop_hint.value = LOOP_HINTS[mode]
         loop_mode["value"] = mode
         chip_infinite.gradient = ft.LinearGradient(colors=[ACCENT_1, ACCENT_2]) if mode == "infinite" else None
         chip_infinite.bgcolor = None if mode == "infinite" else FIELD_BG
@@ -222,29 +278,149 @@ def main(page: ft.Page):
                                  bgcolor=FIELD_BG, border_color=CARD_BORDER, border_radius=10,
                                  color=ft.Colors.WHITE, text_size=13, content_padding=6)
 
+    def section_title(text: str):
+        return ft.Text(text, size=11, weight=ft.FontWeight.W_700, color=TEXT_MUTED, style=ft.TextStyle(letter_spacing=1.2))
+
+    def hint(text: str):
+        return ft.Text(text, size=10, color=TEXT_MUTED)
+
+    # --- Browser: chiusura scheda a fine giro (solo Windows) ---
+    tab_switch = ft.Switch(value=False, active_color=ACCENT_1)
+    browser_section = ft.Column(
+        [
+            ft.Container(height=6),
+            section_title("SCHEDE DEL BROWSER"),
+            ft.Row(
+                [
+                    ft.Icon(ft.Icons.TAB_ROUNDED, size=18, color=TEXT_MUTED),
+                    ft.Text("A fine giro chiudi la scheda (Ctrl+W)", size=12, color=TEXT_MUTED, expand=True),
+                    tab_switch,
+                ],
+                spacing=8,
+            ),
+            hint(
+                "Dopo ogni giro chiude la scheda del cavallo appena fatto e il browser passa da solo alla successiva. "
+                "Più affidabile che cliccare la X della scheda, che si sposta man mano che le schede diminuiscono. "
+                "Attivalo solo se durante la registrazione NON hai chiuso la scheda. Dopo l'ultimo giro non chiude nulla."
+            ),
+        ],
+        spacing=10,
+        visible=(platform == "windows"),
+    )
+
+    # --- Attesa pagina (solo Windows): prima di ogni click confronta il punto dello
+    # schermo con il ritaglio salvato in registrazione ---
+    sync_switch = ft.Switch(value=False, active_color=ACCENT_1)
+    sync_timeout = ft.TextField(value="20", width=64, height=42, text_align=ft.TextAlign.CENTER,
+                                 bgcolor=FIELD_BG, border_color=CARD_BORDER, border_radius=10,
+                                 color=ft.Colors.WHITE, text_size=13, content_padding=6)
+
+    tolerance = {"value": "normal"}
+    TOLERANCE_HINTS = {
+        "strict": "Preciso: il punto deve essere quasi identico. Rischia di fermarsi per differenze minime.",
+        "normal": "Normale: va bene nella maggior parte dei casi.",
+        "loose": "Tollerante: usalo se si ferma dicendo \"pagina non pronta\" anche quando la pagina è a posto "
+                 "(es. attorno al pulsante cambiano nome o foto del cavallo).",
+    }
+    tol_strict = chip(ft.Icons.CENTER_FOCUS_STRONG_ROUNDED, "Preciso", False)
+    tol_normal = chip(ft.Icons.CENTER_FOCUS_WEAK_ROUNDED, "Normale", True)
+    tol_loose = chip(ft.Icons.BLUR_ON_ROUNDED, "Tollerante", False)
+    tol_hint = hint(TOLERANCE_HINTS["normal"])
+
+    def select_tolerance(level: str):
+        tolerance["value"] = level
+        for c, key in ((tol_strict, "strict"), (tol_normal, "normal"), (tol_loose, "loose")):
+            sel = key == level
+            c.gradient = ft.LinearGradient(colors=[ACCENT_1, ACCENT_2]) if sel else None
+            c.bgcolor = None if sel else FIELD_BG
+            c.content.controls[0].color = ft.Colors.WHITE if sel else TEXT_MUTED
+            c.content.controls[1].color = ft.Colors.WHITE if sel else TEXT_MUTED
+        tol_hint.value = TOLERANCE_HINTS[level]
+        page.update()
+
+    tol_strict.on_click = lambda e: select_tolerance("strict")
+    tol_normal.on_click = lambda e: select_tolerance("normal")
+    tol_loose.on_click = lambda e: select_tolerance("loose")
+
+    sync_details = ft.Column(
+        [
+            ft.Row(
+                [
+                    ft.Icon(ft.Icons.TIMER_OFF_ROUNDED, size=18, color=TEXT_MUTED),
+                    ft.Text("Attesa massima per ogni click", size=12, color=TEXT_MUTED, expand=True),
+                    sync_timeout,
+                    ft.Text("s", size=12, color=TEXT_MUTED),
+                ],
+                spacing=8,
+            ),
+            hint("Se dopo questo tempo il punto non è ancora pronto, la riproduzione si ferma invece di cliccare a vuoto."),
+            ft.Text("Confronto", size=12, color=TEXT_MUTED),
+            ft.Row([tol_strict, tol_normal, tol_loose], spacing=8),
+            tol_hint,
+        ],
+        spacing=10,
+        visible=False,
+    )
+
+    def on_sync_change(e):
+        sync_details.visible = bool(sync_switch.value)
+        page.update()
+
+    sync_switch.on_change = on_sync_change
+
+    sync_section = ft.Column(
+        [
+            ft.Container(height=6),
+            section_title("ATTESA PAGINA"),
+            ft.Row(
+                [
+                    ft.Icon(ft.Icons.HOURGLASS_TOP_ROUNDED, size=18, color=TEXT_MUTED),
+                    ft.Text("Aspetta che la pagina sia pronta prima di cliccare", size=12, color=TEXT_MUTED, expand=True),
+                    sync_switch,
+                ],
+                spacing=8,
+            ),
+            hint(
+                "Prima di ogni click controlla che quel punto dello schermo sia com'era in registrazione "
+                "(pagina caricata, pulsante comparso). Se apri prima tutte le schede puoi lasciarla spenta; "
+                "accendila se il sito a volte è lento e la macro clicca prima che la pagina sia pronta."
+            ),
+            sync_details,
+        ],
+        spacing=10,
+        visible=(platform == "windows"),
+    )
+
     options_card = ft.Container(
         content=ft.Column(
             [
-                ft.Text("RIPETIZIONE", size=11, weight=ft.FontWeight.W_700, color=TEXT_MUTED, style=ft.TextStyle(letter_spacing=1.2)),
+                section_title("RIPETIZIONE"),
                 ft.Row([chip_infinite, chip_count, chip_duration], spacing=8),
                 ft.Row([row_count, row_duration], spacing=20),
+                loop_hint,
                 ft.Container(height=6),
-                ft.Text("VELOCITÀ DI RIPRODUZIONE", size=11, weight=ft.FontWeight.W_700, color=TEXT_MUTED, style=ft.TextStyle(letter_spacing=1.2)),
+                section_title("VELOCITÀ DI RIPRODUZIONE"),
                 ft.Row([ft.Icon(ft.Icons.SPEED_ROUNDED, size=18, color=TEXT_MUTED), speed_track, speed_label]),
+                hint(
+                    "1x = stessa velocità della registrazione. Accelerando, le pause lunghe (es. mentre aspettavi "
+                    "una pagina) vengono accelerate al massimo di 1,5x, per non cliccare prima del tempo."
+                ),
                 ft.Row(
                     [
                         ft.Icon(ft.Icons.ADS_CLICK_ROUNDED, size=18, color=TEXT_MUTED),
-                        ft.Text("Click minimo", size=12, color=TEXT_MUTED, expand=True),
+                        ft.Text("Durata minima di click e pause", size=12, color=TEXT_MUTED, expand=True),
                         min_click_ms,
                         ft.Text("ms", size=12, color=TEXT_MUTED),
                     ],
                     spacing=8,
                 ),
-                ft.Text(
-                    "Con velocità alte, un click non scende mai sotto questa durata: evita che app o giochi non lo rilevino. "
-                    "30 ms è il valore consigliato.",
-                    size=10, color=TEXT_MUTED,
+                hint(
+                    "Evita i click persi quando acceleri: anche a velocità alte ogni click resta premuto almeno "
+                    "questo tempo, e tra un click e il successivo passa almeno questo tempo. Lascia 30 ms; "
+                    "se a velocità alte il sito perde ancora qualche click, alzalo a 50-80 ms."
                 ),
+                browser_section,
+                sync_section,
             ],
             spacing=10,
         ),
@@ -358,6 +534,8 @@ def main(page: ft.Page):
         return f"{m:02d}:{s:05.2f}"
 
     def toggle_record(e=None):
+        if state["playing"]:
+            return
         if not state["recording"]:
             if platform == "linux" and not state["selected_device"]:
                 set_status("Nessun mouse selezionato", "Scegli un dispositivo dalla lista qui sopra.")
@@ -384,14 +562,28 @@ def main(page: ft.Page):
             threading.Thread(target=poll_recording, daemon=True).start()
         else:
             events = state["recorder"].stop()
+            if e is not None:
+                # Fermata col pulsante dell'app: l'ultimo click registrato è proprio quello
+                # su "INTERROMPI" e non deve finire nella macro (in riproduzione andrebbe a
+                # cliccare sull'app). Con F9 non serve.
+                last_down = max((i for i, ev in enumerate(events) if ev.kind == LEFT_DOWN), default=None)
+                if last_down is not None:
+                    events = events[:last_down]
             state["recording"] = False
-            state["macro"] = Macro(platform=platform, events=events)
+            state["macro"] = Macro(platform=platform, events=events, screen=current_screen())
             btn_record.content.controls[1].value = "REGISTRA  (F9)"
             has_events = len(events) > 0
             btn_play.opacity = 1.0 if has_events else 0.4
             btn_save.disabled = not has_events
-            set_status("Registrazione completata", f"{len(events)} eventi registrati.")
+            clicks = sum(1 for ev in events if ev.kind in BUTTON_OF_DOWN)
+            set_status("Registrazione completata", f"{len(events)} eventi, {clicks} click. Premi F10 per riprodurla.")
         page.update()
+
+    def current_screen() -> list[int]:
+        if platform != "windows":
+            return []
+        from macro.windows_backend import screen_geometry
+        return screen_geometry()
 
     def parse_int(field: ft.TextField, default: int) -> int:
         try:
@@ -408,6 +600,16 @@ def main(page: ft.Page):
         if not state["macro"].events:
             set_status("Nessuna macro", "Registra o carica prima una macro.")
             page.update()
+            return
+
+        recorded_screen = state["macro"].screen
+        if recorded_screen and recorded_screen != current_screen():
+            w, h = recorded_screen[2], recorded_screen[3]
+            set_status(
+                "Schermo diverso dalla registrazione",
+                f"La macro è stata registrata con uno schermo di {w}×{h} (o con monitor disposti diversamente): "
+                "i click finirebbero nei punti sbagliati. Rimetti la stessa risoluzione/monitor o registrala di nuovo.",
+            )
             return
 
         mode_map = {"infinite": LoopMode.INFINITE, "count": LoopMode.REPEAT_COUNT, "duration": LoopMode.DURATION}
@@ -432,16 +634,57 @@ def main(page: ft.Page):
         def on_progress(status: PlaybackStatus):
             set_status("Riproduzione in corso...", f"cicli completati: {status.completed_loops} · {format_time(status.elapsed_seconds)}")
 
+        stop_event = state["stop_event"]
+        events = state["macro"].events
+        timeout_s = float(parse_int(sync_timeout, 20))
+        failed_click = {"n": 0}
+        wait_ready = None
+        if platform == "windows" and sync_switch.value:
+            from macro.windows_backend import TOLERANCE_LOOSE, TOLERANCE_NORMAL, TOLERANCE_STRICT
+            tol = {"strict": TOLERANCE_STRICT, "normal": TOLERANCE_NORMAL, "loose": TOLERANCE_LOOSE}[tolerance["value"]]
+            click_number = {}
+            for ev in events:
+                if ev.kind in BUTTON_OF_DOWN:
+                    click_number[id(ev)] = len(click_number) + 1
+
+            def wait_ready(evt: MacroEvent) -> bool:
+                n = click_number.get(id(evt), 0)
+                ok = player.wait_until_ready(
+                    evt, timeout_s, stop_event, tol,
+                    on_waiting=lambda: set_status("In attesa della pagina...", f"Il punto del click n° {n} non è ancora pronto."),
+                )
+                if ok:
+                    set_status("Riproduzione in corso...", "")
+                else:
+                    failed_click["n"] = n
+                return ok
+
+        between_cycles = None
+        if platform == "windows" and tab_switch.value:
+            def between_cycles():
+                player.close_tab()
+                # tempo per far comparire la scheda successiva
+                stop_event.wait(1.0)
+
         def run():
+            end = PlaybackEnd.STOPPED
             try:
-                play(state["macro"].events, options, player.apply_event, player.release_held, on_progress, state["stop_event"])
+                end = play(events, options, player.apply_event, player.release_held,
+                           on_progress, stop_event, wait_ready, between_cycles)
             finally:
                 player.close()
                 state["playing"] = False
                 btn_play.content.controls[0].name = ft.Icons.PLAY_ARROW_ROUNDED
                 btn_play.content.controls[1].value = "RIPRODUCI  (F10)"
                 btn_record.opacity = 1.0
-                set_status("Riproduzione terminata", f"{len(state['macro'].events)} eventi nella macro.")
+                if end == PlaybackEnd.SYNC_TIMEOUT:
+                    set_status(
+                        f"Fermato: pagina non pronta al click n° {failed_click['n']}",
+                        f"Dopo {int(timeout_s)} s quel punto non era ancora com'era in registrazione. "
+                        "Controlla la pagina; se era a posto, scegli il confronto \"Tollerante\" o aumenta l'attesa massima.",
+                    )
+                else:
+                    set_status("Riproduzione terminata", f"{len(state['macro'].events)} eventi nella macro.")
                 page.update()
 
         threading.Thread(target=run, daemon=True).start()
@@ -449,17 +692,51 @@ def main(page: ft.Page):
     btn_record.on_click = toggle_record
     btn_play.on_click = toggle_play
 
-    # ================= Tasti rapidi globali =================
+    # ================= Tasti rapidi =================
+    def emergency_stop():
+        if state["recording"]:
+            toggle_record()
+        if state["stop_event"] is not None:
+            state["stop_event"].set()
+
+    global_hotkeys = None
+    if platform == "windows":
+        # Su Windows sono globali: funzionano anche col focus sul browser, così si può
+        # fermare la registrazione senza tornare sull'app (e senza registrare quel click).
+        from macro.windows_backend import (
+            HOTKEY_EMERGENCY, HOTKEY_PLAY, HOTKEY_RECORD, GlobalHotkeys,
+        )
+
+        def on_hotkey(hk_id: int):
+            if hk_id == HOTKEY_RECORD and not state["playing"]:
+                toggle_record()
+            elif hk_id == HOTKEY_PLAY and not state["recording"]:
+                toggle_play()
+            elif hk_id == HOTKEY_EMERGENCY:
+                emergency_stop()
+
+        global_hotkeys = GlobalHotkeys(on_hotkey)
+        global_hotkeys.start()
+        if global_hotkeys.failed:
+            hotkey_info.value = (
+                f"Tasti già usati da un altro programma: {', '.join(global_hotkeys.failed)} "
+                "(funzionano solo con la finestra dell'app attiva)."
+            )
+        else:
+            hotkey_info.value = (
+                "F9 registra/stop · F10 riproduci/stop · Ctrl+Alt+F11 stop di emergenza — "
+                "funzionano anche dal browser"
+            )
+
     def on_keyboard(e: ft.KeyboardEvent):
+        if global_hotkeys is not None and not global_hotkeys.failed:
+            return
         if e.key == "F9" and not state["playing"]:
             toggle_record()
         elif e.key == "F10" and not state["recording"]:
             toggle_play()
         elif e.key == "F11" and e.ctrl and e.alt:
-            if state["recording"]:
-                toggle_record()
-            if state["stop_event"] is not None:
-                state["stop_event"].set()
+            emergency_stop()
 
     page.on_keyboard_event = on_keyboard
 
@@ -542,10 +819,13 @@ def main(page: ft.Page):
                                         options_card,
                                         ft.Row([btn_save, btn_load], spacing=12),
                                         hotkey_info,
+                                        ft.Container(height=36),
                                     ],
                                     spacing=16,
+                                    scroll=ft.ScrollMode.AUTO,
                                 ),
                                 padding=ft.Padding.symmetric(horizontal=24),
+                                expand=True,
                             ),
                         ],
                         spacing=6,

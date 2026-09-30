@@ -1,0 +1,33 @@
+# UTF-8
+#
+# Metadati Windows (Proprietà file > Dettagli) per l'eseguibile: un exe con
+# informazioni coerenti (azienda/prodotto/descrizione) attira meno sospetti
+# dagli euristici antivirus rispetto a uno "anonimo".
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers=(0, 4, 0, 0),
+    prodvers=(0, 4, 0, 0),
+    mask=0x3f,
+    flags=0x0,
+    OS=0x40004,
+    fileType=0x1,
+    subtype=0x0,
+    date=(0, 0)
+  ),
+  kids=[
+    StringFileInfo(
+      [
+      StringTable(
+        u'040904B0',
+        [StringStruct(u'CompanyName', u'hcok'),
+        StringStruct(u'FileDescription', u'Mouse Macro Stocazz Superpower - registratore/riproduttore macro mouse'),
+        StringStruct(u'FileVersion', u'0.4.0.0'),
+        StringStruct(u'InternalName', u'MouseMacroStocazzSuperpower'),
+        StringStruct(u'LegalCopyright', u'\xa9 hcok'),
+        StringStruct(u'OriginalFilename', u'Mouse Macro Stocazz Superpower.exe'),
+        StringStruct(u'ProductName', u'Mouse Macro Stocazz Superpower'),
+        StringStruct(u'ProductVersion', u'0.4.0.0')])
+      ]),
+    VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
+  ]
+)

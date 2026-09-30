@@ -29,24 +29,31 @@ class MacroEvent:
     x: int = 0
     y: int = 0
     wheel: float = 0.0
+    # Ritaglio di schermo attorno al click (solo Windows, zlib+base64): in riproduzione
+    # si aspetta che quel punto torni uguale prima di cliccare.
+    snap: str = ""
 
 
 @dataclass
 class Macro:
     platform: str            # "linux" o "windows": indica come interpretare gli eventi
     events: list[MacroEvent] = field(default_factory=list)
+    # [x, y, larghezza, altezza] del desktop al momento della registrazione (Windows):
+    # se in riproduzione è diverso, le coordinate assolute non corrispondono più.
+    screen: list[int] = field(default_factory=list)
 
     def save(self, path: str) -> None:
         data = {
             "platform": self.platform,
+            "screen": self.screen,
             "events": [asdict(e) for e in self.events],
         }
         with open(path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2)
+            json.dump(data, f)
 
     @staticmethod
     def load(path: str) -> "Macro":
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
         events = [MacroEvent(**e) for e in data["events"]]
-        return Macro(platform=data["platform"], events=events)
+        return Macro(platform=data["platform"], events=events, screen=data.get("screen", []))
