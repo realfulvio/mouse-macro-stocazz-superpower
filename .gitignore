@@ -1,8 +1,19 @@
 .venv/
 .venv_win/
+.venv_preview/
+.venv_linux/
+release/
 __pycache__/
 *.pyc
 *.mmr
 build/
 dist/
 vendor/
+backup_*/
+.pytest_cache/
+.env
+.env.*
+*.log
+*.tmp
+RECAP.md
+Mouse Macro Stocazz Superpower.desktop.txt

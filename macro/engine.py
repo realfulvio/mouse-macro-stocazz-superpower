@@ -4,6 +4,7 @@ backend di sistema (Linux/Windows) usato per registrare e iniettare gli eventi.
 """
 from __future__ import annotations
 
+import random
 import threading
 import time
 from dataclasses import dataclass
@@ -21,8 +22,8 @@ class LoopMode(Enum):
 
 @dataclass
 class PlaybackOptions:
-    mode: LoopMode = LoopMode.INFINITE
-    repeat_count: int = 1
+    mode: LoopMode = LoopMode.REPEAT_COUNT
+    repeat_count: int | None = None
     duration_seconds: float = 60.0
     speed: float = 1.0
     # Le pause più lunghe di questa soglia (secondi) vengono considerate "attese reali"
@@ -35,7 +36,10 @@ class PlaybackOptions:
     # indipendentemente dalla velocità: evita che, accelerando la riproduzione, un
     # click diventi così breve da non essere più rilevato dall'applicazione di
     # destinazione (molti giochi/programmi campionano l'input a intervalli fissi).
-    min_click_hold_seconds: float = 0.03
+    min_click_hold_seconds: float = 0.05
+    # Modalità opzionale: aggiunge attese casuali senza cambiare le coordinate.
+    # Zero mantiene esattamente il comportamento precedente.
+    timing_variation_seconds: float = 0.0
 
 
 @dataclass
@@ -48,13 +52,16 @@ def _wait_until(deadline: Callable[[], float], stop_event: threading.Event) -> b
     """Attende con precisione sub-millisecondo fino all'istante target (in secondi,
     stessa base di time.perf_counter()). Ritorna False se interrotta da stop_event."""
     while True:
+        if stop_event.is_set():
+            return False
         remaining = deadline() - time.perf_counter()
         if remaining <= 0:
             return True
         if stop_event.is_set():
             return False
         if remaining > 0.003:
-            time.sleep(remaining - 0.002)
+            if stop_event.wait(remaining - 0.002):
+                return False
         elif remaining > 0.00005:
             pass  # spin-wait: busy loop finale per la precisione
         else:
@@ -77,6 +84,30 @@ def _compute_scaled_times(events: list[MacroEvent], options: PlaybackOptions) ->
         scaled.append(scaled[-1] + gap / effective_speed)
     _enforce_min_click_hold(events, scaled, options.min_click_hold_seconds)
     return scaled
+
+
+def _vary_times(
+    events: list[MacroEvent], scaled: list[float], maximum: float, rng: random.Random,
+) -> list[float]:
+    """Aggiunge pause ai gesti completi; non altera percorsi o combinazioni di tasti."""
+    maximum = max(0.0, min(1.0, maximum))
+    if maximum == 0:
+        return scaled
+    varied = []
+    shift = 0.0
+    held: set[str] = set()
+    for evt, relative in zip(events, scaled):
+        if evt.kind in BUTTON_OF_DOWN:
+            if not held:
+                shift += rng.uniform(0.0, maximum)
+            held.add(BUTTON_OF_DOWN[evt.kind])
+        elif evt.kind in BUTTON_OF_UP:
+            button = BUTTON_OF_UP[evt.kind]
+            if held == {button}:
+                shift += rng.uniform(0.0, maximum / 4.0)
+            held.discard(button)
+        varied.append(relative + shift)
+    return varied
 
 
 def _enforce_min_click_hold(events: list[MacroEvent], scaled: list[float], min_hold: float) -> None:
@@ -139,14 +170,25 @@ def play(
     if not events:
         return PlaybackEnd.DONE
 
+    if options.mode == LoopMode.REPEAT_COUNT and (
+        not isinstance(options.repeat_count, int)
+        or isinstance(options.repeat_count, bool)
+        or options.repeat_count <= 0
+    ):
+        raise ValueError("Imposta un numero intero di giri maggiore di zero.")
+
     scaled_times = _compute_scaled_times(events, options)
-    # stessa distanza minima anche tra l'ultimo evento di un giro e il primo del successivo
-    cycle_seconds = scaled_times[-1] + max(0.0, options.min_click_hold_seconds)
+    variation = max(0.0, min(1.0, options.timing_variation_seconds))
+    rng = random.Random() if variation else None
 
     start = time.perf_counter()
     held: set[str] = set()
+    actual_down: dict[str, float] = {}
+    actual_last_up: float | None = None
+    minimum = max(0.0, options.min_click_hold_seconds)
     loop = 0
     extra_delay = 0.0
+    loop_start_offset = 0.0
     end = PlaybackEnd.DONE
 
     try:
@@ -159,10 +201,22 @@ def play(
             if options.mode == LoopMode.REPEAT_COUNT and loop >= options.repeat_count:
                 break
 
-            loop_start_offset = loop * cycle_seconds
+            cycle_times = _vary_times(events, scaled_times, variation, rng) if rng else scaled_times
 
-            for evt, relative in zip(events, scaled_times):
+            for evt, relative in zip(events, cycle_times):
                 target = start + loop_start_offset + relative + extra_delay
+                # Se il backend o Windows ritarda, sposta tutto il seguito invece
+                # di recuperare il ritardo inviando pressioni/rilasci in raffica.
+                earliest = time.perf_counter()
+                if evt.kind in BUTTON_OF_DOWN and actual_last_up is not None:
+                    earliest = max(earliest, actual_last_up + minimum)
+                elif evt.kind in BUTTON_OF_UP:
+                    pressed_at = actual_down.get(BUTTON_OF_UP[evt.kind])
+                    if pressed_at is not None:
+                        earliest = max(earliest, pressed_at + minimum)
+                late = max(0.0, earliest - target)
+                target += late
+                extra_delay += late
                 if not _wait_until(lambda: target, stop_event):
                     end = PlaybackEnd.STOPPED
                     break
@@ -175,16 +229,26 @@ def play(
                         end = PlaybackEnd.STOPPED if stop_event.is_set() else PlaybackEnd.SYNC_TIMEOUT
                         break
 
+                if stop_event.is_set():
+                    end = PlaybackEnd.STOPPED
+                    break
                 apply_event(evt)
                 if evt.kind in BUTTON_OF_DOWN:
                     held.add(BUTTON_OF_DOWN[evt.kind])
+                    actual_down[BUTTON_OF_DOWN[evt.kind]] = time.perf_counter()
                 elif evt.kind in BUTTON_OF_UP:
                     held.discard(BUTTON_OF_UP[evt.kind])
+                    actual_down.pop(BUTTON_OF_UP[evt.kind], None)
+                    actual_last_up = time.perf_counter()
 
             if end != PlaybackEnd.DONE:
                 break
 
             loop += 1
+            # Ogni giro ha tempi nuovi; l'offset cumulativo evita sovrapposizioni.
+            loop_start_offset += cycle_times[-1] + max(0.0, options.min_click_hold_seconds)
+            if rng:
+                loop_start_offset += rng.uniform(0.0, variation * 3.0)
             if progress is not None:
                 progress(PlaybackStatus(completed_loops=loop, elapsed_seconds=time.perf_counter() - start))
 

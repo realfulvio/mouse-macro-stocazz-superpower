@@ -12,9 +12,9 @@ import flet as ft
 from macro.backend import current_platform, list_mice, make_player, make_recorder
 from macro.engine import LoopMode, PlaybackEnd, PlaybackOptions, PlaybackStatus, play
 from macro.events import BUTTON_OF_DOWN, LEFT_DOWN, Macro, MacroEvent
+from localization import localize_page, translate
 
-# Palette viola-prugna di sfondo, rosa
-# come colore principale, verde/giallo per gli stati, cavallini come decorazione).
+# Palette viola-prugna e rosa, verde/giallo per gli stati e cavallini decorativi.
 ACCENT_1 = "#FF4F9A"   # rosa
 ACCENT_2 = "#E8B400"   # giallo
 BG_TOP = "#241226"
@@ -25,16 +25,17 @@ FIELD_BG = "#241226"
 TEXT_MUTED = "#CBB3C9"
 DANGER = "#D6357C"
 SUCCESS = "#3FA66B"
-VERSION = "v0.4 beta"
+VERSION = "v0.13 beta"
 
 
-def main(page: ft.Page):
+def main(page: ft.Page, language: str = "it"):
+    localize_page(page, language)
     page.title = "Mouse Macro Stocazz Superpower"
     page.theme_mode = ft.ThemeMode.DARK
     page.window.width = 560
-    page.window.height = 900
+    page.window.height = 720
     page.window.min_width = 480
-    page.window.min_height = 640
+    page.window.min_height = 620
     page.window.icon = "icon.ico"
     page.padding = 0
     page.bgcolor = BG_TOP
@@ -135,14 +136,14 @@ def main(page: ft.Page):
             ],
             spacing=14,
         ),
-        padding=ft.Padding.only(left=24, right=24, top=26, bottom=10),
+        padding=ft.Padding.only(left=24, right=24, top=12, bottom=6),
     )
 
     # ================= Status card (telemetria) =================
     status_title = ft.Text("Pronto", size=15, weight=ft.FontWeight.W_600, color=ft.Colors.WHITE)
     status_sub = ft.Text("Registra i movimenti del mouse per iniziare.", size=12, color=TEXT_MUTED)
-    stat_events = ft.Text("0", size=20, weight=ft.FontWeight.W_700, color=ACCENT_2, font_family="Roboto Mono")
-    stat_time = ft.Text("00:00.00", size=20, weight=ft.FontWeight.W_700, color=ACCENT_1, font_family="Roboto Mono")
+    stat_events = ft.Text("0", size=17, weight=ft.FontWeight.W_700, color=ACCENT_2, font_family="Roboto Mono")
+    stat_time = ft.Text("00:00.00", size=17, weight=ft.FontWeight.W_700, color=ACCENT_1, font_family="Roboto Mono")
 
     def stat_block(label: str, value_ctrl: ft.Text):
         return ft.Column(
@@ -151,19 +152,18 @@ def main(page: ft.Page):
         )
 
     status_card = ft.Container(
-        content=ft.Column(
+        content=ft.Row(
             [
-                ft.Row([status_title], ),
-                status_sub,
-                ft.Container(height=14),
+                ft.Column([status_title, status_sub], spacing=4, expand=True),
                 ft.Row(
                     [stat_block("EVENTI", stat_events), ft.Container(width=1, height=36, bgcolor=CARD_BORDER),
                      stat_block("DURATA", stat_time)],
-                    alignment=ft.MainAxisAlignment.SPACE_EVENLY,
+                    spacing=12,
                 ),
             ],
+            spacing=16,
         ),
-        padding=20, border_radius=20, bgcolor=CARD_BG,
+        padding=16, border_radius=20, bgcolor=CARD_BG,
         border=ft.Border.all(1, CARD_BORDER),
     )
 
@@ -171,11 +171,11 @@ def main(page: ft.Page):
     def make_action_button(icon, text, on_click, gradient_colors):
         return ft.Container(
             content=ft.Row(
-                [ft.Icon(icon, color=ft.Colors.WHITE, size=20), ft.Text(text, color=ft.Colors.WHITE, weight=ft.FontWeight.W_700, size=14)],
-                alignment=ft.MainAxisAlignment.CENTER, spacing=8,
+                [ft.Icon(icon, color=ft.Colors.WHITE, size=18), ft.Text(text, color=ft.Colors.WHITE, weight=ft.FontWeight.W_700, size=13)],
+                alignment=ft.MainAxisAlignment.CENTER, spacing=6,
             ),
             gradient=ft.LinearGradient(colors=gradient_colors),
-            border_radius=16, padding=ft.Padding.symmetric(vertical=16),
+            border_radius=16, padding=ft.Padding.symmetric(vertical=14),
             on_click=on_click, ink=True, expand=True,
             shadow=ft.BoxShadow(blur_radius=16, color="#40FF4F9A", spread_radius=-4, offset=ft.Offset(0, 6)),
             animate_scale=150,
@@ -185,6 +185,32 @@ def main(page: ft.Page):
     btn_play = make_action_button(ft.Icons.PLAY_ARROW_ROUNDED, "RIPRODUCI  (F10)", None, [SUCCESS, ACCENT_2])
     btn_play.opacity = 0.4
 
+    def with_pony(button, asset, side):
+        # La decorazione non intercetta i click; il pulsante conserva i suoi
+        # controlli e callback, anche quando cambia in INTERROMPI.
+        button.expand = False
+        button.left = 0
+        button.right = 0
+        button.bottom = 0
+        button.height = 52
+        button.padding = ft.Padding.only(
+            left=56 if side == "left" else 6,
+            right=56 if side == "right" else 6,
+            top=14, bottom=14,
+        )
+        mascot = ft.TransparentPointer(
+            content=ft.Image(src=asset, width=56, height=64,
+                             fit=ft.BoxFit.CONTAIN, exclude_from_semantics=True),
+            top=0, width=56, height=64,
+            left=0 if side == "left" else None,
+            right=0 if side == "right" else None,
+        )
+        return ft.Stack([button, mascot], height=64, expand=True,
+                        clip_behavior=ft.ClipBehavior.NONE)
+
+    record_action = with_pony(btn_record, "pony-record.png", "left")
+    play_action = with_pony(btn_play, "pony-director.png", "right")
+
     # ================= Opzioni ripetizione =================
     def chip(icon, label, selected=False):
         return ft.Container(
@@ -192,27 +218,27 @@ def main(page: ft.Page):
                              ft.Text(label, size=12, weight=ft.FontWeight.W_600,
                                      color=ft.Colors.WHITE if selected else TEXT_MUTED)],
                             spacing=6, alignment=ft.MainAxisAlignment.CENTER),
-            padding=ft.Padding.symmetric(vertical=10, horizontal=6),
+            padding=ft.Padding.symmetric(vertical=8, horizontal=6),
             border_radius=12, expand=True,
             gradient=ft.LinearGradient(colors=[ACCENT_1, ACCENT_2]) if selected else None,
             bgcolor=None if selected else FIELD_BG,
             animate=150,
         )
 
-    loop_mode = {"value": "infinite"}
+    loop_mode = {"value": "count"}
 
-    num_count = ft.TextField(value="5", width=64, height=42, text_align=ft.TextAlign.CENTER,
+    num_count = ft.TextField(value="", width=64, height=42, text_align=ft.TextAlign.CENTER,
                               bgcolor=FIELD_BG, border_color=CARD_BORDER, border_radius=10,
                               color=ft.Colors.WHITE, text_size=13, content_padding=6)
     num_minutes = ft.TextField(value="10", width=64, height=42, text_align=ft.TextAlign.CENTER,
                                 bgcolor=FIELD_BG, border_color=CARD_BORDER, border_radius=10,
                                 color=ft.Colors.WHITE, text_size=13, content_padding=6)
 
-    chip_infinite = chip(ft.Icons.ALL_INCLUSIVE_ROUNDED, "Infinito", True)
-    chip_count = chip(ft.Icons.REPEAT_ROUNDED, "N volte", False)
+    chip_infinite = chip(ft.Icons.ALL_INCLUSIVE_ROUNDED, "Infinito", False)
+    chip_count = chip(ft.Icons.REPEAT_ROUNDED, "N volte", True)
     chip_duration = chip(ft.Icons.TIMER_ROUNDED, "Durata", False)
 
-    row_count = ft.Row([num_count, ft.Text("volte", size=12, color=TEXT_MUTED)], spacing=8, visible=False)
+    row_count = ft.Row([num_count, ft.Text("volte", size=12, color=TEXT_MUTED)], spacing=8, visible=True)
     row_duration = ft.Row([num_minutes, ft.Text("minuti", size=12, color=TEXT_MUTED)], spacing=8, visible=False)
 
     LOOP_HINTS = {
@@ -221,7 +247,7 @@ def main(page: ft.Page):
                  "metti quante schede hai aperto (un giro = un cavallo).",
         "duration": "Continua a ripetere per i minuti indicati; il giro in corso viene sempre finito.",
     }
-    loop_hint = ft.Text(LOOP_HINTS["infinite"], size=10, color=TEXT_MUTED)
+    loop_hint = ft.Text(LOOP_HINTS["count"], size=10, color=TEXT_MUTED)
 
     def select_loop(mode: str):
         loop_hint.value = LOOP_HINTS[mode]
@@ -274,7 +300,7 @@ def main(page: ft.Page):
 
     speed_slider.on_change = on_speed_change
 
-    min_click_ms = ft.TextField(value="30", width=64, height=42, text_align=ft.TextAlign.CENTER,
+    min_click_ms = ft.TextField(value="50", width=64, height=42, text_align=ft.TextAlign.CENTER,
                                  bgcolor=FIELD_BG, border_color=CARD_BORDER, border_radius=10,
                                  color=ft.Colors.WHITE, text_size=13, content_padding=6)
 
@@ -364,6 +390,7 @@ def main(page: ft.Page):
 
     def on_sync_change(e):
         sync_details.visible = bool(sync_switch.value)
+        refresh_settings_summary()
         page.update()
 
     sync_switch.on_change = on_sync_change
@@ -391,6 +418,88 @@ def main(page: ft.Page):
         visible=(platform == "windows"),
     )
 
+    variation_switch = ft.Switch(value=False, active_color=ACCENT_1)
+    variation_ms = ft.TextField(
+        value="120", width=64, height=42, text_align=ft.TextAlign.CENTER,
+        bgcolor=FIELD_BG, border_color=CARD_BORDER, border_radius=10,
+        color=ft.Colors.WHITE, text_size=13, content_padding=6,
+    )
+    variation_details = ft.Column(
+        [
+            ft.Row(
+                [
+                    ft.Text("Pausa casuale massima prima di un click", size=12, color=TEXT_MUTED, expand=True),
+                    variation_ms,
+                    ft.Text("ms", size=12, color=TEXT_MUTED),
+                ], spacing=8,
+            ),
+            hint("Da 1 a 1000 ms. Prova 120 ms: aggiunge da 0 a 120 ms prima di un click, "
+                 "fino a 30 ms alla pressione e fino a 360 ms tra due giri."),
+        ], spacing=10, visible=False,
+    )
+
+    def on_variation_change(e):
+        variation_details.visible = bool(variation_switch.value)
+        refresh_settings_summary()
+        page.update()
+
+    variation_switch.on_change = on_variation_change
+    variation_section = ft.Column(
+        [
+            ft.Container(height=6),
+            section_title("MODALITÀ SPERIMENTALE"),
+            ft.Row(
+                [
+                    ft.Icon(ft.Icons.TIMER_OFF_ROUNDED, size=18, color=TEXT_MUTED),
+                    ft.Text("Varia i tempi a ogni giro", size=12, color=TEXT_MUTED, expand=True),
+                    variation_switch,
+                ], spacing=8,
+            ),
+            hint("Aggiunge piccole pause casuali e varia la durata delle pressioni. "
+                 "I punti di click restano identici e il click minimo viene sempre rispettato. "
+                 "La macro diventa meno ripetitiva e un po' più lenta; non garantisce "
+                 "che un sito non riconosca l'automazione."),
+            variation_details,
+        ], spacing=10,
+    )
+
+    settings_summary = ft.Text("", size=11, color=TEXT_MUTED, expand=True)
+
+    def refresh_settings_summary(e=None):
+        settings_summary.value = (
+            f"Chiusura schede: {'ON' if tab_switch.value else 'OFF'} · "
+            f"Attesa pagina: {'ON' if sync_switch.value else 'OFF'} · "
+            f"Tempi: {'variabili' if variation_switch.value else 'fissi'}"
+        )
+        if platform == "linux":
+            settings_summary.value = f"Tempi: {'variabili' if variation_switch.value else 'fissi'}"
+        if e is not None:
+            page.update()
+
+    min_click_ms.on_change = refresh_settings_summary
+    tab_switch.on_change = refresh_settings_summary
+    settings_dialog = ft.AlertDialog(
+        modal=False,
+        title=ft.Text("Impostazioni"),
+        content=ft.Column(
+            [
+                browser_section,
+                sync_section,
+                variation_section,
+                ft.Container(height=6),
+                section_title("VELOCITÀ E PAUSE"),
+                hint("1x riproduce la velocità registrata. Le pause lunghe vengono accelerate al massimo "
+                     "di 1,5x per non cliccare prima del caricamento della pagina."),
+            ], width=420, height=360, spacing=12, scroll=ft.ScrollMode.AUTO,
+        ),
+        actions=[ft.TextButton("Fatto", on_click=lambda e: page.pop_dialog())],
+    )
+    settings_button = ft.OutlinedButton(
+        "Impostazioni", icon=ft.Icons.SETTINGS_ROUNDED,
+        on_click=lambda e: page.show_dialog(settings_dialog),
+        style=ft.ButtonStyle(color=ft.Colors.WHITE),
+    )
+
     options_card = ft.Container(
         content=ft.Column(
             [
@@ -398,33 +507,23 @@ def main(page: ft.Page):
                 ft.Row([chip_infinite, chip_count, chip_duration], spacing=8),
                 ft.Row([row_count, row_duration], spacing=20),
                 loop_hint,
-                ft.Container(height=6),
+                ft.Container(height=2),
                 section_title("VELOCITÀ DI RIPRODUZIONE"),
                 ft.Row([ft.Icon(ft.Icons.SPEED_ROUNDED, size=18, color=TEXT_MUTED), speed_track, speed_label]),
-                hint(
-                    "1x = stessa velocità della registrazione. Accelerando, le pause lunghe (es. mentre aspettavi "
-                    "una pagina) vengono accelerate al massimo di 1,5x, per non cliccare prima del tempo."
-                ),
                 ft.Row(
                     [
                         ft.Icon(ft.Icons.ADS_CLICK_ROUNDED, size=18, color=TEXT_MUTED),
                         ft.Text("Durata minima di click e pause", size=12, color=TEXT_MUTED, expand=True),
                         min_click_ms,
                         ft.Text("ms", size=12, color=TEXT_MUTED),
-                    ],
-                    spacing=8,
+                    ], spacing=8,
                 ),
-                hint(
-                    "Evita i click persi quando acceleri: anche a velocità alte ogni click resta premuto almeno "
-                    "questo tempo, e tra un click e il successivo passa almeno questo tempo. Lascia 30 ms; "
-                    "se a velocità alte il sito perde ancora qualche click, alzalo a 50-80 ms."
-                ),
-                browser_section,
-                sync_section,
+                hint("Protegge la pressione e la pausa tra i click a qualsiasi velocità. "
+                     "Lascia 50 ms; se ne perde ancora, prova 80 ms."),
             ],
-            spacing=10,
+            spacing=6,
         ),
-        padding=20, border_radius=20, bgcolor=CARD_BG, border=ft.Border.all(1, CARD_BORDER),
+        padding=12, border_radius=20, bgcolor=CARD_BG, border=ft.Border.all(1, CARD_BORDER),
     )
 
     # ================= Dispositivo mouse (solo Linux) =================
@@ -441,6 +540,7 @@ def main(page: ft.Page):
             state["selected_device"] = mice[0][0]
         else:
             device_dropdown.value = None
+            state["selected_device"] = None
         page.update()
 
     def on_device_change(e):
@@ -461,38 +561,73 @@ def main(page: ft.Page):
     )
 
     # ================= Salva / Carica =================
-    def save_result(e: ft.FilePickerResultEvent):
-        if e.path:
-            state["macro"].save(e.path)
-            set_status(f"Macro salvata in {e.path}", f"{len(state['macro'].events)} eventi")
-
-    def load_result(e: ft.FilePickerResultEvent):
-        if e.files:
-            try:
-                loaded = Macro.load(e.files[0].path)
-                if loaded.platform != platform:
-                    set_status("Attenzione", f"Macro registrata su {loaded.platform}, potrebbe non funzionare qui.")
-                state["macro"] = loaded
-                stat_events.value = str(len(loaded.events))
-                btn_play.opacity = 1.0
-                set_status("Macro caricata", f"{len(loaded.events)} eventi da {e.files[0].name}")
-            except Exception as ex:
-                set_status("Errore nel caricamento", str(ex))
-        page.update()
-
-    save_picker = ft.FilePicker(on_result=save_result)
-    load_picker = ft.FilePicker(on_result=load_result)
+    # In Flet 1.x i metodi del picker sono asincroni e restituiscono il
+    # risultato direttamente: on_result non viene emesso da queste chiamate.
+    save_picker = ft.FilePicker()
+    load_picker = ft.FilePicker()
     page.services.extend([save_picker, load_picker])
+
+    async def save_macro(e):
+        if state["recording"] or state["playing"]:
+            set_status("Macro in uso", "Ferma la registrazione o riproduzione prima di salvare.")
+            return
+        macro = state["macro"]
+        if not macro.events:
+            set_status("Nessuna macro", "Registra o carica una macro prima di salvarla.")
+            return
+        try:
+            path = await save_picker.save_file(
+                dialog_title=translate("Salva macro", language), file_name="macro.mmr",
+                file_type=ft.FilePickerFileType.CUSTOM, allowed_extensions=["mmr"],
+            )
+            if not path:
+                return
+            # Rispetta esattamente il percorso confermato nella finestra nativa.
+            macro.save(path)
+            set_status("Macro salvata", f"{len(macro.events)} eventi in {path}")
+        except Exception as ex:
+            set_status("Errore nel salvataggio", str(ex))
+
+    async def load_macro(e):
+        if state["recording"] or state["playing"]:
+            set_status("Macro in uso", "Ferma la registrazione o riproduzione prima di caricare.")
+            return
+        try:
+            files = await load_picker.pick_files(
+                dialog_title=translate("Carica macro", language), allow_multiple=False,
+                file_type=ft.FilePickerFileType.CUSTOM,
+                allowed_extensions=["mmr", "json"],
+            )
+            if not files:
+                return
+            if state["recording"] or state["playing"]:
+                set_status("Macro in uso", "Ferma la registrazione o riproduzione prima di caricare.")
+                return
+            loaded = Macro.load(files[0].path)
+            if loaded.platform != platform:
+                set_status("Macro non compatibile", f"Questa macro è stata registrata su {loaded.platform}. "
+                           f"Registrala di nuovo su {platform}: i movimenti vengono salvati in modo diverso.")
+                return
+            duration_text = format_time(loaded.events[-1].t if loaded.events else 0)
+            state["macro"] = loaded
+            stat_events.value = str(len(loaded.events))
+            stat_time.value = duration_text
+            has_events = bool(loaded.events)
+            btn_play.opacity = 1.0 if has_events else 0.4
+            btn_save.disabled = not has_events
+            set_status("Macro caricata", f"{len(loaded.events)} eventi da {files[0].name}")
+        except Exception as ex:
+            set_status("Errore nel caricamento", str(ex))
 
     btn_save = ft.OutlinedButton(
         "Salva macro", icon=ft.Icons.SAVE_ROUNDED,
-        on_click=lambda e: save_picker.save_file(file_name="macro.mmr"),
+        on_click=save_macro, tooltip="Salva la macro in un file .mmr",
         style=ft.ButtonStyle(color=ft.Colors.WHITE),
         disabled=True, expand=True,
     )
     btn_load = ft.OutlinedButton(
         "Carica macro", icon=ft.Icons.FOLDER_OPEN_ROUNDED,
-        on_click=lambda e: load_picker.pick_files(allow_multiple=False),
+        on_click=load_macro, tooltip="Apri una macro .mmr o .json",
         style=ft.ButtonStyle(color=ft.Colors.WHITE), expand=True,
     )
 
@@ -561,7 +696,11 @@ def main(page: ft.Page):
             threading.Thread(target=pulse_rec_dot, daemon=True).start()
             threading.Thread(target=poll_recording, daemon=True).start()
         else:
-            events = state["recorder"].stop()
+            try:
+                events = state["recorder"].stop()
+            except Exception as ex:
+                set_status("Errore nel fermare la registrazione", str(ex))
+                return
             if e is not None:
                 # Fermata col pulsante dell'app: l'ultimo click registrato è proprio quello
                 # su "INTERROMPI" e non deve finire nella macro (in riproduzione andrebbe a
@@ -575,6 +714,8 @@ def main(page: ft.Page):
             has_events = len(events) > 0
             btn_play.opacity = 1.0 if has_events else 0.4
             btn_save.disabled = not has_events
+            stat_time.value = format_time(events[-1].t if events else 0)
+            stat_events.value = str(len(events))
             clicks = sum(1 for ev in events if ev.kind in BUTTON_OF_DOWN)
             set_status("Registrazione completata", f"{len(events)} eventi, {clicks} click. Premi F10 per riprodurla.")
         page.update()
@@ -588,10 +729,15 @@ def main(page: ft.Page):
     def parse_int(field: ft.TextField, default: int) -> int:
         try:
             return max(1, int(float(field.value)))
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, OverflowError):
             return default
 
+    refresh_settings_summary()
+
     def toggle_play(e=None):
+        if state["recording"]:
+            set_status("Registrazione in corso...", "Ferma la registrazione prima di riprodurre.")
+            return
         if state["playing"]:
             if state["stop_event"] is not None:
                 state["stop_event"].set()
@@ -612,20 +758,39 @@ def main(page: ft.Page):
             )
             return
 
+        repeat_count = None
+        num_count.error_text = None
+        if loop_mode["value"] == "count":
+            try:
+                repeat_count = int((num_count.value or "").strip())
+                if repeat_count <= 0:
+                    raise ValueError
+            except (ValueError, TypeError):
+                num_count.error_text = "Inserisci il numero di giri."
+                set_status("Imposta il numero di giri", "Scrivi un numero intero maggiore di zero prima di riprodurre.")
+                return
+
         mode_map = {"infinite": LoopMode.INFINITE, "count": LoopMode.REPEAT_COUNT, "duration": LoopMode.DURATION}
         options = PlaybackOptions(
             mode=mode_map[loop_mode["value"]],
-            repeat_count=parse_int(num_count, 5),
+            repeat_count=repeat_count,
             duration_seconds=parse_int(num_minutes, 10) * 60.0,
             speed=speed_slider.value,
-            min_click_hold_seconds=parse_int(min_click_ms, 30) / 1000.0,
+            min_click_hold_seconds=parse_int(min_click_ms, 50) / 1000.0,
+            timing_variation_seconds=(
+                min(1000, parse_int(variation_ms, 120)) / 1000.0 if variation_switch.value else 0.0
+            ),
         )
 
-        player = make_player()
+        try:
+            player = make_player()
+        except Exception as ex:
+            set_status("Errore all'avvio della riproduzione", str(ex))
+            return
         state["player"] = player
         state["playing"] = True
         state["stop_event"] = threading.Event()
-        btn_play.content.controls[0].name = ft.Icons.STOP_ROUNDED
+        btn_play.content.controls[0].icon = ft.Icons.STOP_ROUNDED
         btn_play.content.controls[1].value = "INTERROMPI  (F10)"
         btn_record.opacity = 0.4
         set_status("Riproduzione in corso...", "")
@@ -668,16 +833,24 @@ def main(page: ft.Page):
 
         def run():
             end = PlaybackEnd.STOPPED
+            error = None
             try:
                 end = play(events, options, player.apply_event, player.release_held,
                            on_progress, stop_event, wait_ready, between_cycles)
+            except Exception as ex:
+                error = str(ex) or type(ex).__name__
             finally:
-                player.close()
+                try:
+                    player.close()
+                except Exception as ex:
+                    error = error or str(ex) or type(ex).__name__
                 state["playing"] = False
-                btn_play.content.controls[0].name = ft.Icons.PLAY_ARROW_ROUNDED
+                btn_play.content.controls[0].icon = ft.Icons.PLAY_ARROW_ROUNDED
                 btn_play.content.controls[1].value = "RIPRODUCI  (F10)"
                 btn_record.opacity = 1.0
-                if end == PlaybackEnd.SYNC_TIMEOUT:
+                if error is not None:
+                    set_status("Errore durante la riproduzione", error)
+                elif end == PlaybackEnd.SYNC_TIMEOUT:
                     set_status(
                         f"Fermato: pagina non pronta al click n° {failed_click['n']}",
                         f"Dopo {int(timeout_s)} s quel punto non era ancora com'era in registrazione. "
@@ -740,7 +913,23 @@ def main(page: ft.Page):
 
     page.on_keyboard_event = on_keyboard
 
+    def cleanup(e=None):
+        if state["stop_event"] is not None:
+            state["stop_event"].set()
+        if state["recording"]:
+            state["recording"] = False
+            try:
+                state["recorder"].stop()
+            except Exception:
+                pass
+        if global_hotkeys is not None:
+            global_hotkeys.stop()
+
+    page.on_disconnect = cleanup
+    page.on_close = cleanup
+
     if platform == "linux":
+        hotkey_info.value = "Su Linux F9/F10 e lo stop di emergenza funzionano quando questa finestra è attiva."
         refresh_devices()
 
     # ================= Cavallini decorativi (sfondo) =================
@@ -774,7 +963,7 @@ def main(page: ft.Page):
         expand=True,
     )
 
-    version_label = ft.Text(VERSION, size=10, color=TEXT_MUTED, opacity=0.6,
+    version_label = ft.Text(f"{VERSION} · powered by hcok", size=10, color=TEXT_MUTED, opacity=0.6,
                              right=12, bottom=8)
 
     # ================= Pulsante inutile =================
@@ -814,15 +1003,19 @@ def main(page: ft.Page):
                                 content=ft.Column(
                                     [
                                         status_card,
-                                        ft.Row([btn_record, btn_play], spacing=12),
-                                        device_card,
-                                        options_card,
+                                        ft.Row([record_action, play_action], spacing=12),
                                         ft.Row([btn_save, btn_load], spacing=12),
+                                        ft.Column(
+                                            [
+                                                device_card,
+                                                options_card,
+                                            ], spacing=12, expand=True, scroll=ft.ScrollMode.AUTO,
+                                        ),
+                                        ft.Row([settings_button, settings_summary], spacing=12),
                                         hotkey_info,
-                                        ft.Container(height=36),
+                                        ft.Container(height=22),
                                     ],
-                                    spacing=16,
-                                    scroll=ft.ScrollMode.AUTO,
+                                    spacing=8,
                                 ),
                                 padding=ft.Padding.symmetric(horizontal=24),
                                 expand=True,
@@ -846,4 +1039,8 @@ def main(page: ft.Page):
 
 
 if __name__ == "__main__":
+    import sys
+    if len(sys.argv) == 3 and sys.argv[1] == '--self-test':
+        from macro.diagnostics import self_test
+        raise SystemExit(self_test(sys.argv[2]))
     ft.run(main)

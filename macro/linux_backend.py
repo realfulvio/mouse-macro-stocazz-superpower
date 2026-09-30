@@ -56,18 +56,26 @@ class LinuxRecorder:
         self._base_ts: float | None = None
         self._pending_dx = 0
         self._pending_dy = 0
+        self._device: InputDevice | None = None
 
     def start(self) -> None:
+        # Open synchronously so permission/missing-device errors reach the UI.
+        self._device = InputDevice(self.device_path)
         self._events = []
         self._base_ts = None
         self._pending_dx = 0
         self._pending_dy = 0
         self._stop.clear()
         self._thread = threading.Thread(target=self._run, daemon=True)
-        self._thread.start()
+        try:
+            self._thread.start()
+        except Exception:
+            self._device.close()
+            self._device = None
+            raise
 
     def _run(self) -> None:
-        dev = InputDevice(self.device_path)
+        dev = self._device
         try:
             while not self._stop.is_set():
                 r, _, _ = select.select([dev.fd], [], [], 0.2)
@@ -79,6 +87,7 @@ class LinuxRecorder:
             pass
         finally:
             dev.close()
+            self._device = None
 
     def _handle(self, event) -> None:
         if self._base_ts is None:
