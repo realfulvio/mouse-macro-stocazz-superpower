@@ -29,7 +29,7 @@ EN = {
     "Continua a ripetere per i minuti indicati; il giro in corso viene sempre finito.": "Repeats for the selected number of minutes, finishing the current cycle before stopping.",
     "VELOCITÀ DI RIPRODUZIONE": "PLAYBACK SPEED",
     "Durata minima di click e pause": "Minimum click and pause duration",
-    "Protegge la pressione e la pausa tra i click a qualsiasi velocità. Lascia 50 ms; se ne perde ancora, prova 80 ms.": "Keeps clicks and the pauses between them long enough at any speed. Start at 50 ms; try 80 ms if clicks are missed.",
+    "Protegge la pressione e la pausa tra i click a qualsiasi velocità. Lascia 150 ms; se ne perde ancora, prova 200 ms.": "Keeps clicks and the pauses between them long enough at any speed. Start at 150 ms; try 200 ms if clicks are still missed.",
     "Impostazioni": "Settings",
     "Fatto": "Done",
     "SCHEDE DEL BROWSER": "BROWSER TABS",
@@ -37,7 +37,7 @@ EN = {
     "Dopo ogni giro chiude la scheda del cavallo appena fatto e il browser passa da solo alla successiva. Più affidabile che cliccare la X della scheda, che si sposta man mano che le schede diminuiscono. Attivalo solo se durante la registrazione NON hai chiuso la scheda. Dopo l'ultimo giro non chiude nulla.": "Closes the completed tab between cycles so the browser moves to the next one. This is more reliable than clicking a tab's X, which moves as tabs close. Enable this only if you did NOT close the tab while recording. The last tab stays open.",
     "ATTESA PAGINA": "WAIT FOR PAGE",
     "Aspetta che la pagina sia pronta prima di cliccare": "Wait until the page is ready before clicking",
-    "Prima di ogni click controlla che quel punto dello schermo sia com'era in registrazione (pagina caricata, pulsante comparso). Se apri prima tutte le schede puoi lasciarla spenta; accendila se il sito a volte è lento e la macro clicca prima che la pagina sia pronta.": "Before each click, checks that its screen region matches the recording (page loaded and button visible). Leave this off if all tabs are ready; enable it when slow pages cause the macro to click too soon.",
+    "Prima di ogni click aspetta che il pulsante sia com'era in registrazione, poi clicca subito: se la pagina è già pronta non perde tempo. Serve con le schede aperte in background e con le pagine che si aggiornano dopo ogni click. Foto e nome del cavallo attorno al pulsante possono cambiare. Si attiva e disattiva dalla schermata principale.": "Before each click, waits until the button looks as it did while recording, then clicks at once: no time is lost when the page is already ready. It helps with tabs opened in the background and with pages that update after every click. The horse's picture and name around the button may change. Turn it on or off from the main screen.",
     "Attesa massima per ogni click": "Maximum wait per click",
     "Se dopo questo tempo il punto non è ancora pronto, la riproduzione si ferma invece di cliccare a vuoto.": "Stops playback if the target is still not ready after this time.",
     "Confronto": "Matching",
@@ -46,7 +46,7 @@ EN = {
     "Tollerante": "Tolerant",
     "Preciso: il punto deve essere quasi identico. Rischia di fermarsi per differenze minime.": "Strict: the target must look almost identical; small changes may stop playback.",
     "Normale: va bene nella maggior parte dei casi.": "Normal: suitable for most cases.",
-    'Tollerante: usalo se si ferma dicendo "pagina non pronta" anche quando la pagina è a posto (es. attorno al pulsante cambiano nome o foto del cavallo).': 'Tolerant: use this if playback reports "page not ready" when it is ready, for example when names or pictures near the button change.',
+    'Tollerante: usalo se si ferma dicendo "pagina non pronta" anche quando la pagina è a posto (es. il pulsante cambia un po\' colore o ha un\'animazione).': 'Tolerant: use this if playback reports "page not ready" when it is ready, for example when the button changes colour slightly or is animated.',
     "MODALITÀ SPERIMENTALE": "EXPERIMENTAL MODE",
     "Varia i tempi a ogni giro": "Vary timing each cycle",
     "Pausa casuale massima prima di un click": "Maximum random pause before a click",
@@ -131,10 +131,11 @@ def translate(text: str, language: str) -> str:
         return text
     if text in EN:
         return EN[text]
-    match = re.fullmatch(r"Chiusura schede: (ON|OFF) · Attesa pagina: (ON|OFF) · Tempi: (fissi|variabili)", text)
+    # Riepilogo accanto a Impostazioni (l'attesa pagina ora è nella schermata principale).
+    match = re.fullmatch(r"Chiusura schede: (ON|OFF) · Tempi: (fissi|variabili)", text)
     if match:
-        tab, ready, timing = match.groups()
-        return f"Close tabs: {tab} · Wait for page: {ready} · Timing: {'fixed' if timing == 'fissi' else 'varied'}"
+        tab, timing = match.groups()
+        return f"Close tabs: {tab} · Timing: {'fixed' if timing == 'fissi' else 'varied'}"
     if text in ("Tempi: fissi", "Tempi: variabili"):
         return "Timing: fixed" if text.endswith("fissi") else "Timing: varied"
     for pattern, replacement in TEMPLATES:

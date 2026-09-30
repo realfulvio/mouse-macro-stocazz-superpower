@@ -23,7 +23,8 @@ So this app was built around two ideas:
 
 1. **Record faithfully and replay exactly**: absolute cursor positions, real click
    timing, DPI-aware coordinates. Replay forever, N times, or for a set duration.
-2. **Go faster without losing clicks**: a *minimum click duration* (50 ms by default)
+2. **Go faster without losing clicks**: a *minimum click duration* (150 ms by default,
+   in line with a normal human click)
    protects both how long each click is held and the pause before the next one,
    at any speed.
 
@@ -35,10 +36,14 @@ So this app was built around two ideas:
   waits (page loads) are accelerated by at most 1.5×.
 - Global shortcuts that also work from the browser: **F9** record/stop, **F10** play/stop,
   **Ctrl+Alt+F11** emergency stop (Windows; on Linux they need the app window focused).
+- **Wait for page** (Windows, on by default, on the main screen): before each click, wait
+  until the button looks as it did while recording, then click at once. No time is lost when
+  the page is ready; it covers pages that update after every click and tabs opened in the
+  background, which browsers only load when shown. Only the button itself is compared, so the
+  horse's picture and name around it can change. If a page is not ready within 10 s (adjustable),
+  playback stops and says which click was waiting.
 - Optional, off by default:
   - **Close the tab after each cycle** (Ctrl+W), so the browser moves on to the next tab;
-  - **Wait for page** (Windows): before each click, wait until that spot looks exactly like
-    it did while recording (page loaded, button visible);
   - **Vary timing each cycle** (experimental).
 - Save and load macros (`.mmr`), with checks on the screen layout: a macro recorded at a
   different resolution won't start clicking in the wrong places.
@@ -60,11 +65,13 @@ Windows `.exe` is a single file you can run from anywhere.
 The executables are not code-signed, so the first time Windows may show
 **"Windows protected your PC"** (SmartScreen): click **More info → Run anyway**.
 
-**Smart App Control** (Windows 11) is supported. Earlier versions opened their window
-through Flet's own `flet.exe`, an unsigned helper that Smart App Control blocks outright.
-Since v0.14 the interface is shown in a **Microsoft Edge window in app mode** (no address
-bar, no tabs: it looks like a normal program). Edge is signed by Microsoft and present on
-every Windows 10/11 PC. The interface is served only to this computer (`127.0.0.1`, on a
+**Smart App Control** (Windows 11): earlier versions opened their window through Flet's
+own `flet.exe`, an unsigned helper that Smart App Control always blocks. Since v0.14 the
+interface is shown in a **Microsoft Edge window in app mode** (no address bar, no tabs: it
+looks like a normal program), so that helper is gone. The executable itself, however, is still
+unsigned: on a PC with Smart App Control **on**, Windows asks Microsoft's cloud about it and may
+still block it (`An Application Control policy has blocked this file`). Code signing is planned;
+until then, on those PCs the only option is to turn Smart App Control off. The interface is served only to this computer (`127.0.0.1`, on a
 random secret path), everything it needs is loaded locally, and closing the window closes the program.
 
 PCs managed by a company or school may block any unapproved program regardless: in that
@@ -98,7 +105,7 @@ Use **Save macro** to reuse a recording on the following days.
 
 | Version | Date | Highlights |
 | --- | --- | --- |
-| v0.14 beta | 30/09/2026 | Works with Windows Smart App Control (Edge app window, no `flet.exe`); native Windows open/save dialogs; fonts bundled for offline use; 38 MB instead of 64 MB; MIT licence; automated builds |
+| v0.14 beta | 30/09/2026 | Minimum click 150 ms (was 50); *Wait for page* on by default, on the main screen, ignoring the horse's picture around the button; Edge app window instead of the unsigned `flet.exe`; native Windows open/save dialogs; fonts bundled for offline use; 38 MB instead of 64 MB; MIT licence; automated builds |
 | — | 30/09/2026 | Linux: F9/F10 shortcuts and tab closing |
 | [v0.13 beta](../../releases/tag/v0.13-beta) | 30/09/2026 | English version; safer load/save; self-test diagnostics; Windows and Linux builds |
 | v0.4 | 30/09/2026 | First reliable Windows build: DPI awareness, minimum pause between clicks, global shortcuts, *Wait for page*, *Close tab* |

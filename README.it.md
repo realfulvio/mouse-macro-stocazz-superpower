@@ -8,7 +8,7 @@ Un piccolo programma per Windows e Linux, in italiano e in inglese.
 <p>
 <img src="docs/screenshots/main-it.png" width="300" alt="Finestra principale">
 <img src="docs/screenshots/settings-it.png" width="300" alt="Impostazioni">
-<img src="docs/screenshots/recorded-it.png" width="300" alt="Registrazione completata">
+<img src="docs/screenshots/help-it.png" width="300" alt="Come si usa">
 </p>
 
 ## Perché è nato
@@ -24,7 +24,8 @@ Il programma è costruito attorno a due idee:
 1. **Registrare fedelmente e riprodurre uguale**: posizioni assolute del cursore, tempi
    reali dei click, coordinate corrette anche con lo scaling di Windows. Riproduzione
    all'infinito, per N volte o per un tempo stabilito.
-2. **Andare più veloce senza perdere click**: una *durata minima* (50 ms di base)
+2. **Andare più veloce senza perdere click**: una *durata minima* (150 ms di base,
+   come un normale click umano)
    protegge sia quanto dura ogni click sia la pausa prima del successivo, a qualsiasi
    velocità.
 
@@ -37,10 +38,14 @@ Il programma è costruito attorno a due idee:
   lunghe (caricamento delle pagine) vengono accelerate al massimo di 1,5×.
 - Tasti rapidi che funzionano anche dal browser: **F9** registra/stop, **F10** riproduci/stop,
   **Ctrl+Alt+F11** stop di emergenza (su Linux serve la finestra dell'app attiva).
+- **Attesa pagina** (Windows, attiva di base, nella schermata principale): prima di ogni click
+  aspetta che il pulsante sia com'era in registrazione, poi clicca subito. Se la pagina è pronta
+  non si perde tempo; copre le pagine che si aggiornano dopo ogni click e le schede aperte in
+  background, che il browser carica solo quando le mostri. Confronta solo il pulsante, quindi foto
+  e nome del cavallo attorno possono cambiare. Se una pagina non è pronta entro 10 s (regolabili),
+  la riproduzione si ferma e dice quale click stava aspettando.
 - Opzioni facoltative, spente all'inizio:
   - **A fine giro chiudi la scheda** (Ctrl+W), così il browser passa da solo alla successiva;
-  - **Attesa pagina** (Windows): prima di ogni click aspetta che quel punto dello schermo sia
-    com'era in registrazione (pagina caricata, pulsante comparso);
   - **Tempi variabili a ogni giro** (sperimentale).
 - Salva e carica le macro (`.mmr`), con il controllo dello schermo: una macro registrata con
   un'altra risoluzione non parte a cliccare nei punti sbagliati.
@@ -62,11 +67,14 @@ l'`.exe` per Windows è un file unico che si avvia da qualsiasi cartella.
 Gli eseguibili non sono firmati digitalmente, quindi la prima volta Windows può mostrare
 **"PC protetto da Windows"** (SmartScreen): clicca **Ulteriori informazioni → Esegui comunque**.
 
-**Smart App Control** (Windows 11) è supportato. Le versioni precedenti aprivano la finestra
-con `flet.exe`, un programma di supporto di Flet non firmato che Smart App Control blocca
-senza possibilità di scelta. Dalla v0.14 l'interfaccia compare in una **finestra di Microsoft
-Edge in modalità app** (senza barra degli indirizzi né schede: sembra un programma normale).
-Edge è firmato da Microsoft ed è presente su ogni Windows 10/11. L'interfaccia è visibile
+**Smart App Control** (Windows 11): le versioni precedenti aprivano la finestra con `flet.exe`,
+un programma di supporto di Flet non firmato che Smart App Control blocca sempre. Dalla v0.14
+l'interfaccia compare in una **finestra di Microsoft Edge in modalità app** (senza barra degli
+indirizzi né schede: sembra un programma normale), quindi quel file non c'è più. L'eseguibile
+però non è ancora firmato: su un PC con Smart App Control **attivo**, Windows chiede un parere al
+cloud di Microsoft e può comunque bloccarlo ("Un criterio di controllo dell'applicazione ha
+bloccato il file"). La firma digitale è prevista; fino ad allora, su quei PC l'unica soluzione è
+disattivare Smart App Control. L'interfaccia è visibile
 solo da questo computer (`127.0.0.1`, su un percorso segreto casuale), tutto ciò che le serve
 è incluso nel programma, e chiudendo la finestra si chiude anche il programma.
 
@@ -102,7 +110,7 @@ successivi.
 
 | Versione | Data | Novità principali |
 | --- | --- | --- |
-| v0.14 beta | 30/09/2026 | Funziona con Smart App Control di Windows (finestra Edge, niente `flet.exe`); finestre Apri/Salva native di Windows; font inclusi per l'uso offline; 38 MB invece di 64; licenza MIT; compilazione automatica |
+| v0.14 beta | 30/09/2026 | Click minimo di 150 ms (prima 50); *Attesa pagina* attiva di base, nella schermata principale, senza badare alla foto del cavallo attorno al pulsante; finestra Edge invece di `flet.exe` non firmato; finestre Apri/Salva native di Windows; font inclusi per l'uso offline; 38 MB invece di 64; licenza MIT; compilazione automatica |
 | — | 30/09/2026 | Linux: tasti F9/F10 e chiusura delle schede |
 | [v0.13 beta](../../releases/tag/v0.13-beta) | 30/09/2026 | Versione inglese; carica/salva più sicuri; diagnostica integrata; build Windows e Linux |
 | v0.4 | 30/09/2026 | Prima build Windows affidabile: DPI awareness, pausa minima tra i click, tasti rapidi globali, *Attesa pagina*, *Chiudi scheda* |

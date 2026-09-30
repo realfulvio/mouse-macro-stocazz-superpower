@@ -144,7 +144,7 @@ class UiTests(unittest.TestCase):
                 self.assertAlmostEqual(play_mock.call_args.args[1].timing_variation_seconds,expected)
                 self.assertEqual(play_mock.call_args.args[1].mode,LoopMode.REPEAT_COUNT)
                 self.assertEqual(play_mock.call_args.args[1].repeat_count,7)
-                self.assertAlmostEqual(play_mock.call_args.args[1].min_click_hold_seconds,.05)
+                self.assertAlmostEqual(play_mock.call_args.args[1].min_click_hold_seconds,.15)
 
     def test_backend_error_is_visible_and_buttons_recover(self):
         self.load()
@@ -168,8 +168,8 @@ class UiTests(unittest.TestCase):
 
     def test_settings_close_and_reopen_preserve_values(self):
         self.open_settings()
-        field=next(c for c in self.items if isinstance(c,ft.TextField) and c.value=='50')
-        field.value='80'
+        field=next(c for c in self.items if isinstance(c,ft.TextField) and c.value=='150')
+        field.value='200'
         field.on_change(SimpleNamespace())
         variation=self.variation_switch()
         variation.value=True
@@ -178,7 +178,7 @@ class UiTests(unittest.TestCase):
         self.items=list(controls(self.page))
         self.open_settings()
         self.assertIn(field,self.items)
-        self.assertEqual(field.value,'80')
+        self.assertEqual(field.value,'200')
         self.assertIn(variation,self.items)
         self.assertTrue(variation.value)
         self.load()
@@ -187,17 +187,19 @@ class UiTests(unittest.TestCase):
                 patch.object(app,'play',return_value=PlaybackEnd.DONE) as play_mock, \
                 patch.object(app.threading,'Thread',InlineThread):
             self.play_button().on_click(None)
-            self.assertAlmostEqual(play_mock.call_args.args[1].min_click_hold_seconds,.08)
+            self.assertAlmostEqual(play_mock.call_args.args[1].min_click_hold_seconds,.20)
 
     def test_startup_has_compact_controls_and_preserves_defaults(self):
         self.assertEqual(self.page.window.height,720)
         self.assertEqual(self.page.window.width,560)
         self.assertIn(f'{app.VERSION} · powered by hcok',self.status_values())
-        self.assertEqual(len([c for c in self.items if isinstance(c,ft.Switch)]),0)
+        # Nella schermata principale c'è solo l'attesa pagina, attiva di base.
+        self.assertEqual([c.value for c in self.items if isinstance(c,ft.Switch)],[True])
+        self.assertTrue(self.setting_switch('Aspetta che la pagina sia pronta prima di cliccare').value)
         self.assertFalse(self.page.dialogs)
         self.assertIn('Durata minima di click e pause',self.status_values())
         self.assertNotIn('A fine giro chiudi la scheda (Ctrl+W)',self.status_values())
-        self.assertIn('50',[c.value for c in self.items if isinstance(c,ft.TextField)])
+        self.assertIn('150',[c.value for c in self.items if isinstance(c,ft.TextField)])
         count_row=next(c for c in self.items if isinstance(c,ft.Row)
                        and any(isinstance(t,ft.Text) and t.value=='volte' for t in c.controls))
         self.assertTrue(count_row.visible)
@@ -206,8 +208,9 @@ class UiTests(unittest.TestCase):
         self.assertIn('A fine giro chiudi la scheda (Ctrl+W)',self.status_values())
         self.assertEqual(len([c for c in self.items if isinstance(c,ft.Switch)]),3)
         fields=[c.value for c in self.items if isinstance(c,ft.TextField)]
-        self.assertTrue({'','10','50','20','120'}.issubset(fields))
-        self.assertTrue(all(not c.value for c in self.items if isinstance(c,ft.Switch)))
+        self.assertTrue({'','10','150','120'}.issubset(fields))
+        # Le due opzioni del dialogo restano spente.
+        self.assertEqual(sorted(c.value for c in self.items if isinstance(c,ft.Switch)),[False,False,True])
 
     def test_repeat_count_empty_or_invalid_does_not_start_player(self):
         self.load()
@@ -407,7 +410,7 @@ class UiTests(unittest.TestCase):
         slider.on_change(None)
         self.assertIn('2.50x',self.status_values())
         for invalid in ('','abc','NaN','Infinity'):
-            field=next(c for c in self.items if isinstance(c,ft.TextField) and c.value=='50')
+            field=next(c for c in self.items if isinstance(c,ft.TextField) and c.value=='150')
             field.value=invalid
             with patch.object(app,'make_player',return_value=MagicMock()), \
                     patch.object(app,'play',return_value=PlaybackEnd.DONE) as play_mock, \
@@ -417,8 +420,8 @@ class UiTests(unittest.TestCase):
             self.assertEqual(options.mode,LoopMode.DURATION)
             self.assertEqual(options.duration_seconds,180)
             self.assertEqual(options.speed,2.5)
-            self.assertEqual(options.min_click_hold_seconds,.05)
-            field.value='50'
+            self.assertEqual(options.min_click_hold_seconds,.15)
+            field.value='150'
 
     def test_sync_tab_and_tolerance_settings_are_wired_to_playback(self):
         from macro.windows_backend import TOLERANCE_LOOSE
@@ -442,7 +445,7 @@ class UiTests(unittest.TestCase):
                 patch.object(app.threading,'Thread',InlineThread), \
                 patch('threading.Event.wait',return_value=False):
             self.play_button().on_click(None)
-        self.assertEqual(backend.wait_until_ready.call_args.args[1],20)
+        self.assertEqual(backend.wait_until_ready.call_args.args[1],10)
         self.assertEqual(backend.wait_until_ready.call_args.args[3],TOLERANCE_LOOSE)
         backend.close_tab.assert_called_once()
         self.assertIn('Fermato: pagina non pronta al click n° 1',self.status_values())

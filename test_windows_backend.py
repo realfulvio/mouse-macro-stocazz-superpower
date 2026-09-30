@@ -78,6 +78,24 @@ class WindowsBackendTests(unittest.TestCase):
             self.assertTrue(player.wait_until_ready(event,1,threading.Event(),on_waiting=waiting))
         waiting.assert_called_once()
 
+    def test_page_wait_ignores_surroundings_but_not_the_button(self):
+        def snapshot(border,center):
+            rows=[]
+            for y in range(40):
+                inside=8<=y<32
+                rows.append(bytes([border])*8*4+bytes([center if inside else border])*24*4+bytes([border])*8*4)
+            return b''.join(rows)
+        recorded=snapshot(40,200)
+        event=MacroEvent(0,LEFT_DOWN,snap=backend.encode_snap(recorded))
+        player=self.player()
+        # un altro cavallo: cornice diversa, stesso pulsante al centro
+        with patch.object(backend,'grab_region',return_value=snapshot(230,200)):
+            self.assertTrue(player.wait_until_ready(event,0,threading.Event()))
+        # pagina non pronta: il pulsante al centro manca
+        with patch.object(backend,'grab_region',return_value=snapshot(40,40)):
+            self.assertFalse(player.wait_until_ready(event,0,threading.Event(),backend.TOLERANCE_LOOSE))
+        self.assertEqual(len(backend.center_crop(recorded)),24*24*4)
+
     def test_close_tab_uses_ctrl_w_and_releases_key(self):
         player=self.player()
         with patch.object(backend.time,'sleep'):

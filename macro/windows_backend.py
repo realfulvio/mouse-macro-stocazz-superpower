@@ -137,6 +137,21 @@ def grab_region(cx: int, cy: int, size: int = SNAP_SIZE) -> bytes:
         _user32.ReleaseDC(None, hdc_screen)
 
 
+# L'attesa pagina confronta solo la parte centrale del ritaglio, cioè il pulsante
+# cliccato: attorno possono cambiare foto, nome e icone da una scheda all'altra.
+COMPARE_SIZE = 24
+
+
+def center_crop(raw: bytes, size: int = SNAP_SIZE, inner: int = COMPARE_SIZE) -> bytes:
+    """Quadrato inner×inner al centro di un ritaglio BGRA size×size."""
+    if len(raw) != size * size * 4 or inner >= size:
+        return raw
+    start = (size - inner) // 2
+    stride = size * 4
+    return b"".join(raw[(start + y) * stride + start * 4:(start + y) * stride + (start + inner) * 4]
+                    for y in range(inner))
+
+
 def region_diff(a: bytes, b: bytes) -> float:
     if len(a) != len(b) or not a:
         return 255.0
@@ -270,12 +285,12 @@ class WindowsPlayer:
         se la riproduzione viene fermata."""
         if not evt.snap:
             return True
-        ref = decode_snap(evt.snap)
+        ref = center_crop(decode_snap(evt.snap))
         self._ctrl.position = (evt.x, evt.y)
         deadline = time.perf_counter() + timeout_seconds
         notified = False
         while True:
-            if region_diff(ref, grab_region(evt.x, evt.y)) <= tolerance:
+            if region_diff(ref, center_crop(grab_region(evt.x, evt.y))) <= tolerance:
                 return True
             if stop_event.is_set() or time.perf_counter() >= deadline:
                 return False

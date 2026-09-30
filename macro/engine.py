@@ -36,7 +36,7 @@ class PlaybackOptions:
     # indipendentemente dalla velocità: evita che, accelerando la riproduzione, un
     # click diventi così breve da non essere più rilevato dall'applicazione di
     # destinazione (molti giochi/programmi campionano l'input a intervalli fissi).
-    min_click_hold_seconds: float = 0.05
+    min_click_hold_seconds: float = 0.15
     # Modalità opzionale: aggiunge attese casuali senza cambiare le coordinate.
     # Zero mantiene esattamente il comportamento precedente.
     timing_variation_seconds: float = 0.0

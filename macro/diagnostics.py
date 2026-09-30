@@ -43,7 +43,7 @@ def self_test(report_path, language='it'):
             macro.save(filename)
             checks['file_roundtrip'] = Macro.load(filename) == macro
         times = _compute_scaled_times(macro.events, PlaybackOptions(speed=3))
-        checks['minimum_50ms_at_3x'] = times[1] - times[0] >= .05
+        checks['minimum_150ms_at_3x'] = times[1] - times[0] >= .15
         checks['translation'] = translate('Pronto', language) == ('Ready' if language == 'en' else 'Pronto')
         checks['backend_import'] = True
         if current_platform() == 'linux':

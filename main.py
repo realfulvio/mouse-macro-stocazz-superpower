@@ -305,7 +305,7 @@ def main(page: ft.Page, language: str = "it"):
 
     speed_slider.on_change = on_speed_change
 
-    min_click_ms = ft.TextField(value="50", width=64, height=42, text_align=ft.TextAlign.CENTER,
+    min_click_ms = ft.TextField(value="150", width=64, height=42, text_align=ft.TextAlign.CENTER,
                                  bgcolor=FIELD_BG, border_color=CARD_BORDER, border_radius=10,
                                  color=ft.Colors.WHITE, text_size=13, content_padding=6)
 
@@ -338,10 +338,10 @@ def main(page: ft.Page, language: str = "it"):
         spacing=10,
     )
 
-    # --- Attesa pagina (solo Windows): prima di ogni click confronta il punto dello
-    # schermo con il ritaglio salvato in registrazione ---
-    sync_switch = ft.Switch(value=False, active_color=ACCENT_1)
-    sync_timeout = ft.TextField(value="20", width=64, height=42, text_align=ft.TextAlign.CENTER,
+    # --- Attesa pagina (solo Windows, attiva di base): prima di ogni click confronta
+    # il pulsante sullo schermo con il ritaglio salvato in registrazione ---
+    sync_switch = ft.Switch(value=True, active_color=ACCENT_1)
+    sync_timeout = ft.TextField(value="10", width=64, height=42, text_align=ft.TextAlign.CENTER,
                                  bgcolor=FIELD_BG, border_color=CARD_BORDER, border_radius=10,
                                  color=ft.Colors.WHITE, text_size=13, content_padding=6)
 
@@ -350,7 +350,7 @@ def main(page: ft.Page, language: str = "it"):
         "strict": "Preciso: il punto deve essere quasi identico. Rischia di fermarsi per differenze minime.",
         "normal": "Normale: va bene nella maggior parte dei casi.",
         "loose": "Tollerante: usalo se si ferma dicendo \"pagina non pronta\" anche quando la pagina è a posto "
-                 "(es. attorno al pulsante cambiano nome o foto del cavallo).",
+                 "(es. il pulsante cambia un po' colore o ha un'animazione).",
     }
     tol_strict = chip(ft.Icons.CENTER_FOCUS_STRONG_ROUNDED, "Preciso", False)
     tol_normal = chip(ft.Icons.CENTER_FOCUS_WEAK_ROUNDED, "Normale", True)
@@ -389,7 +389,7 @@ def main(page: ft.Page, language: str = "it"):
             tol_hint,
         ],
         spacing=10,
-        visible=False,
+        visible=bool(sync_switch.value),
     )
 
     def on_sync_change(e):
@@ -399,22 +399,26 @@ def main(page: ft.Page, language: str = "it"):
 
     sync_switch.on_change = on_sync_change
 
+    # L'interruttore sta nella schermata principale (è l'impostazione che più decide
+    # se un click va a segno); spiegazione e regolazioni nel dialogo Impostazioni.
+    sync_row = ft.Row(
+        [
+            ft.Icon(ft.Icons.HOURGLASS_TOP_ROUNDED, size=18, color=TEXT_MUTED),
+            ft.Text("Aspetta che la pagina sia pronta prima di cliccare", size=12, color=TEXT_MUTED, expand=True),
+            sync_switch,
+        ],
+        spacing=8,
+        visible=(platform == "windows"),
+    )
     sync_section = ft.Column(
         [
             ft.Container(height=6),
             section_title("ATTESA PAGINA"),
-            ft.Row(
-                [
-                    ft.Icon(ft.Icons.HOURGLASS_TOP_ROUNDED, size=18, color=TEXT_MUTED),
-                    ft.Text("Aspetta che la pagina sia pronta prima di cliccare", size=12, color=TEXT_MUTED, expand=True),
-                    sync_switch,
-                ],
-                spacing=8,
-            ),
             hint(
-                "Prima di ogni click controlla che quel punto dello schermo sia com'era in registrazione "
-                "(pagina caricata, pulsante comparso). Se apri prima tutte le schede puoi lasciarla spenta; "
-                "accendila se il sito a volte è lento e la macro clicca prima che la pagina sia pronta."
+                "Prima di ogni click aspetta che il pulsante sia com'era in registrazione, poi clicca subito: "
+                "se la pagina è già pronta non perde tempo. Serve con le schede aperte in background e con "
+                "le pagine che si aggiornano dopo ogni click. Foto e nome del cavallo attorno al pulsante "
+                "possono cambiare. Si attiva e disattiva dalla schermata principale."
             ),
             sync_details,
         ],
@@ -471,8 +475,6 @@ def main(page: ft.Page, language: str = "it"):
 
     def refresh_settings_summary(e=None):
         parts = [f"Chiusura schede: {'ON' if tab_switch.value else 'OFF'}"]
-        if platform == "windows":
-            parts.append(f"Attesa pagina: {'ON' if sync_switch.value else 'OFF'}")
         parts.append(f"Tempi: {'variabili' if variation_switch.value else 'fissi'}")
         settings_summary.value = " · ".join(parts)
         if e is not None:
@@ -521,7 +523,8 @@ def main(page: ft.Page, language: str = "it"):
                     ], spacing=8,
                 ),
                 hint("Protegge la pressione e la pausa tra i click a qualsiasi velocità. "
-                     "Lascia 50 ms; se ne perde ancora, prova 80 ms."),
+                     "Lascia 150 ms; se ne perde ancora, prova 200 ms."),
+                sync_row,
             ],
             spacing=6,
         ),
@@ -796,7 +799,7 @@ def main(page: ft.Page, language: str = "it"):
             repeat_count=repeat_count,
             duration_seconds=parse_int(num_minutes, 10) * 60.0,
             speed=speed_slider.value,
-            min_click_hold_seconds=parse_int(min_click_ms, 50) / 1000.0,
+            min_click_hold_seconds=parse_int(min_click_ms, 150) / 1000.0,
             timing_variation_seconds=(
                 min(1000, parse_int(variation_ms, 120)) / 1000.0 if variation_switch.value else 0.0
             ),
@@ -821,7 +824,7 @@ def main(page: ft.Page, language: str = "it"):
 
         stop_event = state["stop_event"]
         events = state["macro"].events
-        timeout_s = float(parse_int(sync_timeout, 20))
+        timeout_s = float(parse_int(sync_timeout, 10))
         failed_click = {"n": 0}
         wait_ready = None
         if platform == "windows" and sync_switch.value:

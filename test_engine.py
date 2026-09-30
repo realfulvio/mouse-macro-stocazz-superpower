@@ -136,7 +136,7 @@ class PlaybackTests(unittest.TestCase):
         self.assertFalse(seen or released)
 
     def test_minimum_at_every_slider_speed(self):
-        for minimum in (.03,.05):
+        for minimum in (.03,.05,.15):
             for step in range(1,31):
                 for variation in (0,.12):
                     with self.subTest(minimum=minimum,speed=step/10,variation=variation):
@@ -178,13 +178,15 @@ class PlaybackTests(unittest.TestCase):
         self.assertAlmostEqual(slow[2],10)
 
     def test_duration_finishes_current_cycle_and_infinite_can_be_stopped(self):
-        end,seen,_=self.run_fake(PlaybackOptions(mode=LoopMode.DURATION,duration_seconds=.08))
+        end,seen,_=self.run_fake(PlaybackOptions(mode=LoopMode.DURATION,duration_seconds=.08,
+                                                min_click_hold_seconds=.05))
         self.assertEqual(end,PlaybackEnd.DONE)
         self.assertEqual(len(seen),4)
         def stop_on_second_loop(event,clock,stop):
             if clock.now>=100.2:
                 stop.set()
-        end,seen,_=self.run_fake(PlaybackOptions(mode=LoopMode.INFINITE),apply=stop_on_second_loop)
+        end,seen,_=self.run_fake(PlaybackOptions(mode=LoopMode.INFINITE,min_click_hold_seconds=.05),
+                                apply=stop_on_second_loop)
         self.assertEqual(end,PlaybackEnd.STOPPED)
         self.assertGreater(len(seen),4)
 

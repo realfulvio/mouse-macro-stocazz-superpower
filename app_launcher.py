@@ -18,8 +18,8 @@ import webbrowser
 
 import flet as ft
 
-# Dimensione esterna della finestra: contenuto ~560x720 più la barra del titolo.
-WINDOW_SIZE = (576, 770)
+# Dimensione esterna della finestra: contenuto ~560x770 più la barra del titolo.
+WINDOW_SIZE = (576, 820)
 # Senza finestra aperta per così tanti secondi, il programma si chiude.
 IDLE_EXIT_SECONDS = 8
 # Se nessuna finestra si collega entro questo tempo, apre il browser predefinito.

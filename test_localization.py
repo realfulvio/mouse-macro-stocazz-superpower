@@ -24,14 +24,20 @@ class LocalizationTests(unittest.TestCase):
         return [c.value for c in controls(page) if isinstance(c, ft.Text)]
 
     def test_initial_english_and_italian_preserve_defaults(self):
-        for language, ready, repeat in [('it', 'Pronto', 'N volte'), ('en', 'Ready', 'N times')]:
+        for language, ready, repeat, summary, wait in [
+                ('it', 'Pronto', 'N volte', 'Chiusura schede: OFF · Tempi: fissi',
+                 'Aspetta che la pagina sia pronta prima di cliccare'),
+                ('en', 'Ready', 'N times', 'Close tabs: OFF · Timing: fixed',
+                 'Wait until the page is ready before clicking')]:
             with self.subTest(language=language):
                 page = self.page(language)
                 items = list(controls(page))
                 self.assertIn(ready, self.texts(page))
                 self.assertIn(repeat, self.texts(page))
+                self.assertIn(summary, self.texts(page))
+                self.assertIn(wait, self.texts(page))
                 fields = [c.value for c in items if isinstance(c, ft.TextField)]
-                self.assertIn('50', fields)
+                self.assertIn('150', fields)
                 self.assertIn('', fields)
                 self.assertEqual(next(c.value for c in items if isinstance(c, ft.Slider)), 1.0)
                 self.assertEqual((page.window.width, page.window.height), (560, 720))

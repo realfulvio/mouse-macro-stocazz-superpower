@@ -25,8 +25,22 @@ App Control **in modalità applicazione** e con l'exe marcato come scaricato da 
 | Chiusura della finestra | Terminati sia il programma sia il processo di Edge |
 | Aspetto | Font Outfit e cavallini 🐴 caricati dagli asset locali, senza rete |
 
-Le schermate in `docs/screenshots` sono state catturate dall'eseguibile reale durante
-queste prove. La build Linux della v0.14 viene compilata e testata da GitHub Actions su
+Dopo il primo uso reale (1 click perso su 35, cioè 5 giri da 7 click, con schede aperte in
+background) il click minimo di base è passato da 50 a **150 ms** e **Attesa pagina** è attiva di
+base, nella schermata principale, con attesa massima di 10 s. L'attesa ora confronta solo i
+24×24 pixel centrali del ritaglio (il pulsante), così foto e nome del cavallo attorno possono
+cambiare da una scheda all'altra. I test automatici sono stati aggiornati di conseguenza.
+
+**Limite scoperto:** le prime tre build della v0.14 sono partite con Smart App Control attivo,
+ma le build successive, identiche salvo le modifiche sopra, sono state bloccate
+("Un criterio di controllo dell'applicazione ha bloccato il file", eventi CodeIntegrity 3033,
+3077 e 3118). Per un eseguibile non firmato Windows chiede un parere al cloud di Microsoft, e
+il risultato cambia da una build all'altra. Senza firma digitale la compatibilità con Smart App
+Control non è garantita.
+
+Le schermate in `docs/screenshots` mostrano la versione finale (150 ms, Attesa pagina nella
+schermata principale), avviata dai sorgenti con lo stesso avvio in finestra Edge, perché su
+questo PC la build finale viene bloccata da Smart App Control. La build Linux della v0.14 viene compilata e testata da GitHub Actions su
 Ubuntu 22.04, ma in questa sessione non è stata provata su un desktop Linux reale.
 
 # Verifica v0.13 beta — 30/09/2026
