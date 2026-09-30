@@ -1,3 +1,34 @@
+# Verifica v0.14 beta — 30/09/2026
+
+Problema: su Windows 11 con **Smart App Control attivo** la v0.13 si fermava subito con
+`OSError: [WinError 4551] Un criterio di controllo dell'applicazione ha bloccato il file`.
+Il registro *CodeIntegrity* mostrava il blocco di `flet.exe`, il client desktop di Flet
+estratto in `%USERPROFILE%\.flet\client`, perché non è firmato.
+
+Correzione: su Windows l'interfaccia viene mostrata in una finestra di Microsoft Edge in
+modalità app (`app_launcher.py`), `flet.exe` non viene più incluso, Apri/Salva usano le
+finestre native di Windows (`macro/win_dialogs.py`) e i font sono inclusi negli asset.
+
+**72 test eseguiti su Windows, 66 superati e 6 saltati** (quelli specifici di Linux),
+Python 3.13 e Flet 1.0.3. Collaudo dell'eseguibile compilato, su Windows 11 con Smart
+App Control **in modalità applicazione** e con l'exe marcato come scaricato da Internet
+(Zone.Identifier 3):
+
+| Prova | Risultato |
+| --- | --- |
+| Avvio IT ed EN | Finestra dell'app aperta, nessun evento di blocco nel registro CodeIntegrity |
+| `--self-test` IT ed EN | Tutti i controlli superati |
+| Registrazione con F9 da tastiera | 20 eventi e 1 click registrati; F9 funziona anche con il focus altrove |
+| Riproduzione con F10, N volte = 2 | Completata, "Riproduzione terminata" |
+| Salva macro | Finestra nativa "Salva macro", file scritto e riletto (20 eventi) |
+| Carica macro | Finestra nativa "Carica macro", macro caricata |
+| Chiusura della finestra | Terminati sia il programma sia il processo di Edge |
+| Aspetto | Font Outfit e cavallini 🐴 caricati dagli asset locali, senza rete |
+
+Le schermate in `docs/screenshots` sono state catturate dall'eseguibile reale durante
+queste prove. La build Linux della v0.14 viene compilata e testata da GitHub Actions su
+Ubuntu 22.04, ma in questa sessione non è stata provata su un desktop Linux reale.
+
 # Verifica v0.13 beta — 30/09/2026
 
 **58 test superati su Windows e 32 su Linux**, Python 3.14.7 e Flet 1.0.3. Su 62 test raccolti, Windows salta i 4 specifici Linux; Linux salta i 30 specifici Windows.

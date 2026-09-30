@@ -1,38 +1,125 @@
 # Mouse Macro Stocazz Superpower
 
-Registra movimenti, click e rotella del mouse e riproducili quando vuoi.
-App desktop Windows e Linux, in italiano e inglese.
-**v0.13 beta · powered by hcok**
+**Registra il mouse una volta, riproducilo quante volte vuoi, senza perdere click.**
+Un piccolo programma per Windows e Linux, in italiano e in inglese.
 
-[English](README.md) · [Avvio e compilazione](docs/BUILD.md) · [Collaudo](COLLAUDO.md)
+**v0.14 beta · powered by hcok** · [English](README.md) · [Download](#download) · [Compilazione](docs/BUILD.md) · [Collaudo](COLLAUDO.md)
 
-<img src="docs/screenshots/main-it.jpg" width="280" alt="Schermata italiana"> <img src="docs/screenshots/settings-it.jpg" width="280" alt="Impostazioni">
+<p>
+<img src="docs/screenshots/main-it.png" width="300" alt="Finestra principale">
+<img src="docs/screenshots/settings-it.png" width="300" alt="Impostazioni">
+<img src="docs/screenshots/recorded-it.png" width="300" alt="Registrazione completata">
+</p>
 
-Le schermate mostrano la vera interfaccia Flet nel browser locale per il controllo
-visivo. Il programma distribuito rimane un'applicazione desktop.
+## Perché è nato
 
-## Funzioni e uso
+È nato da un lavoro molto concreto e molto ripetitivo: un gioco nel browser giocato su
+una ventina di schede, dove su ogni scheda va fatta la stessa sequenza di click, tutti
+i giorni. Gli altri programmi di macro ci riuscivano a velocità normale, ma **appena si
+aumentava la velocità della riproduzione cominciavano a perdere click**: le pressioni
+diventavano così brevi, o così ravvicinate, che la pagina le ignorava.
 
-- Registra movimenti, tre pulsanti e rotella. Ripete N volte, all'infinito o per durata.
-- Velocità 0,1×–3×, con minimo iniziale modificabile di 50 ms per click e pause,
-  a qualsiasi velocità. Le attese lunghe si accelerano al massimo di 1,5×.
-- Carica e salva `.mmr` con finestre native; legge anche i vecchi `.json` compatibili.
-- Su Windows: tasti globali, attesa visiva della pagina e Ctrl+W tra giri.
-  Variazione dei tempi opzionale su entrambe le piattaforme.
+Il programma è costruito attorno a due idee:
 
-F9 registra/ferma; F10 riproduce/interrompe; Ctrl+Alt+F11 richiede lo stop di emergenza.
-N volte è selezionato inizialmente e il campo è vuoto: inserisci tu il numero di giri.
-Su Linux i tasti richiedono la finestra attiva; servono GTK 3, Zenity e permessi
-mouse/uinput. I binari sono stati verificati su CachyOS x86_64; distro più vecchie
-possono richiedere compilazione nativa.
+1. **Registrare fedelmente e riprodurre uguale**: posizioni assolute del cursore, tempi
+   reali dei click, coordinate corrette anche con lo scaling di Windows. Riproduzione
+   all'infinito, per N volte o per un tempo stabilito.
+2. **Andare più veloce senza perdere click**: una *durata minima* (50 ms di base)
+   protegge sia quanto dura ogni click sia la pausa prima del successivo, a qualsiasi
+   velocità.
 
-Conserva posizione, dimensioni e zoom della finestra di destinazione. Windows usa
-coordinate assolute, Linux movimenti relativi dal punto iniziale del cursore.
-Le registrazioni delle due piattaforme non sono intercambiabili.
+## Cosa fa
 
-58 test superati su Windows, 32 su Linux e diagnostica superata sui quattro
-eseguibili. GUI native e risultato dei click sul sito restano da provare manualmente.
-[Dettagli del collaudo](COLLAUDO.md).
+- Registra movimenti, click sinistro/destro/centrale e rotellina.
+- Riproduce **all'infinito**, **N volte** (per esempio un giro per ogni scheda aperta) o per
+  una **durata**.
+- Velocità da 0,1× a 3×; la durata minima di click e pause è sempre rispettata, e le attese
+  lunghe (caricamento delle pagine) vengono accelerate al massimo di 1,5×.
+- Tasti rapidi che funzionano anche dal browser: **F9** registra/stop, **F10** riproduci/stop,
+  **Ctrl+Alt+F11** stop di emergenza (su Linux serve la finestra dell'app attiva).
+- Opzioni facoltative, spente all'inizio:
+  - **A fine giro chiudi la scheda** (Ctrl+W), così il browser passa da solo alla successiva;
+  - **Attesa pagina** (Windows): prima di ogni click aspetta che quel punto dello schermo sia
+    com'era in registrazione (pagina caricata, pulsante comparso);
+  - **Tempi variabili a ogni giro** (sperimentale).
+- Salva e carica le macro (`.mmr`), con il controllo dello schermo: una macro registrata con
+  un'altra risoluzione non parte a cliccare nei punti sbagliati.
 
-Ideazione e progetto: **hcok**. Sviluppato con assistenza di Claude e Codex.
-Non è ancora stata scelta una licenza di distribuzione.
+## Download
+
+Scarica l'ultima versione dalla [pagina delle release](../../releases/latest):
+
+| Sistema | Italiano | English |
+| --- | --- | --- |
+| Windows 10/11 (64 bit) | `MouseMacroStocazzSuperpower-Windows-IT.exe` | `MouseMacroStocazzSuperpower-Windows-EN.exe` |
+| Linux x86_64 | `MouseMacroStocazzSuperpower-Linux-IT.tar.gz` | `MouseMacroStocazzSuperpower-Linux-EN.tar.gz` |
+
+In ogni release c'è `SHA256SUMS.txt` per verificare i file. Non serve installare niente:
+l'`.exe` per Windows è un file unico che si avvia da qualsiasi cartella.
+
+### Windows: il primo avvio
+
+Gli eseguibili non sono firmati digitalmente, quindi la prima volta Windows può mostrare
+**"PC protetto da Windows"** (SmartScreen): clicca **Ulteriori informazioni → Esegui comunque**.
+
+**Smart App Control** (Windows 11) è supportato. Le versioni precedenti aprivano la finestra
+con `flet.exe`, un programma di supporto di Flet non firmato che Smart App Control blocca
+senza possibilità di scelta. Dalla v0.14 l'interfaccia compare in una **finestra di Microsoft
+Edge in modalità app** (senza barra degli indirizzi né schede: sembra un programma normale).
+Edge è firmato da Microsoft ed è presente su ogni Windows 10/11. L'interfaccia è visibile
+solo da questo computer (`127.0.0.1`, su un percorso segreto casuale), tutto ciò che le serve
+è incluso nel programma, e chiudendo la finestra si chiude anche il programma.
+
+I PC gestiti da un'azienda o da una scuola possono bloccare comunque qualsiasi programma non
+approvato: in quel caso bisogna chiedere all'amministratore.
+
+### Linux
+
+Estrai l'archivio e avvia l'eseguibile (se serve, `chmod +x`). Richiede GTK 3 e Zenity, i
+permessi di lettura del mouse in `/dev/input` per registrare e di scrittura su `/dev/uinput`
+per riprodurre. Usa la configurazione dei permessi della tua distribuzione (gruppo `input`
+o regola udev): **non avviare il programma come root**. Su Linux i movimenti vengono
+riprodotti a partire dalla posizione iniziale del cursore.
+
+## Come si usa
+
+<img src="docs/screenshots/help-it.png" width="280" align="right" alt="Come si usa">
+
+1. Apri nel browser tutte le schede che ti servono e mettiti sulla prima.
+2. Premi **F9** e fai il lavoro a mano, con calma e con la pagina già caricata.
+3. Premi di nuovo **F9** per fermare.
+4. In **Ripetizione** scegli **N volte** e scrivi quante schede hai aperto.
+5. Torna sulla prima scheda e premi **F10**. Per fermare: **F10**, oppure **Ctrl+Alt+F11**.
+
+Per non sbagliare i click: non spostare, ridimensionare o zoomare il browser tra
+registrazione e riproduzione, non toccare il mouse durante la riproduzione e registra
+con le pagine già caricate. Con **Salva macro** puoi riusare la registrazione nei giorni
+successivi.
+
+<br clear="right">
+
+## Storia delle versioni
+
+| Versione | Data | Novità principali |
+| --- | --- | --- |
+| v0.14 beta | 30/09/2026 | Funziona con Smart App Control di Windows (finestra Edge, niente `flet.exe`); finestre Apri/Salva native di Windows; font inclusi per l'uso offline; 38 MB invece di 64; licenza MIT; compilazione automatica |
+| — | 30/09/2026 | Linux: tasti F9/F10 e chiusura delle schede |
+| [v0.13 beta](../../releases/tag/v0.13-beta) | 30/09/2026 | Versione inglese; carica/salva più sicuri; diagnostica integrata; build Windows e Linux |
+| v0.4 | 30/09/2026 | Prima build Windows affidabile: DPI awareness, pausa minima tra i click, tasti rapidi globali, *Attesa pagina*, *Chiudi scheda* |
+| prima versione | 29/09/2026 | Registrazione e riproduzione su Linux e Windows |
+
+La storia completa è nei [commit](../../commits/main).
+
+## Compilare dai sorgenti
+
+Vedi [docs/BUILD.md](docs/BUILD.md). In breve: `pip install -r requirements.txt pyinstaller`,
+poi `python build_release.py` compila le due lingue per il sistema su cui lo lanci. Le release
+vengono compilate automaticamente da [GitHub Actions](.github/workflows/release.yml) quando
+si pubblica un tag `v*`.
+
+## Licenza
+
+[MIT](LICENSE) © hcok. Font inclusi: Outfit e un sottoinsieme di un solo carattere di Noto
+Color Emoji, entrambi con licenza SIL Open Font License.
+
+Progetto e design: **hcok**. Sviluppato con l'assistenza di Claude e Codex.

@@ -1,0 +1,92 @@
+name: Build and release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt pyinstaller==6.22.3
+      - name: Tests
+        run: python -m unittest discover -v
+      - name: Build IT/EN
+        run: python build_release.py
+      - name: Self-test the executables
+        shell: pwsh
+        run: |
+          foreach ($l in 'IT', 'EN') {
+            $p = Start-Process "dist/windows/MouseMacroStocazzSuperpower-Windows-$l.exe" -ArgumentList '--self-test', "report-$l.json" -PassThru -Wait
+            Get-Content "report-$l.json"
+            if ($p.ExitCode -ne 0) { throw "Self-test $l failed" }
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: dist/windows/MouseMacroStocazzSuperpower-*.exe
+          if-no-files-found: error
+
+  linux:
+    # Ubuntu 22.04: an older glibc makes the binaries run on more distributions.
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Enable uinput for tests and diagnostics
+        run: |
+          sudo modprobe uinput
+          sudo chmod 666 /dev/uinput
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt pyinstaller==6.22.3
+      - name: Tests
+        run: python -m unittest discover -v
+      - name: Build IT/EN
+        run: python build_release.py
+      - name: Self-test and package
+        run: |
+          cd dist/linux
+          for l in IT EN; do
+            ./MouseMacroStocazzSuperpower-Linux-$l --self-test report-$l.json
+            cat report-$l.json
+            tar -czf MouseMacroStocazzSuperpower-Linux-$l.tar.gz MouseMacroStocazzSuperpower-Linux-$l
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: dist/linux/MouseMacroStocazzSuperpower-*.tar.gz
+          if-no-files-found: error
+
+  release:
+    needs: [windows, linux]
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: release
+          merge-multiple: true
+      - name: Checksums
+        run: cd release && sha256sum MouseMacroStocazzSuperpower-* > SHA256SUMS.txt && cat SHA256SUMS.txt
+      - name: Publish the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          notes=".github/release-notes/$TAG.md"
+          if [ -f "$notes" ]; then set -- --notes-file "$notes"; else set -- --generate-notes; fi
+          prerelease=""
+          case "$TAG" in *beta*|*alpha*|*rc*) prerelease="--prerelease" ;; esac
+          gh release create "$TAG" release/* --title "Mouse Macro Stocazz Superpower $TAG" $prerelease "$@"
