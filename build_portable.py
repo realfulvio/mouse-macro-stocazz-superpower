@@ -45,14 +45,18 @@ README = """Mouse Macro Stocazz Superpower - versione portatile / portable versi
 ITALIANO
 Fai doppio clic su "Mouse Macro Stocazz Superpower.exe".
 Non serve installare niente: tieni insieme tutti i file di questa cartella.
-L'icona e' quella di Python perche' il file e' il Python ufficiale, firmato:
-per questo funziona anche sui PC con Smart App Control attivo.
+L'icona e' quella di Python perche' il runtime e' il Python ufficiale, firmato.
+La firma del runtime non garantisce l'accettazione dell'app da parte di
+Smart App Control, antivirus o protezioni aziendali. Se compare una
+segnalazione, interrompi l'uso e conserva i dettagli per l'analisi.
 
 ENGLISH
 Double-click "Mouse Macro Stocazz Superpower (English).exe".
 Nothing to install: keep all the files in this folder together.
-It shows the Python icon because it is the official, signed Python: that is
-why it also works on PCs with Smart App Control turned on.
+It shows the Python icon because the runtime is the official, signed Python.
+The runtime signature does not guarantee that Smart App Control, antivirus
+or corporate security policies will accept the app. If an alert appears,
+stop using the app and preserve the detection details for investigation.
 
 powered by hcok - MIT licence (app/LICENSE)
 """
