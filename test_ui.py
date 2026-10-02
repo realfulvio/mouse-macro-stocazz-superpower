@@ -131,7 +131,7 @@ class UiTests(unittest.TestCase):
         self.count_field().value='7'
         self.open_settings()
         switches=[c for c in self.items if isinstance(c,ft.Switch)]
-        self.assertEqual(len(switches),4)
+        self.assertEqual(len(switches),5)
         variation=self.variation_switch()
         self.assertFalse(variation.value)
         for enabled,expected in [(False,0),(True,.12)]:
@@ -193,8 +193,8 @@ class UiTests(unittest.TestCase):
         self.assertEqual(self.page.window.height,720)
         self.assertEqual(self.page.window.width,560)
         self.assertIn(f'{app.VERSION} · powered by hcok',self.status_values())
-        # Nella schermata principale c'è solo l'attesa pagina, attiva di base.
-        self.assertEqual([c.value for c in self.items if isinstance(c,ft.Switch)],[True])
+        # Confronto visivo e controllo finestra sono indipendenti, attivi di base.
+        self.assertEqual([c.value for c in self.items if isinstance(c,ft.Switch)],[True,True])
         self.assertTrue(self.setting_switch('Confronta il pulsante prima di cliccare').value)
         self.assertFalse(self.page.dialogs)
         self.assertIn('Durata minima della pressione',self.status_values())
@@ -206,11 +206,11 @@ class UiTests(unittest.TestCase):
         self.assertEqual(self.count_field().value,'')
         self.open_settings()
         self.assertIn('A fine giro chiudi la scheda (Ctrl+W)',self.status_values())
-        self.assertEqual(len([c for c in self.items if isinstance(c,ft.Switch)]),4)
+        self.assertEqual(len([c for c in self.items if isinstance(c,ft.Switch)]),5)
         fields=[c.value for c in self.items if isinstance(c,ft.TextField)]
         self.assertTrue({'','10','150','120'}.issubset(fields))
         # Le due opzioni del dialogo restano spente.
-        self.assertEqual(sorted(c.value for c in self.items if isinstance(c,ft.Switch)),[False,False,False,True])
+        self.assertEqual(sorted(c.value for c in self.items if isinstance(c,ft.Switch)),[False,False,False,True,True])
 
     def test_repeat_count_empty_or_invalid_does_not_start_player(self):
         self.load()
@@ -504,6 +504,28 @@ class UiTests(unittest.TestCase):
         backend.close_tab.assert_not_called()
         self.assertIn('Errore durante la riproduzione',self.status_values())
         self.assertTrue(any('Wrong target window' in text for text in self.status_values()))
+
+    def test_window_check_is_on_main_screen_and_enabled_by_default(self):
+        self.assertTrue(self.setting_switch('Verifica la finestra dei click').value)
+
+    def test_disabling_window_check_allows_playback_independently_of_visual_matching(self):
+        self.load()
+        self.count_field().value='1'
+        self.setting_switch('Verifica la finestra dei click').value=False
+        visual=self.setting_switch('Confronta il pulsante prima di cliccare')
+        for enabled in (True,False):
+            with self.subTest(visual_matching=enabled):
+                visual.value=enabled
+                backend=MagicMock()
+                backend.lock_target_window.side_effect=RuntimeError('Wrong target window')
+                with patch.object(app,'make_player',return_value=backend), \
+                        patch.object(app,'play',return_value=PlaybackEnd.DONE) as play_mock, \
+                        patch.object(app.threading,'Thread',InlineThread):
+                    self.play_button().on_click(None)
+                backend.lock_target_window.assert_not_called()
+                play_mock.assert_called_once()
+                self.assertEqual(play_mock.call_args.args[6] is not None,enabled)
+                backend.close.assert_called_once()
 
     def test_trace_save_failure_is_visible_without_hiding_playback_error(self):
         self.load()

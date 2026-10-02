@@ -6,7 +6,7 @@
 
 <p align="center"><b>Su Windows scarica la versione Portable.</b> Non richiede installazione.</p>
 
-<p align="center"><a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.15-beta"><b>⬇ Scarica l'ultima versione</b></a></p>
+<p align="center"><a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.15.1-beta"><b>⬇ Scarica l'ultima versione</b></a></p>
 
 <p align="center">
 <img src="docs/screenshots/main-it.png" width="520" alt="Finestra principale">
@@ -27,7 +27,7 @@
 
 ## Download
 
-Apri l'**[ultima release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.15-beta)** e scegli il file per il tuo sistema:
+Apri l'**[ultima release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.15.1-beta)** e scegli il file per il tuo sistema:
 
 | Sistema | File da scaricare |
 | --- | --- |
@@ -63,3 +63,7 @@ Pressione del click e pausa dopo il rilascio sono indipendenti. Le pause registr
 - [Licenza](LICENSE)
 
 Progetto e design: **hcok**.
+
+## v0.15.1 beta
+
+Nella schermata principale puoi disattivare «Verifica la finestra dei click» per riprodurre alle coordinate registrate senza il controllo del primo punto, del primo piano e della copertura. Il confronto visivo resta indipendente: per saltare anche quello disattiva «Confronta il pulsante prima di cliccare».

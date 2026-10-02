@@ -6,6 +6,8 @@ import flet as ft
 
 
 EN = {
+    "Verifica la finestra dei click": "Check the click target window",
+    "Attivo: controlla il primo punto e ferma la macro se cambi finestra o il bersaglio è coperto. Disattivo: riproduce alle coordinate registrate senza questo controllo.": "On: checks the first click position and stops if the target window loses focus or is covered. Off: replays at the recorded coordinates without this check.",
     "Pronto": "Ready",
     "Registra i movimenti del mouse per iniziare.": "Record your mouse movements to get started.",
     "REGISTRA  (F9)": "RECORD  (F9)",
