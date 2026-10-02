@@ -6,7 +6,7 @@
 
 <p align="center"><b>Windows users: download the Portable ZIP.</b> No installation required.</p>
 
-<p align="center"><a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.15-beta"><b>⬇ Download the latest release</b></a></p>
+<p align="center"><a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.15.1-beta"><b>⬇ Download the latest release</b></a></p>
 
 <p align="center">
 <img src="docs/screenshots/main-en.png" width="520" alt="Main window">
@@ -27,7 +27,7 @@
 
 ## Download
 
-Open the **[latest release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.15-beta)** and choose the file for your system:
+Open the **[latest release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.15.1-beta)** and choose the file for your system:
 
 | Your system | Download this file |
 | --- | --- |
@@ -63,3 +63,7 @@ Click hold time and the pause after release are independent. Longer recorded pau
 - [Licence](LICENSE)
 
 Project and design: **hcok**.
+
+## v0.15.1 beta
+
+Turn off 'Check the click target window' on the main screen to replay at recorded coordinates without checking the initial target, foreground window or overlays. Visual matching is independent: turn off 'Compare the button before clicking' to skip it too.

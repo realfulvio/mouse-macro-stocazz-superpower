@@ -29,7 +29,7 @@ FIELD_BG = "#241226"
 TEXT_MUTED = "#CBB3C9"
 DANGER = "#D6357C"
 SUCCESS = "#3FA66B"
-VERSION = "v0.15 beta"
+VERSION = "v0.15.1 beta"
 
 
 def main(page: ft.Page, language: str = "it"):
@@ -415,6 +415,21 @@ def main(page: ft.Page, language: str = "it"):
         spacing=8,
         visible=(platform == "windows"),
     )
+    window_check_switch = ft.Switch(value=True, active_color=ACCENT_1)
+    window_check_row = ft.Row(
+        [
+            ft.Icon(ft.Icons.CENTER_FOCUS_STRONG_ROUNDED, size=18, color=TEXT_MUTED),
+            ft.Text("Verifica la finestra dei click", size=12, color=TEXT_MUTED, expand=True),
+            window_check_switch,
+        ],
+        spacing=8,
+        visible=(platform == "windows"),
+    )
+    window_check_hint = hint(
+        "Attivo: controlla il primo punto e ferma la macro se cambi finestra o il bersaglio è coperto. "
+        "Disattivo: riproduce alle coordinate registrate senza questo controllo."
+    )
+    window_check_hint.visible = platform == "windows"
     visual_warning = ft.Text("", size=11, color=ACCENT_2, visible=(platform == "windows"))
     sync_section = ft.Column(
         [
@@ -546,6 +561,8 @@ def main(page: ft.Page, language: str = "it"):
                      "La pausa protegge anche l'ultima azione prima di chiudere la scheda."),
                 sync_row,
                 visual_warning,
+                window_check_row,
+                window_check_hint,
             ],
             spacing=6,
         ),
@@ -847,6 +864,7 @@ def main(page: ft.Page, language: str = "it"):
         stop_event = state["stop_event"]
         events = state["macro"].events
         sync_enabled = platform == "windows" and bool(sync_switch.value)
+        window_check_enabled = platform == "windows" and bool(window_check_switch.value)
         trace_enabled = platform == "windows" and bool(trace_switch.value)
         close_tabs = bool(tab_switch.value)
         tolerance_level = tolerance["value"]
@@ -894,9 +912,9 @@ def main(page: ft.Page, language: str = "it"):
             try:
                 if platform == "windows" and not stop_event.is_set():
                     first_click = next((ev for ev in events if ev.kind in BUTTON_OF_DOWN), None)
-                    if first_click is not None:
+                    if first_click is not None and window_check_enabled:
                         player.lock_target_window(first_click)
-                    elif close_tabs:
+                    elif first_click is None and close_tabs:
                         raise RuntimeError("La chiusura schede richiede una macro con click.")
                 end = play(events, options, player.apply_event, player.release_held,
                            on_progress, stop_event, wait_ready, between_cycles,
@@ -913,6 +931,7 @@ def main(page: ft.Page, language: str = "it"):
                         folder = Path(os.environ.get("LOCALAPPDATA") or Path.home()) / "MouseMacroStocazzSuperpower" / "diagnostics"
                         path = trace.save(folder, VERSION, options,
                                           {"visual_check_enabled": sync_enabled,
+                                           "window_check_enabled": window_check_enabled,
                                            "missing_visual_references": missing_refs,
                                            "visual_tolerance": tolerance_level,
                                            "visual_timeout_seconds": timeout_s,
