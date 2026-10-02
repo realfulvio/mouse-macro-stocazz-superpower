@@ -79,6 +79,19 @@ def screen_geometry() -> list[int]:
 _user32 = ctypes.windll.user32
 _gdi32 = ctypes.windll.gdi32
 
+_user32.GetForegroundWindow.restype = wintypes.HWND
+_user32.GetForegroundWindow.argtypes = []
+_user32.GetWindowTextW.argtypes = [wintypes.HWND, wintypes.LPWSTR, ctypes.c_int]
+_user32.GetWindowTextW.restype = ctypes.c_int
+_user32.WindowFromPoint.argtypes = [wintypes.POINT]
+_user32.WindowFromPoint.restype = wintypes.HWND
+_user32.GetAncestor.argtypes = [wintypes.HWND, wintypes.UINT]
+_user32.GetAncestor.restype = wintypes.HWND
+
+
+class TargetWindowChanged(RuntimeError):
+    pass
+
 _user32.GetDC.argtypes = [wintypes.HWND]
 _user32.GetDC.restype = wintypes.HDC
 _user32.ReleaseDC.argtypes = [wintypes.HWND, wintypes.HDC]
@@ -238,16 +251,39 @@ class WindowsPlayer:
     def __init__(self):
         self._ctrl = mouse.Controller()
         self._kbd = keyboard.Controller()
+        self._target_window = None
+
+    def lock_target_window(self, evt: MacroEvent) -> None:
+        """Fissa la finestra sotto il primo click; non porta finestre in primo piano."""
+        target = _user32.GetForegroundWindow()
+        title = ctypes.create_unicode_buffer(512)
+        _user32.GetWindowTextW(target, title, len(title))
+        if not target or "mouse macro" in title.value.lower():
+            raise TargetWindowChanged("Torna sulla finestra del browser e avvia con F10.")
+        self._target_window = target
+        self._check_target(evt)
+
+    def _check_target(self, evt: MacroEvent | None = None) -> None:
+        if self._target_window is None:
+            return
+        if _user32.GetForegroundWindow() != self._target_window:
+            raise TargetWindowChanged("La finestra destinataria non è più in primo piano. Riproduzione fermata.")
+        if evt is not None and evt.kind in (LEFT_DOWN, RIGHT_DOWN, MIDDLE_DOWN):
+            window = _user32.WindowFromPoint(wintypes.POINT(evt.x, evt.y))
+            if _user32.GetAncestor(window, 2) != self._target_window:  # GA_ROOT
+                raise TargetWindowChanged("Il punto del click non appartiene alla finestra destinataria. Riproduzione fermata.")
 
     def close_tab(self) -> None:
         """Ctrl+W alla finestra in primo piano (il browser): chiude la scheda corrente e
         il browser passa alla successiva. Solo invio di tasti, nessun hook di tastiera."""
+        self._check_target()
         with self._kbd.pressed(keyboard.Key.ctrl):
             self._kbd.press("w")
             time.sleep(0.03)
             self._kbd.release("w")
 
     def apply_event(self, evt: MacroEvent) -> None:
+        self._check_target(evt)
         if evt.kind == MOVE_ABS:
             self._ctrl.position = (evt.x, evt.y)
         elif evt.kind == LEFT_DOWN:
@@ -283,6 +319,9 @@ class WindowsPlayer:
         """Prima di un click, aspetta che il punto sullo schermo torni uguale a com'era in
         registrazione (pagina caricata, pulsante comparso). False se scade il timeout o
         se la riproduzione viene fermata."""
+        if stop_event.is_set():
+            return False
+        self._check_target(evt)
         if not evt.snap:
             return True
         ref = center_crop(decode_snap(evt.snap))
@@ -290,6 +329,9 @@ class WindowsPlayer:
         deadline = time.perf_counter() + timeout_seconds
         notified = False
         while True:
+            if stop_event.is_set():
+                return False
+            self._check_target(evt)
             if region_diff(ref, center_crop(grab_region(evt.x, evt.y))) <= tolerance:
                 return True
             if stop_event.is_set() or time.perf_counter() >= deadline:
@@ -297,7 +339,8 @@ class WindowsPlayer:
             if not notified and on_waiting is not None:
                 on_waiting()
                 notified = True
-            time.sleep(0.05)
+            if stop_event.wait(0.05):
+                return False
 
     def release_held(self, held: set[str]) -> None:
         mapping = {"left": mouse.Button.left, "right": mouse.Button.right, "middle": mouse.Button.middle}

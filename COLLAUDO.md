@@ -1,3 +1,16 @@
+# Verifica v0.15 beta — 01/10/2026
+
+20 prove native Windows superate dopo il ricontrollo; 85 test automatici superati e 6 esclusi (Linux).
+Test su destinatario locale controllato: nessun accesso a Howrse.
+Applicazione e runtime pubblicati coincidono byte per byte con quelli collaudati; aggiornato solo il README nel pacchetto.
+
+- [Protocollo e cambiamenti](docs/V015.md)
+- [Risultati e limiti](docs/ESITO-COLLAUDO-v0.15.md)
+
+Dialoghi Apri/Salva dalla UI e ciclo di schede browser reali non completati: restano limiti dichiarati della beta.
+
+---
+
 # Verifica v0.14 beta — 30/09/2026
 
 Problema: su Windows 11 con **Smart App Control attivo** la v0.13 si fermava subito con

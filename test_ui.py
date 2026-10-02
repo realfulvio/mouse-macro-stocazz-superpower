@@ -131,7 +131,7 @@ class UiTests(unittest.TestCase):
         self.count_field().value='7'
         self.open_settings()
         switches=[c for c in self.items if isinstance(c,ft.Switch)]
-        self.assertEqual(len(switches),3)
+        self.assertEqual(len(switches),4)
         variation=self.variation_switch()
         self.assertFalse(variation.value)
         for enabled,expected in [(False,0),(True,.12)]:
@@ -195,9 +195,9 @@ class UiTests(unittest.TestCase):
         self.assertIn(f'{app.VERSION} · powered by hcok',self.status_values())
         # Nella schermata principale c'è solo l'attesa pagina, attiva di base.
         self.assertEqual([c.value for c in self.items if isinstance(c,ft.Switch)],[True])
-        self.assertTrue(self.setting_switch('Aspetta che la pagina sia pronta prima di cliccare').value)
+        self.assertTrue(self.setting_switch('Confronta il pulsante prima di cliccare').value)
         self.assertFalse(self.page.dialogs)
-        self.assertIn('Durata minima di click e pause',self.status_values())
+        self.assertIn('Durata minima della pressione',self.status_values())
         self.assertNotIn('A fine giro chiudi la scheda (Ctrl+W)',self.status_values())
         self.assertIn('150',[c.value for c in self.items if isinstance(c,ft.TextField)])
         count_row=next(c for c in self.items if isinstance(c,ft.Row)
@@ -206,11 +206,11 @@ class UiTests(unittest.TestCase):
         self.assertEqual(self.count_field().value,'')
         self.open_settings()
         self.assertIn('A fine giro chiudi la scheda (Ctrl+W)',self.status_values())
-        self.assertEqual(len([c for c in self.items if isinstance(c,ft.Switch)]),3)
+        self.assertEqual(len([c for c in self.items if isinstance(c,ft.Switch)]),4)
         fields=[c.value for c in self.items if isinstance(c,ft.TextField)]
         self.assertTrue({'','10','150','120'}.issubset(fields))
         # Le due opzioni del dialogo restano spente.
-        self.assertEqual(sorted(c.value for c in self.items if isinstance(c,ft.Switch)),[False,False,True])
+        self.assertEqual(sorted(c.value for c in self.items if isinstance(c,ft.Switch)),[False,False,False,True])
 
     def test_repeat_count_empty_or_invalid_does_not_start_player(self):
         self.load()
@@ -375,7 +375,7 @@ class UiTests(unittest.TestCase):
                         self.hotkey_callback(HOTKEY_EMERGENCY)
                     else:
                         button.on_click(None)
-                def fake_play(*args):
+                def fake_play(*args, **kwargs):
                     self.assertTrue(args[5].is_set())
                     return PlaybackEnd.STOPPED
                 with patch.object(app,'play',side_effect=fake_play):
@@ -429,14 +429,14 @@ class UiTests(unittest.TestCase):
         self.count_field().value='2'
         self.open_settings()
         for label in ('A fine giro chiudi la scheda (Ctrl+W)',
-                      'Aspetta che la pagina sia pronta prima di cliccare'):
+                      'Confronta il pulsante prima di cliccare'):
             switch=self.setting_switch(label)
             switch.value=True
             switch.on_change(None)
         self.chip('Tollerante').on_click(None)
         backend=MagicMock()
         backend.wait_until_ready.return_value=False
-        def fake_play(*args):
+        def fake_play(*args, **kwargs):
             self.assertFalse(args[6](args[0][0]))
             args[7]()
             return PlaybackEnd.SYNC_TIMEOUT
@@ -459,6 +459,64 @@ class UiTests(unittest.TestCase):
             self.assertEqual(len(self.page.dialogs),1)
             self.page.dialogs[-1].actions[0].on_click(None)
             self.assertFalse(self.page.dialogs)
+
+    def test_separate_action_gap_and_trace_are_wired_without_changing_hold(self):
+        import json
+        self.load()
+        self.count_field().value='1'
+        self.open_settings()
+        row=next(c for c in self.items if isinstance(c,ft.Row)
+                 and any(isinstance(t,ft.Text) and t.value=='Pausa minima tra azioni' for t in c.controls))
+        next(c for c in row.controls if isinstance(c,ft.TextField)).value='450'
+        trace_switch=self.setting_switch('Registra i tempi della riproduzione')
+        self.assertFalse(trace_switch.value)
+        trace_switch.value=True
+        with patch.object(app,'make_player',return_value=MagicMock()), \
+                patch.object(app,'play',return_value=PlaybackEnd.DONE) as play_mock, \
+                patch.object(app.threading,'Thread',InlineThread), \
+                patch.dict(app.os.environ,{'LOCALAPPDATA':self.temp.name}):
+            self.play_button().on_click(None)
+        options=play_mock.call_args.args[1]
+        self.assertEqual(options.min_click_hold_seconds,.15)
+        self.assertEqual(options.min_action_gap_seconds,.45)
+        self.assertIsNotNone(play_mock.call_args.kwargs['trace'])
+        files=list(Path(self.temp.name).rglob('playback-*.json'))
+        self.assertEqual(len(files),1)
+        data=json.loads(files[0].read_text(encoding='utf-8'))
+        self.assertEqual(data['metadata']['missing_visual_references'],1)
+        self.assertIsNone(data['site_actions_confirmed'])
+        self.assertTrue(any('Registro:' in text for text in self.status_values()))
+
+    def test_window_guard_failure_sends_no_input_and_preserves_error_with_trace(self):
+        self.load()
+        self.count_field().value='2'
+        self.open_settings()
+        self.setting_switch('Registra i tempi della riproduzione').value=True
+        backend=MagicMock()
+        backend.lock_target_window.side_effect=RuntimeError('Wrong target window')
+        with patch.object(app,'make_player',return_value=backend), \
+                patch.object(app,'play') as play_mock, \
+                patch.object(app.threading,'Thread',InlineThread), \
+                patch.dict(app.os.environ,{'LOCALAPPDATA':self.temp.name}):
+            self.play_button().on_click(None)
+        play_mock.assert_not_called()
+        backend.apply_event.assert_not_called()
+        backend.close_tab.assert_not_called()
+        self.assertIn('Errore durante la riproduzione',self.status_values())
+        self.assertTrue(any('Wrong target window' in text for text in self.status_values()))
+
+    def test_trace_save_failure_is_visible_without_hiding_playback_error(self):
+        self.load()
+        self.count_field().value='1'
+        self.open_settings()
+        self.setting_switch('Registra i tempi della riproduzione').value=True
+        with patch.object(app,'make_player',return_value=MagicMock()), \
+                patch.object(app,'play',side_effect=OSError('Backend failure')), \
+                patch.object(app.threading,'Thread',InlineThread), \
+                patch.object(app.PlaybackTrace,'save',side_effect=OSError('Disk full')):
+            self.play_button().on_click(None)
+        self.assertTrue(any('Backend failure' in text and 'Impossibile salvare' in text
+                            for text in self.status_values()))
 
     def test_session_cleanup_stops_recording_and_unregisters_hotkeys(self):
         recorder=MagicMock()

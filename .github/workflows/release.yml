@@ -1,8 +1,6 @@
 name: Build and release
 
 on:
-  push:
-    tags: ['v*']
   workflow_dispatch:
 
 permissions:
@@ -100,4 +98,4 @@ jobs:
           if [ -f "$notes" ]; then set -- --notes-file "$notes"; else set -- --generate-notes; fi
           prerelease=""
           case "$TAG" in *beta*|*alpha*|*rc*) prerelease="--prerelease" ;; esac
-          gh release create "$TAG" release/* --title "Mouse Macro Stocazz Superpower $TAG" $prerelease "$@"
+          gh release create "$TAG" release/* --draft --draft --title "Mouse Macro Stocazz Superpower $TAG" $prerelease "$@"

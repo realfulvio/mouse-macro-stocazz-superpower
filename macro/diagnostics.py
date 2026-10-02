@@ -44,6 +44,9 @@ def self_test(report_path, language='it'):
             checks['file_roundtrip'] = Macro.load(filename) == macro
         times = _compute_scaled_times(macro.events, PlaybackOptions(speed=3))
         checks['minimum_150ms_at_3x'] = times[1] - times[0] >= .15
+        sequence = macro.events + [MacroEvent(.02, LEFT_DOWN), MacroEvent(.03, LEFT_UP)]
+        times = _compute_scaled_times(sequence, PlaybackOptions(speed=3, min_action_gap_seconds=.4))
+        checks['independent_400ms_action_gap_at_3x'] = times[2] - times[1] >= .4 - 1e-9
         checks['translation'] = translate('Pronto', language) == ('Ready' if language == 'en' else 'Pronto')
         checks['backend_import'] = True
         if current_platform() == 'linux':
