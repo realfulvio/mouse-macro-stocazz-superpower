@@ -28,7 +28,7 @@ class PlaybackTests(unittest.TestCase):
                        MacroEvent(.02, LEFT_DOWN, x=300, y=400),
                        MacroEvent(.03, LEFT_UP, x=300, y=400)]
 
-    def run_fake(self, options, apply=None, ready=None, between=None, stop=None):
+    def run_fake(self, options, apply=None, ready=None, between=None, stop=None, trace=None):
         clock = FakeClock()
         seen, released = [], []
         stop = stop or threading.Event()
@@ -39,7 +39,7 @@ class PlaybackTests(unittest.TestCase):
         with patch.object(engine.time, 'perf_counter', lambda: clock.now), \
                 patch.object(engine, '_wait_until', clock.wait):
             end = play(self.events, options, emit, lambda held: released.append(set(held)),
-                       None, stop, ready, between)
+                       None, stop, ready, between, trace)
         return end, seen, released
 
     def test_disabled_preserves_original_schedule(self):
@@ -185,7 +185,7 @@ class PlaybackTests(unittest.TestCase):
         def stop_on_second_loop(event,clock,stop):
             if clock.now>=100.2:
                 stop.set()
-        end,seen,_=self.run_fake(PlaybackOptions(mode=LoopMode.INFINITE,min_click_hold_seconds=.05),
+        end,seen,_=self.run_fake(PlaybackOptions(mode=LoopMode.INFINITE,min_click_hold_seconds=.05,min_action_gap_seconds=.05),
                                 apply=stop_on_second_loop)
         self.assertEqual(end,PlaybackEnd.STOPPED)
         self.assertGreater(len(seen),4)
@@ -195,6 +195,101 @@ class PlaybackTests(unittest.TestCase):
             with self.subTest(count=count), self.assertRaises(ValueError):
                 play(self.events,PlaybackOptions(repeat_count=count),lambda event:None,
                      lambda held:None,None,threading.Event())
+
+    def test_action_pause_is_independent_of_press_duration_and_speed(self):
+        for speed in (.1, 1, 3, 20):
+            with self.subTest(speed=speed):
+                options = PlaybackOptions(repeat_count=2, speed=speed,
+                                          min_click_hold_seconds=.05, min_action_gap_seconds=.4)
+                end, seen, _ = self.run_fake(options)
+                self.assertEqual(end, PlaybackEnd.DONE)
+                for index in range(0, len(seen), 2):
+                    self.assertGreaterEqual(seen[index+1][1]-seen[index][1], .05-1e-9)
+                for index in range(1, len(seen)-1, 2):
+                    self.assertGreaterEqual(seen[index+1][1]-seen[index][1], .4-1e-9)
+
+    def test_mouse_movements_cannot_shorten_loading_pause(self):
+        plain = [MacroEvent(0,LEFT_DOWN), MacroEvent(.15,LEFT_UP),
+                 MacroEvent(.75,LEFT_DOWN), MacroEvent(.9,LEFT_UP)]
+        moved = plain[:2] + [MacroEvent(t,MOVE_ABS) for t in (.25,.35,.45,.55,.65)] + plain[2:]
+        for speed in (.1, 1, 3, 20):
+            options = PlaybackOptions(speed=speed)
+            a = _compute_scaled_times(plain, options)
+            b = _compute_scaled_times(moved, options)
+            self.assertAlmostEqual(a[2]-a[1], b[-2]-b[1])
+            self.assertAlmostEqual(a[2]-a[1], .6/min(speed,1.5))
+
+    def test_final_action_waits_before_tab_close_and_before_done(self):
+        records, closes = [], []
+        options = PlaybackOptions(repeat_count=2, speed=20, min_action_gap_seconds=.4)
+        end, seen, _ = self.run_fake(options, trace=records.append,
+                                     between=lambda: closes.append(engine.time.perf_counter()))
+        self.assertEqual(end, PlaybackEnd.DONE)
+        self.assertEqual(len(closes),1)
+        self.assertGreaterEqual(closes[0]-seen[3][1],.4-1e-9)
+        done = records[-1]
+        self.assertEqual(done['type'],'playback_end')
+        self.assertGreaterEqual(done['elapsed_seconds']-(seen[-1][1]-100),.4-1e-9)
+        self.assertEqual(len([r for r in records if r['type']=='input_sent']),len(seen))
+
+    def test_stop_during_final_action_guard_does_not_close_tab(self):
+        stop = threading.Event()
+        clock = FakeClock()
+        seen, closes = [], []
+        def wait(deadline, event):
+            if len(seen)==4:
+                event.set()
+                return False
+            return clock.wait(deadline,event)
+        with patch.object(engine.time,'perf_counter',lambda:clock.now), \
+                patch.object(engine,'_wait_until',wait):
+            end=play(self.events,PlaybackOptions(repeat_count=2),lambda evt:seen.append(evt),
+                     lambda held:None,None,stop,between_cycles=lambda:closes.append(1))
+        self.assertEqual(end,PlaybackEnd.STOPPED)
+        self.assertEqual(len(seen),4)
+        self.assertFalse(closes)
+
+    def test_matching_pixels_still_respect_action_gap_and_never_retry(self):
+        records = []
+        options = PlaybackOptions(repeat_count=1,speed=20,min_action_gap_seconds=.5)
+        end,seen,_ = self.run_fake(options,ready=lambda event:True,trace=records.append)
+        self.assertEqual(end,PlaybackEnd.DONE)
+        self.assertEqual(len(seen),4)
+        self.assertGreaterEqual(seen[2][1]-seen[1][1],.5-1e-9)
+        checks=[r for r in records if r['type']=='visual_check']
+        self.assertEqual([r['outcome'] for r in checks],['missing_reference','missing_reference'])
+
+    def test_slow_backend_respects_separate_pause_without_catchup(self):
+        def slow(event, clock, stop):
+            clock.now += .23
+        _,seen,_ = self.run_fake(PlaybackOptions(repeat_count=2,speed=20,
+                                                 min_click_hold_seconds=.05,min_action_gap_seconds=.4),
+                                 apply=slow)
+        for index in range(1,len(seen)-1,2):
+            self.assertGreaterEqual(seen[index+1][1]-seen[index][1],.23+.4-1e-9)
+
+    def test_invisible_busy_site_needs_action_gap_even_when_button_matches(self):
+        self.events=[]
+        for i in range(10):
+            self.events.extend([MacroEvent(i*.02,LEFT_DOWN),MacroEvent(i*.02+.01,LEFT_UP)])
+        measurements=[]
+        for hold,gap in ((.15,.15),(.15,.45),(.45,.45)):
+            accepted=[]
+            busy_until=[0.0]
+            records=[]
+            def site(event,clock,stop):
+                if event.kind==LEFT_UP and clock.now >= busy_until[0]-1e-9:
+                    accepted.append(clock.now)
+                    busy_until[0]=clock.now+.45
+            end,seen,_=self.run_fake(PlaybackOptions(repeat_count=1,speed=20,
+                                                     min_click_hold_seconds=hold,
+                                                     min_action_gap_seconds=gap),
+                                     apply=site,ready=lambda evt:True,trace=records.append)
+            self.assertEqual(end,PlaybackEnd.DONE)
+            self.assertEqual(len(seen),20)  # nessun reinvio
+            measurements.append((len(accepted),records[-1]['elapsed_seconds']))
+        self.assertEqual([n for n,duration in measurements],[5,10,10])
+        self.assertLess(measurements[1][1],measurements[2][1])
 
 
 if __name__ == '__main__':

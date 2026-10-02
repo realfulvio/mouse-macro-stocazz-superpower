@@ -111,7 +111,28 @@ EN = {
 }
 
 
+EN.update({
+    "La chiusura schede richiede una macro con click.": "Closing tabs requires a macro with clicks.",
+    "Durata minima della pressione": "Minimum press duration",
+    "Pausa minima tra azioni": "Minimum pause between actions",
+    "Parti da 150 ms per entrambi. Se perde click, aumenta soltanto la pausa tra azioni. La pausa protegge anche l'ultima azione prima di chiudere la scheda.": "Start at 150 ms for both. If clicks are missed, increase only the pause between actions. This pause also protects the last action before closing the tab.",
+    "Confronta il pulsante prima di cliccare": "Match the button before clicking",
+    "Confronta il pulsante con la registrazione. Un pulsante uguale non conferma che il sito abbia finito l'azione precedente: regola anche la pausa tra azioni. I click senza riferimento visivo usano soltanto le attese temporali.": "Matches the button against the recording. A matching button does not confirm that the site has finished the previous action: adjust the pause between actions too. Clicks without a visual reference use timing waits only.",
+    "Le attese oltre 350 ms tra azioni vengono accelerate al massimo di 1,5x, anche se muovi il mouse. Pressione e pausa minima restano indipendenti dalla velocità.": "Waits longer than 350 ms between actions are sped up by at most 1.5x, even with mouse movements. Minimum press and pause durations are independent of speed.",
+    "COLLAUDO": "TESTING",
+    "Registra i tempi della riproduzione": "Record playback timings",
+    "Salva un registro locale a fine riproduzione. Conta gli input inviati, non le azioni completate sul sito. Non salva immagini o indirizzi web.": "Saves a local report after playback. Counts inputs sent, not completed website actions. Does not save images or web addresses.",
+    "Riproduzione interrotta": "Playback stopped",
+    "Controlla il sito prima di avviare un altro giro.": "Check the site before starting another cycle.",
+    "Impossibile salvare il registro dei tempi.": "Could not save the timing report.",
+    "Torna sulla finestra del browser e avvia con F10.": "Return to the browser window and start with F10.",
+    "La finestra destinataria non è più in primo piano. Riproduzione fermata.": "The target window has lost focus. Playback stopped.",
+    "Il punto del click non appartiene alla finestra destinataria. Riproduzione fermata.": "The click target is outside the target window. Playback stopped.",
+})
+
 TEMPLATES = [
+    (r"Registro: (.+)", r"Timing report: \1"),
+    (r"(\d+) click senza riferimento visivo\.", r"\1 clicks without a visual reference."),
     (r"(\d+) eventi da (.+)", r"\1 events from \2"),
     (r"(\d+) eventi in (.+)", r"\1 events in \2"),
     (r"(\d+) eventi nella macro\.", r"\1 events in the macro."),

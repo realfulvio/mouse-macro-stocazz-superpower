@@ -105,6 +105,60 @@ class WindowsBackendTests(unittest.TestCase):
         player._kbd.release.assert_called_once_with('w')
         player._kbd.pressed.return_value.__exit__.assert_called_once()
 
+    def test_focus_loss_blocks_inputs_and_tab_close_without_refocusing(self):
+        player=self.player()
+        player._target_window=123
+        with patch.object(backend._user32,'GetForegroundWindow',return_value=456):
+            with self.assertRaises(backend.TargetWindowChanged):
+                player.apply_event(MacroEvent(0,LEFT_DOWN,x=10,y=20))
+            with self.assertRaises(backend.TargetWindowChanged):
+                player.close_tab()
+        player._ctrl.press.assert_not_called()
+        player._kbd.press.assert_not_called()
+
+    def test_overlay_blocks_click_even_with_matching_pixels(self):
+        player=self.player()
+        player._target_window=123
+        with patch.object(backend._user32,'GetForegroundWindow',return_value=123), \
+                patch.object(backend._user32,'WindowFromPoint',return_value=456), \
+                patch.object(backend._user32,'GetAncestor',return_value=456):
+            with self.assertRaises(backend.TargetWindowChanged):
+                player.wait_until_ready(MacroEvent(0,LEFT_DOWN),10,threading.Event())
+        player._ctrl.press.assert_not_called()
+
+    def test_stop_wins_over_matching_pixels_and_missing_snapshot(self):
+        player=self.player()
+        stop=threading.Event()
+        stop.set()
+        pixels=bytes([80])*40*40*4
+        with patch.object(backend,'grab_region',return_value=pixels) as grab:
+            for snap in ('',backend.encode_snap(pixels)):
+                self.assertFalse(player.wait_until_ready(MacroEvent(0,LEFT_DOWN,snap=snap),10,stop))
+        grab.assert_not_called()
+
+    def test_lock_target_requires_foreground_window_at_first_click(self):
+        player=self.player()
+        def title(hwnd,buffer,size):
+            buffer.value='Local test browser'
+            return len(buffer.value)
+        with patch.object(backend._user32,'GetForegroundWindow',return_value=123), \
+                patch.object(backend._user32,'GetWindowTextW',side_effect=title), \
+                patch.object(backend._user32,'WindowFromPoint',return_value=124), \
+                patch.object(backend._user32,'GetAncestor',return_value=123):
+            player.lock_target_window(MacroEvent(0,LEFT_DOWN,x=10,y=20))
+        self.assertEqual(player._target_window,123)
+
+    def test_lock_target_rejects_app_window(self):
+        player=self.player()
+        def title(hwnd,buffer,size):
+            buffer.value='Mouse Macro Stocazz Superpower'
+            return len(buffer.value)
+        with patch.object(backend._user32,'GetForegroundWindow',return_value=123), \
+                patch.object(backend._user32,'GetWindowTextW',side_effect=title):
+            with self.assertRaises(backend.TargetWindowChanged):
+                player.lock_target_window(MacroEvent(0,LEFT_DOWN))
+        self.assertIsNone(player._target_window)
+
     def test_global_hotkeys_registration_dispatch_and_cleanup(self):
         callback=MagicMock()
         hotkeys=backend.GlobalHotkeys(callback)

@@ -26,9 +26,9 @@ class LocalizationTests(unittest.TestCase):
     def test_initial_english_and_italian_preserve_defaults(self):
         for language, ready, repeat, summary, wait in [
                 ('it', 'Pronto', 'N volte', 'Chiusura schede: OFF · Tempi: fissi',
-                 'Aspetta che la pagina sia pronta prima di cliccare'),
+                 'Confronta il pulsante prima di cliccare'),
                 ('en', 'Ready', 'N times', 'Close tabs: OFF · Timing: fixed',
-                 'Wait until the page is ready before clicking')]:
+                 'Match the button before clicking')]:
             with self.subTest(language=language):
                 page = self.page(language)
                 items = list(controls(page))

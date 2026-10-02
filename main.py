@@ -8,12 +8,14 @@ import os
 import random
 import threading
 import time
+from pathlib import Path
 
 import flet as ft
 
 from macro.backend import current_platform, list_mice, make_player, make_recorder
 from macro.engine import LoopMode, PlaybackEnd, PlaybackOptions, PlaybackStatus, play
 from macro.events import BUTTON_OF_DOWN, LEFT_DOWN, Macro, MacroEvent
+from macro.playback_trace import PlaybackTrace
 from localization import localize_page, translate
 
 # Palette viola-prugna e rosa, verde/giallo per gli stati e cavallini decorativi.
@@ -27,7 +29,7 @@ FIELD_BG = "#241226"
 TEXT_MUTED = "#CBB3C9"
 DANGER = "#D6357C"
 SUCCESS = "#3FA66B"
-VERSION = "v0.14 beta"
+VERSION = "v0.15 beta"
 
 
 def main(page: ft.Page, language: str = "it"):
@@ -308,6 +310,9 @@ def main(page: ft.Page, language: str = "it"):
     min_click_ms = ft.TextField(value="150", width=64, height=42, text_align=ft.TextAlign.CENTER,
                                  bgcolor=FIELD_BG, border_color=CARD_BORDER, border_radius=10,
                                  color=ft.Colors.WHITE, text_size=13, content_padding=6)
+    action_gap_ms = ft.TextField(value="150", width=64, height=42, text_align=ft.TextAlign.CENTER,
+                                  bgcolor=FIELD_BG, border_color=CARD_BORDER, border_radius=10,
+                                  color=ft.Colors.WHITE, text_size=13, content_padding=6)
 
     def section_title(text: str):
         return ft.Text(text, size=11, weight=ft.FontWeight.W_700, color=TEXT_MUTED, style=ft.TextStyle(letter_spacing=1.2))
@@ -404,21 +409,21 @@ def main(page: ft.Page, language: str = "it"):
     sync_row = ft.Row(
         [
             ft.Icon(ft.Icons.HOURGLASS_TOP_ROUNDED, size=18, color=TEXT_MUTED),
-            ft.Text("Aspetta che la pagina sia pronta prima di cliccare", size=12, color=TEXT_MUTED, expand=True),
+            ft.Text("Confronta il pulsante prima di cliccare", size=12, color=TEXT_MUTED, expand=True),
             sync_switch,
         ],
         spacing=8,
         visible=(platform == "windows"),
     )
+    visual_warning = ft.Text("", size=11, color=ACCENT_2, visible=(platform == "windows"))
     sync_section = ft.Column(
         [
             ft.Container(height=6),
             section_title("ATTESA PAGINA"),
             hint(
-                "Prima di ogni click aspetta che il pulsante sia com'era in registrazione, poi clicca subito: "
-                "se la pagina è già pronta non perde tempo. Serve con le schede aperte in background e con "
-                "le pagine che si aggiornano dopo ogni click. Foto e nome del cavallo attorno al pulsante "
-                "possono cambiare. Si attiva e disattiva dalla schermata principale."
+                "Confronta il pulsante con la registrazione. Un pulsante uguale non conferma che il sito "
+                "abbia finito l'azione precedente: regola anche la pausa tra azioni. "
+                "I click senza riferimento visivo usano soltanto le attese temporali."
             ),
             sync_details,
         ],
@@ -481,7 +486,16 @@ def main(page: ft.Page, language: str = "it"):
             page.update()
 
     min_click_ms.on_change = refresh_settings_summary
+    action_gap_ms.on_change = refresh_settings_summary
     tab_switch.on_change = refresh_settings_summary
+    trace_switch = ft.Switch(value=False, active_color=ACCENT_1)
+    trace_section = ft.Column([
+        section_title("COLLAUDO"),
+        ft.Row([ft.Text("Registra i tempi della riproduzione", size=12, color=TEXT_MUTED, expand=True),
+                trace_switch]),
+        hint("Salva un registro locale a fine riproduzione. Conta gli input inviati, "
+             "non le azioni completate sul sito. Non salva immagini o indirizzi web."),
+    ], spacing=10, visible=(platform == "windows"))
     settings_dialog = ft.AlertDialog(
         modal=False,
         title=ft.Text("Impostazioni"),
@@ -490,10 +504,11 @@ def main(page: ft.Page, language: str = "it"):
                 browser_section,
                 sync_section,
                 variation_section,
+                trace_section,
                 ft.Container(height=6),
                 section_title("VELOCITÀ E PAUSE"),
-                hint("1x riproduce la velocità registrata. Le pause lunghe vengono accelerate al massimo "
-                     "di 1,5x per non cliccare prima del caricamento della pagina."),
+                hint("Le attese oltre 350 ms tra azioni vengono accelerate al massimo di 1,5x, "
+                     "anche se muovi il mouse. Pressione e pausa minima restano indipendenti dalla velocità."),
             ], width=420, height=360, spacing=12, scroll=ft.ScrollMode.AUTO,
         ),
         actions=[ft.TextButton("Fatto", on_click=lambda e: page.pop_dialog())],
@@ -517,14 +532,20 @@ def main(page: ft.Page, language: str = "it"):
                 ft.Row(
                     [
                         ft.Icon(ft.Icons.ADS_CLICK_ROUNDED, size=18, color=TEXT_MUTED),
-                        ft.Text("Durata minima di click e pause", size=12, color=TEXT_MUTED, expand=True),
+                        ft.Text("Durata minima della pressione", size=12, color=TEXT_MUTED, expand=True),
                         min_click_ms,
                         ft.Text("ms", size=12, color=TEXT_MUTED),
                     ], spacing=8,
                 ),
-                hint("Protegge la pressione e la pausa tra i click a qualsiasi velocità. "
-                     "Lascia 150 ms; se ne perde ancora, prova 200 ms."),
+                ft.Row([
+                    ft.Icon(ft.Icons.HOURGLASS_TOP_ROUNDED, size=18, color=TEXT_MUTED),
+                    ft.Text("Pausa minima tra azioni", size=12, color=TEXT_MUTED, expand=True),
+                    action_gap_ms, ft.Text("ms", size=12, color=TEXT_MUTED),
+                ], spacing=8),
+                hint("Parti da 150 ms per entrambi. Se perde click, aumenta soltanto la pausa tra azioni. "
+                     "La pausa protegge anche l'ultima azione prima di chiudere la scheda."),
                 sync_row,
+                visual_warning,
             ],
             spacing=6,
         ),
@@ -800,6 +821,7 @@ def main(page: ft.Page, language: str = "it"):
             duration_seconds=parse_int(num_minutes, 10) * 60.0,
             speed=speed_slider.value,
             min_click_hold_seconds=parse_int(min_click_ms, 150) / 1000.0,
+            min_action_gap_seconds=parse_int(action_gap_ms, 150) / 1000.0,
             timing_variation_seconds=(
                 min(1000, parse_int(variation_ms, 120)) / 1000.0 if variation_switch.value else 0.0
             ),
@@ -824,12 +846,19 @@ def main(page: ft.Page, language: str = "it"):
 
         stop_event = state["stop_event"]
         events = state["macro"].events
+        sync_enabled = platform == "windows" and bool(sync_switch.value)
+        trace_enabled = platform == "windows" and bool(trace_switch.value)
+        close_tabs = bool(tab_switch.value)
+        tolerance_level = tolerance["value"]
+        trace = PlaybackTrace() if trace_enabled else None
+        missing_refs = sum(1 for ev in events if ev.kind in BUTTON_OF_DOWN and not ev.snap)
+        visual_warning.value = f"{missing_refs} click senza riferimento visivo." if sync_enabled and missing_refs else ""
         timeout_s = float(parse_int(sync_timeout, 10))
         failed_click = {"n": 0}
         wait_ready = None
-        if platform == "windows" and sync_switch.value:
+        if sync_enabled:
             from macro.windows_backend import TOLERANCE_LOOSE, TOLERANCE_NORMAL, TOLERANCE_STRICT
-            tol = {"strict": TOLERANCE_STRICT, "normal": TOLERANCE_NORMAL, "loose": TOLERANCE_LOOSE}[tolerance["value"]]
+            tol = {"strict": TOLERANCE_STRICT, "normal": TOLERANCE_NORMAL, "loose": TOLERANCE_LOOSE}[tolerance_level]
             click_number = {}
             for ev in events:
                 if ev.kind in BUTTON_OF_DOWN:
@@ -848,18 +877,30 @@ def main(page: ft.Page, language: str = "it"):
                 return ok
 
         between_cycles = None
-        if tab_switch.value:
+        if close_tabs:
             def between_cycles():
+                if stop_event.is_set():
+                    return
                 player.close_tab()
+                if trace is not None:
+                    trace.record({"type": "tab_close_sent"})
                 # tempo per far comparire la scheda successiva
                 stop_event.wait(1.0)
 
         def run():
             end = PlaybackEnd.STOPPED
             error = None
+            trace_note = ""
             try:
+                if platform == "windows" and not stop_event.is_set():
+                    first_click = next((ev for ev in events if ev.kind in BUTTON_OF_DOWN), None)
+                    if first_click is not None:
+                        player.lock_target_window(first_click)
+                    elif close_tabs:
+                        raise RuntimeError("La chiusura schede richiede una macro con click.")
                 end = play(events, options, player.apply_event, player.release_held,
-                           on_progress, stop_event, wait_ready, between_cycles)
+                           on_progress, stop_event, wait_ready, between_cycles,
+                           trace=trace.record if trace is not None else None)
             except Exception as ex:
                 error = str(ex) or type(ex).__name__
             finally:
@@ -867,6 +908,20 @@ def main(page: ft.Page, language: str = "it"):
                     player.close()
                 except Exception as ex:
                     error = error or str(ex) or type(ex).__name__
+                if trace is not None:
+                    try:
+                        folder = Path(os.environ.get("LOCALAPPDATA") or Path.home()) / "MouseMacroStocazzSuperpower" / "diagnostics"
+                        path = trace.save(folder, VERSION, options,
+                                          {"visual_check_enabled": sync_enabled,
+                                           "missing_visual_references": missing_refs,
+                                           "visual_tolerance": tolerance_level,
+                                           "visual_timeout_seconds": timeout_s,
+                                           "close_tabs": close_tabs,
+                                           "tab_wait_seconds": 1.0},
+                                          "error" if error else end.value, error)
+                        trace_note = f"Registro: {path}"
+                    except OSError:
+                        trace_note = "Impossibile salvare il registro dei tempi."
                 state["playing"] = False
                 btn_play.content.controls[0].icon = ft.Icons.PLAY_ARROW_ROUNDED
                 btn_play.content.controls[1].value = "RIPRODUCI  (F10)"
@@ -879,8 +934,13 @@ def main(page: ft.Page, language: str = "it"):
                         f"Dopo {int(timeout_s)} s quel punto non era ancora com'era in registrazione. "
                         "Controlla la pagina; se era a posto, scegli il confronto \"Tollerante\" o aumenta l'attesa massima.",
                     )
+                elif end == PlaybackEnd.STOPPED:
+                    set_status("Riproduzione interrotta", "Controlla il sito prima di avviare un altro giro.")
                 else:
                     set_status("Riproduzione terminata", f"{len(state['macro'].events)} eventi nella macro.")
+                if trace_note:
+                    # Il dettaglio viene tradotto da set_status insieme al resto della UI.
+                    set_status(status_title.value, status_sub.value + "\n" + translate(trace_note, language))
                 page.update()
 
         threading.Thread(target=run, daemon=True).start()
