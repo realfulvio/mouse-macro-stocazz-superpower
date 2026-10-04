@@ -1,4 +1,4 @@
-"""Compact native Windows panel. No browser UI, no Flet helper, no network."""
+"""Approved compact/expanded Windows UI, native controls and offline runtime."""
 from __future__ import annotations
 
 import ctypes as C
@@ -9,10 +9,12 @@ from pathlib import Path
 import queue
 import threading
 import traceback
+import time
+from windows_visual import Theme, Canvas, COLORS, Paint, DrawItem
 
 from macro.windows_backend import (WindowsRecorder, WindowsPlayer, GlobalHotkeys,
     HOTKEY_RECORD, HOTKEY_PLAY, HOTKEY_EMERGENCY, screen_geometry, window_rect, browser_layout)
-from macro.session import Session, State, VERSION
+from macro.session import Session, State, VERSION, validate_gestures
 from macro.engine import PlaybackOptions
 from macro.events import BUTTON_OF_DOWN, BUTTON_OF_UP, WHEEL
 
@@ -52,6 +54,8 @@ api(U, 'SetWindowTextW', W.BOOL, [W.HWND, W.LPCWSTR])
 api(U, 'EnableWindow', W.BOOL, [W.HWND, W.BOOL])
 api(U, 'ShowWindow', W.BOOL, [W.HWND, C.c_int])
 api(U, 'DestroyWindow', W.BOOL, [W.HWND])
+api(C.windll.uxtheme,'SetWindowTheme',C.c_long,[W.HWND,W.LPCWSTR,W.LPCWSTR])
+api(U, 'LoadImageW', W.HANDLE, [W.HINSTANCE,W.LPCWSTR,W.UINT,C.c_int,C.c_int,W.UINT])
 api(U, 'LoadCursorW', W.HANDLE, [W.HINSTANCE, C.c_void_p])
 api(U, 'MonitorFromPoint', W.HANDLE, [W.POINT, W.DWORD])
 api(U, 'GetMonitorInfoW', W.BOOL, [W.HANDLE, C.POINTER(MONITORINFO)])
@@ -64,6 +68,10 @@ api(G, 'CreateFontW', W.HFONT, [C.c_int]*5 + [W.DWORD]*8 + [W.LPCWSTR])
 api(G, 'DeleteObject', W.BOOL, [W.HGDIOBJ])
 api(U, 'SetTimer', C.c_size_t, [W.HWND, C.c_size_t, W.UINT, C.c_void_p])
 api(U, 'KillTimer', W.BOOL, [W.HWND, C.c_size_t])
+api(U, 'IsDialogMessageW', W.BOOL, [W.HWND, C.POINTER(W.MSG)])
+api(U, 'SetWindowRgn', C.c_int, [W.HWND, W.HRGN, W.BOOL])
+api(G, 'CreateRoundRectRgn', W.HRGN, [C.c_int]*6)
+api(U, 'GetCursorPos', W.BOOL, [C.POINTER(W.POINT)])
 api(U, 'GetMessageW', C.c_int, [C.POINTER(W.MSG), W.HWND, W.UINT, W.UINT])
 api(U, 'TranslateMessage', W.BOOL, [C.POINTER(W.MSG)])
 api(U, 'DispatchMessageW', LRESULT, [C.POINTER(W.MSG)])
@@ -82,11 +90,15 @@ class Panel:
         self.speed = 1.0
         self.next_tab = True
         self.slow = False
-        self.fonts = []
         self.closing = False
         self.dialog_open = False
         self.trace_saved = None
         self.settings = {}
+        self.expanded = False
+        self.record_started = None
+        self.hover = None
+        self.last_view = None
+        self.theme = Theme()
         FOLDER.mkdir(parents=True, exist_ok=True)
         try:
             self.settings = json.loads((FOLDER / 'panel-v016.json').read_text('utf-8'))
@@ -94,15 +106,17 @@ class Panel:
             pass
         self.proc = WNDPROC(self.wndproc)
         self.instance = K.GetModuleHandleW(None)
-        wc = WNDCLASS(0, self.proc, 0, 0, self.instance, None,
-                      U.LoadCursorW(None, C.c_void_p(32512)), W.HBRUSH(16), None, 'MouseMacroCompact016')
+        icon = U.LoadImageW(None,str(Path(__file__).resolve().parent/'assets'/'icon.ico'),1,0,0,0x10|0x40)
+        wc = WNDCLASS(0, self.proc, 0, 0, self.instance, icon,
+                      U.LoadCursorW(None, C.c_void_p(32512)), W.HBRUSH(16), None, 'MouseMacroSuperpower017')
         if not U.RegisterClassW(C.byref(wc)):
             raise C.WinError()
         dpi = U.GetDpiForSystem()
         scale = dpi / 96
-        width, height = round(356 * scale), round(254 * scale)
+        self.dpi = dpi
+        width, height = round(340 * scale), round(600 * scale)
         rect = W.RECT(0, 0, width, height)
-        self.style = 0x00C80000  # WS_CAPTION | WS_SYSMENU; fixed compact size
+        self.style = 0x82000000  # WS_POPUP | WS_CLIPCHILDREN; custom drawn chrome
         self.exstyle = 0x08040008  # NOACTIVATE | APPWINDOW | TOPMOST
         U.AdjustWindowRectExForDpi(C.byref(rect), self.style, False, self.exstyle, dpi)
         w, h = rect.right - rect.left, rect.bottom - rect.top
@@ -116,16 +130,19 @@ class Panel:
             raise C.WinError()
         self.session = Session(lambda: WindowsRecorder(self.hwnd, capture_snapshots=False, browser_only=True),
                                WindowsPlayer, lambda: self.post('render'), screen_geometry)
-        for cid, cls, text, style in [
-            (1, 'STATIC', 'PRONTO', 0), (2, 'STATIC', '', 0),
-            (10, 'BUTTON', 'Registra  F9', 0), (11, 'BUTTON', 'Riproduci  F10', 0),
-            (20, 'STATIC', 'Ripetizioni', 0), (21, 'BUTTON', '−', 0),
-            (22, 'STATIC', '1', 1), (23, 'BUTTON', '+', 0), (24, 'BUTTON', 'Menu', 0),
-            (30, 'STATIC', 'Velocità', 0), (31, 'BUTTON', 'Normale', 0),
-            (32, 'BUTTON', 'Rapida 2×', 0), (40, 'BUTTON', 'Scheda successiva tra i giri', 3),
-            (50, 'STATIC', 'F9 / F10 · Emergenza Ctrl+Alt+F11', 0)]:
-            self.controls[cid] = U.CreateWindowExW(0, cls, text, 0x50000000 | style,
-                0, 0, 1, 1, self.hwnd, W.HMENU(cid), self.instance, None)
+        # Status text children remain available to accessibility/QA without
+        # overlaying the vector card. All actions are actual Win32 buttons.
+        for cid, label in [(1,'PRONTO'),(2,self.session.message),(3,'0'),(4,'00:00.000'),(22,'1')]:
+            self.controls[cid] = U.CreateWindowExW(0,'STATIC',label,0x40000000,
+                0,0,1,1,self.hwnd,W.HMENU(cid),self.instance,None)
+        labels = {10:'Registra · F9',11:'Riproduci · F10',21:'−',23:'+',24:'Opzioni',
+                  25:'Preset 20',31:'Normale',32:'Rapida 2×',40:'Scheda successiva tra i giri',
+                  41:'Pagine lente',101:'Salva macro',102:'Carica macro',104:'Guida',
+                  110:'Emergenza: Ctrl+Alt+F11',201:'Riduci a icona',202:'Espandi opzioni',203:'Chiudi'}
+        for cid, label in labels.items():
+            self.controls[cid] = U.CreateWindowExW(0,'BUTTON',label,0x5001000B,
+                0,0,1,1,self.hwnd,W.HMENU(cid),self.instance,None)
+        for control in self.controls.values():C.windll.uxtheme.SetWindowTheme(control,'','')
         self.layout(U.GetDpiForWindow(self.hwnd))
         self.hotkeys = GlobalHotkeys(self.hotkey)
         self.hotkeys.start()
@@ -145,16 +162,159 @@ class Panel:
 
     def layout(self, dpi):
         self.dpi = dpi
-        s = dpi / 96
-        font = G.CreateFontW(-round(14*s), 0, 0, 0, 400, 0, 0, 0, 1, 0, 0, 5, 0, 'Segoe UI')
-        self.fonts.append(font)
-        boxes = {1:(12,10,332,24), 2:(12,38,332,38), 10:(12,82,158,38), 11:(182,82,162,38),
-            20:(12,134,84,24), 21:(104,128,32,32), 22:(141,134,56,24), 23:(202,128,32,32),
-            24:(270,128,74,32), 30:(12,175,72,24), 31:(90,170,118,32), 32:(220,170,124,32),
-            40:(12,207,332,24), 50:(12,234,332,18)}
-        for cid, (x,y,w,h) in boxes.items():
-            U.SetWindowPos(self.controls[cid], None, round(x*s),round(y*s),round(w*s),round(h*s),0x14)
-            U.SendMessageW(self.controls[cid],0x30,font,1)
+        scale = dpi / 96
+        width,height = (640,608) if self.expanded else (340,600)
+        self.width,self.height = width,height
+        r = window_rect(self.hwnd)
+        x,y = self.clamp(r[0],r[1],round(width*scale),round(height*scale))
+        U.SetWindowPos(self.hwnd,None,x,y,round(width*scale),round(height*scale),0x14)
+        # Windows owns this region after SetWindowRgn succeeds.
+        region = G.CreateRoundRectRgn(0,0,round(width*scale)+1,round(height*scale)+1,round(36*scale),round(36*scale))
+        if not U.SetWindowRgn(self.hwnd,region,True): G.DeleteObject(region)
+        boxes = {201:(width-98,7,28,28),202:(width-66,7,28,28),203:(width-34,7,28,28)}
+        if self.expanded:
+            boxes.update({10:(16,244,298,64),11:(326,244,298,64),24:(16,324,608,44),
+                21:(32,410,34,38),23:(112,410,34,38),25:(32,457,114,30),
+                31:(192,402,162,38),32:(192,442,162,38),
+                40:(386,399,220,38),41:(386,444,220,38),
+                101:(192,495,162,38),102:(366,495,240,38),
+                104:(20,558,104,34),110:(346,562,266,30)})
+            boxes[104]=(20,558,104,34);boxes[110]=(346,562,266,30)
+        else:
+            boxes.update({10:(16,322,308,64),11:(16,398,308,64),24:(16,478,308,44),
+                          104:(20,538,98,34),110:(146,535,178,46)})
+        self.boxes = boxes
+        for cid,hwnd in self.controls.items():
+            if cid in boxes:
+                x1,y1,w,h=boxes[cid]
+                U.SetWindowPos(hwnd,None,round(x1*scale),round(y1*scale),round(w*scale),round(h*scale),0x14)
+                U.ShowWindow(hwnd,4)
+            else:U.ShowWindow(hwnd,0)
+        U.SetWindowTextW(self.controls[202], 'Riduci opzioni' if self.expanded else 'Espandi opzioni')
+        U.InvalidateRect(self.hwnd,None,False)
+
+    def paint(self, hwnd):
+        ps=Paint();hdc=U.BeginPaint(hwnd,C.byref(ps))
+        rect=W.RECT();U.GetClientRect(hwnd,C.byref(rect))
+        c=Canvas(self.theme,hdc,rect.right,rect.bottom,self.dpi/96)
+        try:
+            w,h=self.width,self.height
+            c.clear(COLORS['background'])
+            c.rounded(1,1,w-2,h-2,18,COLORS['background'],COLORS['border'])
+            c.rounded(3,3,w-6,86,16,'#332049',bottom='#251735')
+            c.horse('pronto',10,30,58,54)
+            tx=76
+            c.text('Mouse Macro',tx,32,w-tx-12,26,22,bold=True)
+            c.text('Stocazz',tx,57,85,24,20,COLORS['warning'],True)
+            c.text('Superpower',tx+86,57,w-tx-98,24,20,COLORS['record'],True)
+            state=self.session.state
+            horse={State.RECORDING:'registrazione',State.PLAYING:'riproduzione',State.STOPPING:'riproduzione',State.ERROR:'errore'}.get(state,'pronto')
+            color={'pronto':COLORS['ready'],'registrazione':COLORS['record'],'riproduzione':COLORS['play'],'errore':COLORS['error']}[horse]
+            c.rounded(16,102,w-32,126,14,COLORS['surface'],COLORS['border'],bottom='#21132F')
+            c.ellipse(32,125,16,16,color)
+            c.text(state.value.capitalize(),58,115,226 if self.expanded else 156,34,22,color if state==State.ERROR else COLORS['text'],True)
+            c.text(self.session.message,32,152,268 if self.expanded else 172,64,13,
+                   COLORS['error'] if state==State.ERROR else COLORS['muted'],wrap=True)
+            count,duration=self.metrics()
+            if self.expanded:
+                for x in (314,386):c.line(x,127,x,207,COLORS['border'])
+                c.text('Eventi',328,127,66,24,13,COLORS['muted'])
+                c.text(count,328,154,60,34,22,bold=True)
+                c.text('Durata',402,127,110,24,13,COLORS['muted'])
+                c.text(duration,402,154,113,34,18,bold=True)
+                c.horse(horse,508,105,114,120)
+                c.rounded(16,324,w-32,220,14,COLORS['surface'],COLORS['border'])
+                c.text('Ripetizioni',32,376,140,26,14,bold=True)
+                c.text('Velocità',192,376,158,26,14,bold=True)
+                for x in (172,368):c.line(x,384,x,484,COLORS['border'])
+                c.rounded(66,410,46,38,1,'#21132F',COLORS['border'])
+                c.text(str(self.repeats),66,410,46,38,20,bold=True,align=1)
+                c.line(16,550,w-16,550,COLORS['border'])
+            else:
+                c.horse(horse,207,118,112,104)
+                for x,cw,label,value in [(16,148,'Eventi',count),(176,148,'Durata',duration)]:
+                    c.rounded(x,240,cw,66,14,COLORS['surface'],COLORS['border'])
+                    c.text(label,x+16,247,cw-28,22,13,COLORS['muted'])
+                    c.text(value,x+16,267,cw-24,30,22 if label=='Eventi' else 19,bold=True)
+            c.text('hcok',w-57,h-19,44,14,11,COLORS['muted'],align=2)
+        finally:c.close();U.EndPaint(hwnd,C.byref(ps))
+
+    def metrics(self):
+        if self.session.state==State.RECORDING and self.session.recorder:
+            count=self.session.recorder.current_event_count
+            duration=time.monotonic()-(self.record_started or time.monotonic())
+        else:
+            count=len(self.session.macro.events)
+            duration=self.session.macro.events[-1].t if count else 0
+        millis=max(0,round(duration*1000))
+        return str(count),f'{millis//60000:02d}:{(millis//1000)%60:02d}.{millis%1000:03d}'
+
+    def draw_control(self,item):
+        cid=item.id
+        if cid not in self.boxes:return
+        scale=self.dpi/96
+        w=(item.rect.right-item.rect.left)/scale;h=(item.rect.bottom-item.rect.top)/scale
+        c=Canvas(self.theme,item.hdc,item.rect.right-item.rect.left,item.rect.bottom-item.rect.top,scale)
+        enabled=bool(U.IsWindowEnabled(item.hwnd));hover=cid==self.hover and enabled
+        pressed=bool(item.state&1);fg=COLORS['text'] if enabled else COLORS['faded']
+        try:
+            c.clear('#322047' if cid in (201,202,203) else COLORS['surface'] if cid in (21,23,25,31,32,40,41,101,102) else COLORS['background'])
+            if cid in (10,11):
+                key='record' if cid==10 else 'play'
+                bg=COLORS[key] if enabled else COLORS['disabled']
+                if hover:bg='#FF55A8' if cid==10 else '#A78BFA'
+                if pressed and enabled:bg='#C91F6C' if cid==10 else '#6D48D7'
+                c.rounded(1,1,w-2,h-2,16,bg,'#FF76BB' if cid==10 and enabled else COLORS['border'],bottom=bg if not enabled else ('#E61980' if cid==10 else '#6740AF'))
+                stopping=self.session.state==State.RECORDING if cid==10 else self.session.state in (State.PLAYING,State.STOPPING)
+                icon='stop' if stopping else key if cid==10 else 'play'
+                label=('Ferma' if stopping else 'Registra' if cid==10 else 'Riproduci')+(' · F9' if cid==10 else ' · F10')
+                c.icon(icon,41 if cid==10 else 30,14,36,fg)
+                c.text(label,80 if cid==10 else 66,0,w-90 if cid==10 else w-76,h,18,fg,True)
+            elif cid==24:
+                c.rounded(1,1,w-2,h-2,12,'#36234E' if hover else COLORS['surface'],COLORS['border'])
+                c.icon('gear',16,10,24,fg)
+                c.text('Opzioni',50,0,w-85,h,16,fg,True)
+                cx=w-24;cy=h/2
+                d=-1 if self.expanded else 1
+                c.line(cx-6,cy-3*d,cx,cy+3*d,fg,2);c.line(cx,cy+3*d,cx+6,cy-3*d,fg,2)
+            elif cid in (31,32):
+                selected=self.speed==(1 if cid==31 else 2)
+                if hover:c.rounded(1,1,w-2,h-2,10,COLORS['alt'])
+                c.ellipse(6,11,16,16,COLORS['record'] if selected and enabled else fg,not selected)
+                if selected:c.ellipse(11,16,6,6,COLORS['text'])
+                c.text('Normale' if cid==31 else 'Rapida 2×',32,0,w-38,h,14,fg)
+            elif cid in (40,41):
+                on=self.next_tab if cid==40 else self.slow
+                c.text('Scheda successiva\ntra i giri' if cid==40 else 'Pagine lente',0,0,w-55,h,14,fg,wrap=True)
+                c.rounded(w-48,9,44,22,11,COLORS['record'] if on and enabled else COLORS['disabled'])
+                c.ellipse(w-24 if on else w-44,12,16,16,fg)
+            elif cid==104:
+                c.icon('help',4,7,22,COLORS['record']);c.text('Guida',34,0,w-38,h,14,COLORS['record'],True)
+            elif cid==110:
+                c.icon('warning',2,(h-24)/2,24,COLORS['warning'])
+                c.text('Emergenza: Ctrl+Alt+F11' if self.expanded else 'Emergenza:\nCtrl+Alt+F11',31,0,w-33,h,13,COLORS['warning'],wrap=True)
+            elif cid in (201,202,203):
+                color=COLORS['text'] if hover else COLORS['muted']
+                if hover:c.rounded(0,0,w,h,7,COLORS['error'] if cid==203 else COLORS['alt'])
+                if cid==201:c.line(8,15,20,15,color,1.5)
+                elif cid==202:
+                    for a,b,d,e in [(8,8,20,8),(20,8,20,20),(20,20,8,20),(8,20,8,8)]:c.line(a,b,d,e,color,1.5)
+                else:c.line(8,8,20,20,color,1.5);c.line(20,8,8,20,color,1.5)
+            else:
+                c.rounded(1,1,w-2,h-2,9,COLORS['alt'] if hover else '#322047',COLORS['border'])
+                label={21:'−',23:'+',25:'Preset 20',101:'Salva macro',102:'Carica macro'}[cid]
+                if cid in (101,102):
+                    c.icon('save' if cid==101 else 'load',12,(h-20)/2,20,fg)
+                    c.text(label,40,0,w-44,h,14,fg,bold=True)
+                else:c.text(label,0,0,w,h,20 if cid in (21,23) else 13,fg,align=1)
+            if item.state&16 and enabled:self.focus_ring(c,w,h)
+        finally:c.close()
+
+    def focus_ring(self,c,w,h):
+        p=c.path(3,3,w-6,h-6,10)
+        from windows_visual import D, ptrcall, argb
+        pen=ptrcall(D.GdipCreatePen1,argb(COLORS['warning']),2,2)
+        D.GdipDrawPath(c.g,pen,p);D.GdipDeletePen(pen);D.GdipDeletePath(p)
 
     def post(self, action):
         if not self.closing:
@@ -200,19 +360,36 @@ class Panel:
 
     def render(self):
         state = self.session.state
+        if state == State.RECORDING and self.record_started is None: self.record_started = time.monotonic()
+        elif state != State.RECORDING: self.record_started = None
+        count,duration=self.metrics()
+        U.SetWindowTextW(self.controls[3],count)
+        U.SetWindowTextW(self.controls[4],duration)
+        U.SetWindowTextW(self.hwnd,f'Mouse Macro {VERSION} · hcok · {state.value} · {count} eventi · {duration}')
         active = state in (State.RECORDING, State.PLAYING, State.STOPPING)
         U.SetWindowTextW(self.controls[1], state.value.upper())
         U.SetWindowTextW(self.controls[2], self.session.message)
         U.SetWindowTextW(self.controls[10], 'FERMA  F9' if state == State.RECORDING else 'Registra  F9')
         U.SetWindowTextW(self.controls[11], 'FERMA  F10' if state in (State.PLAYING, State.STOPPING) else 'Riproduci  F10')
         U.EnableWindow(self.controls[10], state not in (State.PLAYING, State.STOPPING))
-        U.EnableWindow(self.controls[11], state != State.RECORDING and bool(self.session.macro.events))
-        for cid in (21,23,24,31,32,40):
+        try:
+            validate_gestures(self.session.macro.events)
+            valid = True
+        except ValueError: valid = False
+        U.EnableWindow(self.controls[11], state != State.RECORDING and valid)
+        for cid in (21,23,24,25,31,32,40,41,101,102,104,202):
             U.EnableWindow(self.controls[cid], not active)
         U.SetWindowTextW(self.controls[22], str(self.repeats))
         U.SetWindowTextW(self.controls[31], ('✓ ' if self.speed == 1 else '')+'Normale')
         U.SetWindowTextW(self.controls[32], ('✓ ' if self.speed == 2 else '')+'Rapida 2×')
-        U.SendMessageW(self.controls[40], 0xF1, int(self.next_tab), 0)
+        U.SetWindowTextW(self.controls[40], 'Scheda successiva tra i giri: '+('attivo' if self.next_tab else 'disattivato'))
+        U.SetWindowTextW(self.controls[41], 'Pagine lente: '+('attivo' if self.slow else 'disattivato'))
+        U.EnableWindow(self.controls[101], not active and valid)
+        view=(state,self.session.message,self.metrics(),self.repeats,self.speed,self.next_tab,self.slow)
+        if view != self.last_view:
+            self.last_view=view
+            U.InvalidateRect(self.hwnd,None,False)
+            for hwnd in self.controls.values():U.InvalidateRect(hwnd,None,False)
         if self.session.last_trace and state in (State.READY, State.ERROR) and self.trace_saved is not self.session.last_trace:
             self.trace_saved = self.session.last_trace
             try:
@@ -233,18 +410,7 @@ class Panel:
                 self.session.toggle_record()
         self.render()
 
-    def menu(self):
-        menu = U.CreatePopupMenu()
-        entries = [(101,'Salva macro…'),(102,'Carica macro…'),(0,''),
-            (103, ('✓ ' if self.slow else '')+'Pagine lente: pausa più prudente'),
-            (104,'Guida e limiti'),(0,''),(105,'Ripetizioni: 1'),(106,'Ripetizioni: 20')]
-        for cid, label in entries:
-            U.AppendMenuW(menu, 0 if cid else 0x800, cid, label)
-        r = window_rect(self.controls[24])
-        try:
-            choice = U.TrackPopupMenu(menu, 0x100 | 0x2, r[0], r[3], 0, self.hwnd, None)
-        finally:
-            U.DestroyMenu(menu)
+    def action(self, choice):
         if choice in (101,102):
             from macro.win_dialogs import ask_save_path, ask_open_path
             self.dialog_open = True
@@ -254,7 +420,7 @@ class Panel:
                 self.dialog_open = False
             if path:
                 self.session.save(path) if choice == 101 else self.session.load(path)
-        elif choice == 103:
+        elif choice == 41:
             self.slow = not self.slow
             self.session.message = 'Pagine lente attive: nessun rilevamento automatico del caricamento.' if self.slow else 'Pausa standard fra le azioni.'
         elif choice == 104:
@@ -286,14 +452,35 @@ class Panel:
 
     def wndproc(self, hwnd, msg, wp, lp):
         try:
+            if msg == 0xF and hasattr(self,'width') and hasattr(self,'session'):
+                self.paint(hwnd);return 0
+            if msg == 0x14:return 1  # fully buffered painting
+            if msg == 0x2B and hasattr(self,'boxes'):
+                self.draw_control(C.cast(lp,C.POINTER(DrawItem)).contents);return 1
+            if msg == 0x84 and hasattr(self,'hwnd') and self.hwnd:
+                r=window_rect(hwnd);y=C.c_short((lp >> 16)&0xffff).value-r[1]
+                if 0 <= y < round(30*self.dpi/96):return 2  # header drag
             if msg == 0x21:  # WM_MOUSEACTIVATE: don't steal Chrome's focus
                 return 3  # MA_NOACTIVATE
+            if msg == 0x113 and hasattr(self,'boxes'):
+                point=W.POINT();U.GetCursorPos(C.byref(point))
+                hovered=next((cid for cid in self.boxes if (lambda r:r[0]<=point.x<r[2] and r[1]<=point.y<r[3])(window_rect(self.controls[cid]))),None)
+                if hovered != self.hover:
+                    for cid in (self.hover,hovered):
+                        if cid:U.InvalidateRect(self.controls[cid],None,False)
+                    self.hover=hovered
             if msg in (WM_APP, 0x113) and self.hwnd and hasattr(self, 'session'):
                 self.drain()
                 return 0
             if msg == WM_COMMAND and hasattr(self, 'session'):
                 cid = wp & 0xffff
-                if cid == 10:
+                if cid == 203: U.PostMessageW(hwnd,WM_CLOSE,0,0)
+                elif cid == 201: U.ShowWindow(hwnd,6)
+                elif cid in (24,202) and self.session.state in (State.READY,State.ERROR):
+                    self.expanded=not self.expanded;self.layout(self.dpi)
+                elif cid == 104:self.action(104)
+                elif cid == 110:self.hotkey(HOTKEY_EMERGENCY)
+                elif cid == 10:
                     self.post('record')
                 elif cid == 11:
                     if self.session.state in (State.PLAYING, State.STOPPING):
@@ -306,7 +493,8 @@ class Panel:
                     if cid == 31: self.speed = 1
                     if cid == 32: self.speed = 2
                     if cid == 40: self.next_tab = not self.next_tab
-                    if cid == 24: self.menu()
+                    if cid == 25: self.repeats = 20
+                    if cid in (41,101,102): self.action(cid)
                     self.render()
                 return 0
             if msg == 0x2E0 and self.hwnd:  # WM_DPICHANGED
@@ -326,8 +514,7 @@ class Panel:
                 U.DestroyWindow(hwnd)
                 return 0
             if msg == WM_DESTROY:
-                for font in self.fonts:
-                    G.DeleteObject(font)
+                self.theme.close()
                 U.PostQuitMessage(0)
                 return 0
         except Exception as error:
@@ -340,12 +527,13 @@ class Panel:
     def run(self):
         msg = W.MSG()
         while U.GetMessageW(C.byref(msg), None, 0, 0) > 0:
-            U.TranslateMessage(C.byref(msg))
-            U.DispatchMessageW(C.byref(msg))
+            if not U.IsDialogMessageW(self.hwnd,C.byref(msg)):
+                U.TranslateMessage(C.byref(msg))
+                U.DispatchMessageW(C.byref(msg))
 
 
 def main():
-    mutex = K.CreateMutexW(None, False, 'Local\\MouseMacroCompact016')
+    mutex = K.CreateMutexW(None, False, 'Local\\MouseMacroSuperpower017')
     if K.GetLastError() == 183:
         # Second launch leaves the original session and its global hotkeys alone.
         K.CloseHandle(mutex)

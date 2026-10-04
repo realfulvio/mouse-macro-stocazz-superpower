@@ -9,5 +9,5 @@ original=struct.unpack_from('III',b,168)
 struct.pack_into('I',b,172,1920);struct.pack_into('I',b,176,1200)
 struct.pack_into('I',b,72,0x00080000|0x00100000)
 result=u.ChangeDisplaySettingsW(b,0)
-Path(r'C:\Transfer\codex-display-result.json').write_text(json.dumps({'original':original,'requested':[1920,1200],'result':result}))
+Path(r'C:\Transfer\test-display-result.json').write_text(json.dumps({'original':original,'requested':[1920,1200],'result':result}))
 assert result==0

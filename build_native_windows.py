@@ -1,9 +1,9 @@
 """Reproducible Windows build procedure: official embed + pinned pure Python wheels."""
 from pathlib import Path
 import argparse, hashlib, json, shutil, subprocess, sys, urllib.request, zipfile
-VERSION = '0.16.0-beta'
+VERSION = '0.17.0-beta'
 ROOT = Path(__file__).resolve().parent
-PACKAGE = f'MouseMacroStocazzSuperpower-Windows-v{VERSION}-by-codex'
+PACKAGE = f'MouseMacroStocazzSuperpower-Windows-v{VERSION}'
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
@@ -32,6 +32,14 @@ def main():
         '--only-binary=:all:','--no-compile','--no-deps','--target',str(runtime/'Lib'),
         '-r',str(ROOT/'requirements-windows.txt')],check=True)
     shutil.copy2(ROOT/'windows_main.py',app/'windows_main.py')
+    shutil.copy2(ROOT/'windows_visual.py',app/'windows_visual.py')
+    for folder in ('horses','icons','fonts'):
+        target_assets = app/'assets'/folder
+        target_assets.mkdir(parents=True)
+        for asset in (ROOT/'assets'/folder).iterdir():
+            if folder != 'fonts' or asset.name in ('Outfit-Regular.ttf','Outfit-Bold.ttf','Outfit-OFL.txt'):
+                shutil.copy2(asset,target_assets/asset.name)
+    shutil.copy2(ROOT/'assets'/'icon.ico',app/'assets'/'icon.ico')
     macro = app/'macro'
     macro.mkdir()
     for name in ('__init__.py','events.py','engine.py','session.py','windows_backend.py','win_dialogs.py'):
@@ -40,7 +48,7 @@ def main():
         if (ROOT/name).exists():
             shutil.copy2(ROOT/name,stage/name)
     csc = Path(r'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe')
-    exe = stage/f'Mouse Macro v{VERSION}-by-codex.exe'
+    exe = stage/f'Mouse Macro v{VERSION}.exe'
     if args.cross:
         references=cache/'net48-reference'
         refs=cache/'microsoft.netframework.referenceassemblies.net48.1.0.3.nupkg'
@@ -59,12 +67,12 @@ def main():
     else:
         subprocess.run([str(csc),'/nologo','/target:winexe','/platform:x64','/optimize+',
             '/reference:System.Windows.Forms.dll','/out:'+str(exe),str(ROOT/'launcher.cs')],check=True)
-    manifest = {'version':VERSION,'base_commit':'7dbdc83b44dacd6c3853584b10e011c647be93d1',
+    manifest = {'version':VERSION,'engine_base':'v0.16.0-beta',
         'runtime':'Python 3.13.16 official embeddable x64',
         'embed_sha256':hashlib.sha256(embed.read_bytes()).hexdigest(),
         'launcher':'unsigned .NET Framework launcher; original signed pythonw.exe; explicit startup',
         'compiler':'Roslyn SDK 10.0.112, net48 reference assemblies 1.0.3' if args.cross else '.NET Framework csc.exe v4.0.30319 on Windows',
-        'validation':'Consult RISULTATO-NOTTE-by-codex.md for the exact tested package hash',
+        'validation':'See the release acceptance report for the exact tested ZIP hash',
         'sha256':{str(p.relative_to(stage)).replace('\\','/'):hashlib.sha256(p.read_bytes()).hexdigest()
                   for p in sorted(stage.rglob('*')) if p.is_file()}}
     (stage/'build_info.json').write_text(json.dumps(manifest,indent=2)+'\n','utf-8')
@@ -76,7 +84,7 @@ def main():
             if p.is_file():
                 z.write(p,p.relative_to(stage.parent))
     digest = hashlib.sha256(target.read_bytes()).hexdigest()
-    (out/'SHA256SUMS-v0.16.txt').write_text(digest+'  '+target.name+'\n','ascii')
+    (out/'SHA256SUMS-v0.17.txt').write_text(digest+'  '+target.name+'\n','ascii')
     print(str(target),digest,flush=True)
 
 if __name__=='__main__':
