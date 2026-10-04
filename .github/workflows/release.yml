@@ -24,10 +24,10 @@ jobs:
         run: python qa/check_package.py
       - uses: actions/upload-artifact@v4
         with:
-          name: windows-v016-candidate
+          name: windows-v017-candidate
           path: |
-            dist/windows/MouseMacroStocazzSuperpower-Windows-v0.16.0-beta-by-codex.zip
-            dist/windows/SHA256SUMS-v0.16.txt
+            dist/windows/MouseMacroStocazzSuperpower-Windows-v0.17.0-beta.zip
+            dist/windows/SHA256SUMS-v0.17.txt
           if-no-files-found: error
 # A build artifact is a candidate. Interactive acceptance must be repeated on
 # its exact ZIP before it replaces an accepted release asset.
