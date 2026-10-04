@@ -4,15 +4,19 @@ import json
 from pathlib import Path
 import struct
 import zipfile
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from macro.session import VERSION
 
 ROOT = Path(__file__).resolve().parents[1]
-archive = ROOT/'dist/windows/MouseMacroStocazzSuperpower-Windows-v0.17.0-beta.zip'
+archive = ROOT/'dist/windows'/f'MouseMacroStocazzSuperpower-Windows-v{VERSION}.zip'
 with zipfile.ZipFile(archive) as z:
     assert z.testzip() is None
     prefix = z.namelist()[0].split('/')[0]+'/'
     assert all(name.startswith(prefix) and '..' not in Path(name).parts for name in z.namelist())
     manifest = json.loads(z.read(prefix+'build_info.json'))
-    assert manifest['version'] == '0.17.0-beta'
+    assert manifest['version'] == VERSION
     for name, expected in manifest['sha256'].items():
         assert hashlib.sha256(z.read(prefix+name)).hexdigest() == expected, name
     listed = set(manifest['sha256'])|{'build_info.json'}
@@ -31,7 +35,7 @@ with zipfile.ZipFile(archive) as z:
         preserved = ('pythonw.exe','python.exe','python313.dll','python3.dll','python313.zip')
         for name in preserved:
             assert z.read(prefix+'runtime/'+name) == embed.read(name), name
-    exe = z.read(prefix+'Mouse Macro v0.17.0-beta.exe')
+    exe = z.read(prefix+f'Mouse Macro v{VERSION}.exe')
     pe = struct.unpack_from('<I',exe,0x3c)[0]
     assert exe[:2] == b'MZ' and exe[pe:pe+4] == b'PE\0\0'
     assert struct.unpack_from('<H',exe,pe+4)[0] == 0x8664
