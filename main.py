@@ -3,6 +3,16 @@ riproduce con precisione, all'infinito o per un tempo/numero di ripetizioni scel
 Funziona su Linux (X11/Wayland, via evdev/uinput) e su Windows (via pynput)."""
 from __future__ import annotations
 
+import sys
+
+# Direct Windows startup must not require the legacy Flet dependency. Importing
+# this module for legacy UI tests still exposes its original API.
+if __name__ == '__main__' and sys.platform == 'win32' and not (
+        len(sys.argv) == 3 and sys.argv[1] == '--self-test'):
+    from windows_main import main as native_main
+    native_main()
+    raise SystemExit(0)
+
 import asyncio
 import os
 import random

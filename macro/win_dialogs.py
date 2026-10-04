@@ -52,7 +52,7 @@ def _file_filter(pairs: list[tuple[str, str]]) -> str:
 
 
 def _run_dialog(save: bool, title: str, file_name: str, pairs: list[tuple[str, str]],
-                default_ext: str) -> str | None:
+                default_ext: str, owner=None) -> str | None:
     ctypes.windll.ole32.CoInitializeEx(None, _COINIT_APARTMENTTHREADED)
     file_buf = ctypes.create_unicode_buffer(file_name, _MAX_PATH_BUFFER)
     filter_buf = ctypes.create_unicode_buffer(_file_filter(pairs))
@@ -61,7 +61,8 @@ def _run_dialog(save: bool, title: str, file_name: str, pairs: list[tuple[str, s
     ofn.lStructSize = ctypes.sizeof(_OPENFILENAMEW)
     # La finestra in primo piano è quella dell'app (l'utente ha appena cliccato
     # il pulsante): il dialogo le resta sopra.
-    ofn.hwndOwner = ctypes.windll.user32.GetForegroundWindow()
+    ctypes.windll.user32.GetForegroundWindow.restype = wintypes.HWND
+    ofn.hwndOwner = owner or ctypes.windll.user32.GetForegroundWindow()
     ofn.lpstrFilter = ctypes.addressof(filter_buf)
     ofn.nFilterIndex = 1
     ofn.lpstrFile = ctypes.addressof(file_buf)
@@ -83,10 +84,10 @@ def _run_dialog(save: bool, title: str, file_name: str, pairs: list[tuple[str, s
     return None  # annullato dall'utente
 
 
-def ask_save_path(title: str, file_name: str = "macro.mmr") -> str | None:
-    return _run_dialog(True, title, file_name, [("Mouse macro (*.mmr)", "*.mmr")], "mmr")
+def ask_save_path(title: str, file_name: str = "macro.mmr", owner=None) -> str | None:
+    return _run_dialog(True, title, file_name, [("Mouse macro (*.mmr)", "*.mmr")], "mmr", owner)
 
 
-def ask_open_path(title: str) -> str | None:
+def ask_open_path(title: str, owner=None) -> str | None:
     return _run_dialog(False, title, "", [("Mouse macro (*.mmr; *.json)", "*.mmr;*.json"),
-                                          ("*.*", "*.*")], "mmr")
+                                          ("*.*", "*.*")], "mmr", owner)

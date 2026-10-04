@@ -39,6 +39,46 @@ def _enable_dpi_awareness() -> None:
 _enable_dpi_awareness()
 
 from pynput import keyboard, mouse  # noqa: E402
+from pynput._util.win32 import INPUT, INPUT_union, MOUSEINPUT, KEYBDINPUT, SendInput
+
+
+def checked_input(packet) -> None:
+    if SendInput(1, ctypes.byref(packet), ctypes.sizeof(INPUT)) != 1:
+        raise OSError("Windows non ha accettato l'input. Riproduzione fermata.")
+
+
+class CheckedMouse(mouse.Controller):
+    """Use the native input stream for motion too, and check every injection."""
+    def _position_set(self, pos):
+        x, y = map(int, pos)
+        if self._position_get() == (x, y):
+            return
+        left, top, width, height = screen_geometry()
+        if not left <= x < left + width or not top <= y < top + height:
+            raise ValueError("Una coordinata è fuori dallo schermo. Registra di nuovo.")
+        checked_input(INPUT(type=INPUT.MOUSE, value=INPUT_union(mi=MOUSEINPUT(
+            dx=round((x-left)*65535/(width-1)), dy=round((y-top)*65535/(height-1)),
+            dwFlags=0x0001 | 0x8000 | 0x4000))))  # MOVE | ABSOLUTE | VIRTUALDESK
+
+    def _press(self, button):
+        checked_input(INPUT(type=INPUT.MOUSE, value=INPUT_union(mi=MOUSEINPUT(
+            dwFlags=button.value[1], mouseData=button.value[2]))))
+
+    def _release(self, button):
+        checked_input(INPUT(type=INPUT.MOUSE, value=INPUT_union(mi=MOUSEINPUT(
+            dwFlags=button.value[0], mouseData=button.value[2]))))
+
+    def _scroll(self, dx, dy):
+        for amount, flag in ((dy, 0x0800), (dx, 0x1000)):
+            if amount:
+                checked_input(INPUT(type=INPUT.MOUSE, value=INPUT_union(mi=MOUSEINPUT(
+                    dwFlags=flag, mouseData=int(amount*120)))))
+
+
+class CheckedKeyboard(keyboard.Controller):
+    def _handle(self, key, is_press):
+        checked_input(INPUT(type=INPUT.KEYBOARD, value=INPUT_union(
+            ki=KEYBDINPUT(**key._parameters(is_press)))))
 
 from .events import (  # noqa: E402
     LEFT_DOWN,
@@ -91,6 +131,49 @@ _user32.GetAncestor.restype = wintypes.HWND
 
 class TargetWindowChanged(RuntimeError):
     pass
+
+_user32.GetWindowRect.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.RECT)]
+_user32.GetWindowThreadProcessId.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.DWORD)]
+_user32.IsWindow.argtypes = [wintypes.HWND]
+_user32.GetDpiForWindow.argtypes = [wintypes.HWND]
+_kernel32 = ctypes.windll.kernel32
+_kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+_kernel32.OpenProcess.restype = wintypes.HANDLE
+_kernel32.QueryFullProcessImageNameW.argtypes = [wintypes.HANDLE, wintypes.DWORD, wintypes.LPWSTR, ctypes.POINTER(wintypes.DWORD)]
+_kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+
+
+def root_at(x: int, y: int):
+    return _user32.GetAncestor(_user32.WindowFromPoint(wintypes.POINT(x, y)), 2)
+
+
+def window_rect(hwnd) -> list[int]:
+    rect = wintypes.RECT()
+    if not _user32.GetWindowRect(hwnd, ctypes.byref(rect)):
+        raise TargetWindowChanged("La finestra del browser non è disponibile.")
+    return [rect.left, rect.top, rect.right, rect.bottom]
+
+
+def browser_name(hwnd) -> str:
+    import ntpath
+    pid = wintypes.DWORD()
+    _user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
+    handle = _kernel32.OpenProcess(0x1000, False, pid.value)
+    if not handle:
+        return ""
+    try:
+        size = wintypes.DWORD(32768)
+        name = ctypes.create_unicode_buffer(size.value)
+        if _kernel32.QueryFullProcessImageNameW(handle, 0, name, ctypes.byref(size)):
+            return {"chrome.exe": "Chrome", "firefox.exe": "Firefox"}.get(ntpath.basename(name.value).lower(), "")
+        return ""
+    finally:
+        _kernel32.CloseHandle(handle)
+
+
+def browser_layout(hwnd) -> dict:
+    return {"window_rect": window_rect(hwnd), "dpi": _user32.GetDpiForWindow(hwnd)}
+
 
 _user32.GetDC.argtypes = [wintypes.HWND]
 _user32.GetDC.restype = wintypes.HDC
@@ -182,21 +265,56 @@ def decode_snap(snap: str) -> bytes:
 # ================= Registrazione =================
 
 class WindowsRecorder:
-    def __init__(self):
+    def __init__(self, excluded_window=None, capture_snapshots=True, browser_only=False):
         self._events: list[MacroEvent] = []
         self._raw_snaps: dict[int, bytes] = {}
         self._lock = threading.Lock()
         self._listener: mouse.Listener | None = None
         self._base_t: float | None = None
+        self.excluded_window = excluded_window
+        self.capture_snapshots = capture_snapshots
+        self.browser_only = browser_only
+        self.target_window = None
+        self.layout = {}
+        self.error = ""
+        self._ignored_buttons = set()
+        self._held_buttons = set()
+        self._keyboard_listener = None
+        self._control_keys = set()
+
+    def _exclude(self, x, y) -> bool:
+        if self.excluded_window is None:
+            return False
+        r = window_rect(self.excluded_window)
+        return r[0] <= x < r[2] and r[1] <= y < r[3]
 
     def start(self) -> None:
         self._events = []
         self._raw_snaps = {}
         self._base_t = None
+        self.target_window = None
+        self.layout = {}
+        self.error = ""
+        self._ignored_buttons.clear()
+        self._held_buttons.clear()
         self._listener = mouse.Listener(
             on_move=self._on_move, on_click=self._on_click, on_scroll=self._on_scroll
         )
         self._listener.start()
+        if self.browser_only:
+            self._control_keys.clear()
+            self._keyboard_listener = keyboard.Listener(on_press=self._key_press, on_release=self._key_release)
+            self._keyboard_listener.start()
+
+    def _key_press(self, key):
+        if key in (keyboard.Key.ctrl, keyboard.Key.ctrl_l, keyboard.Key.ctrl_r):
+            self._control_keys.add(key)
+        if self._control_keys and (key in (keyboard.Key.tab, keyboard.Key.page_down, keyboard.Key.page_up)
+                or getattr(key, 'char', None) == 'w'):
+            self.error = "Non cambiare scheda mentre registri. Registra i task di un solo cavallo."
+
+    def _key_release(self, key):
+        self._control_keys.discard(key)
 
     def _now(self) -> float:
         t = time.perf_counter()
@@ -210,15 +328,27 @@ class WindowsRecorder:
                 self._raw_snaps[len(self._events)] = snap
             self._events.append(evt)
 
-    def _on_move(self, x, y) -> None:
+    def _on_move(self, x, y, injected=False) -> None:
+        if not self._held_buttons and self._exclude(x, y):
+            return
         self._append(MacroEvent(t=self._now(), kind=MOVE_ABS, x=int(x), y=int(y)))
 
-    def _on_click(self, x, y, button, pressed) -> None:
+    def _on_click(self, x, y, button, pressed, injected=False) -> None:
+        if pressed and self._exclude(x, y):
+            self._ignored_buttons.add(button)
+            return
+        if not pressed and button in self._ignored_buttons:
+            self._ignored_buttons.discard(button)
+            return
+        if not pressed and button not in self._held_buttons:
+            return  # release of the panel's start click is not a recorded gesture
+        if pressed and self.browser_only and not self._check_record_target(x, y):
+            return
         kind = _CLICK_KIND.get((button, pressed))
         if not kind:
             return
         snap = None
-        if pressed:
+        if pressed and self.capture_snapshots:
             # L'hook scatta prima che l'applicazione riceva il click: lo schermo è
             # ancora nello stato "pronto a essere cliccato" (hover compreso).
             try:
@@ -226,18 +356,61 @@ class WindowsRecorder:
             except OSError:
                 snap = None
         self._append(MacroEvent(t=self._now(), kind=kind, x=int(x), y=int(y)), snap)
+        if pressed:
+            self._held_buttons.add(button)
+        else:
+            self._held_buttons.discard(button)
 
-    def _on_scroll(self, x, y, dx, dy) -> None:
+    def _on_scroll(self, x, y, dx, dy, injected=False) -> None:
+        if self._exclude(x, y):
+            return
+        if self.browser_only and not self._check_record_target(x, y):
+            return
         self._append(MacroEvent(t=self._now(), kind=WHEEL, x=int(x), y=int(y), wheel=float(dy)))
 
+    def _check_record_target(self, x, y) -> bool:
+        root = root_at(int(x), int(y))
+        if root != _user32.GetForegroundWindow() or not browser_name(root):
+            self.error = "Registra soltanto nella pagina di Chrome o Firefox."
+            return False
+        r = window_rect(root)
+        if y < r[1] + round(64 * _user32.GetDpiForWindow(root) / 96):
+            self.error = "Non registrare il cambio scheda. Ferma con F9 dopo i task di un solo cavallo."
+            return False
+        if self.target_window is None:
+            self.target_window = root
+            self.layout = browser_layout(root)
+        elif root != self.target_window or browser_layout(root) != self.layout:
+            self.error = "La finestra è cambiata durante la registrazione. Registra di nuovo un solo cavallo."
+            return False
+        return True
+
     def stop(self) -> list[MacroEvent]:
+        if self._keyboard_listener:
+            self._keyboard_listener.stop()
+            self._keyboard_listener.join(timeout=1)
+            if self._keyboard_listener.is_alive():
+                raise RuntimeError("L'ascolto tastiera non si è arrestato.")
+            self._keyboard_listener = None
         if self._listener:
             self._listener.stop()
+            self._listener.join(timeout=1)
+            if self._listener.is_alive():
+                raise RuntimeError("Il registratore non si è arrestato.")
             self._listener = None
         with self._lock:
             for idx, raw in self._raw_snaps.items():
                 self._events[idx].snap = encode_snap(raw)
-            return list(self._events)
+            events = list(self._events)
+        # An incomplete physical drag stopped with F9/close must not leave the
+        # Windows button state latched; validation still rejects the incomplete
+        # macro rather than silently inventing its missing release event.
+        if self._held_buttons:
+            ctrl = CheckedMouse()
+            for button in self._held_buttons:
+                ctrl.release(button)
+            self._held_buttons.clear()
+        return events
 
     @property
     def current_event_count(self) -> int:
@@ -249,9 +422,24 @@ class WindowsRecorder:
 
 class WindowsPlayer:
     def __init__(self):
-        self._ctrl = mouse.Controller()
-        self._kbd = keyboard.Controller()
+        self._ctrl = CheckedMouse()
+        self._kbd = CheckedKeyboard()
         self._target_window = None
+        self._held = set()
+        self._layout = None
+
+    def select_browser(self, evt: MacroEvent, layout: dict | None = None) -> str:
+        target = _user32.GetForegroundWindow()
+        name = browser_name(target)
+        if not name:
+            raise TargetWindowChanged("Attiva Chrome o Firefox, poi premi F10.")
+        current = browser_layout(target)
+        if layout and current != layout:
+            raise TargetWindowChanged("Posizione, dimensione o scala del browser diversa: ripristinala o registra di nuovo.")
+        self._target_window = target
+        self._layout = current
+        self._check_target(evt)
+        return name
 
     def lock_target_window(self, evt: MacroEvent) -> None:
         """Fissa la finestra sotto il primo click; non porta finestre in primo piano."""
@@ -268,10 +456,29 @@ class WindowsPlayer:
             return
         if _user32.GetForegroundWindow() != self._target_window:
             raise TargetWindowChanged("La finestra destinataria non è più in primo piano. Riproduzione fermata.")
-        if evt is not None and evt.kind in (LEFT_DOWN, RIGHT_DOWN, MIDDLE_DOWN):
+        if self._layout is not None and browser_layout(self._target_window) != self._layout:
+            raise TargetWindowChanged("La finestra del browser è stata spostata o ridimensionata. Riproduzione fermata.")
+        if evt is not None and evt.kind in (LEFT_DOWN, RIGHT_DOWN, MIDDLE_DOWN, WHEEL):
             window = _user32.WindowFromPoint(wintypes.POINT(evt.x, evt.y))
             if _user32.GetAncestor(window, 2) != self._target_window:  # GA_ROOT
                 raise TargetWindowChanged("Il punto del click non appartiene alla finestra destinataria. Riproduzione fermata.")
+
+    def next_tab(self, stop_event: threading.Event) -> None:
+        """Exactly one Ctrl+Tab between completed cycles. Never closes a tab."""
+        self._check_target()
+        try:
+            self._kbd.press(keyboard.Key.ctrl)
+            self._kbd.press(keyboard.Key.tab)
+            stop_event.wait(0.04)
+        finally:
+            try:
+                self._kbd.release(keyboard.Key.tab)
+            finally:
+                self._kbd.release(keyboard.Key.ctrl)
+        # Guard time, NOT a detection of loading completion.
+        stop_event.wait(0.8)
+        if not stop_event.is_set():
+            self._check_target()
 
     def close_tab(self) -> None:
         """Ctrl+W alla finestra in primo piano (il browser): chiude la scheda corrente e
@@ -288,22 +495,28 @@ class WindowsPlayer:
             self._ctrl.position = (evt.x, evt.y)
         elif evt.kind == LEFT_DOWN:
             self._ctrl.position = (evt.x, evt.y)
+            self._held.add("left")
             self._ctrl.press(mouse.Button.left)
         elif evt.kind == LEFT_UP:
             self._ctrl.position = (evt.x, evt.y)
             self._ctrl.release(mouse.Button.left)
+            self._held.discard("left")
         elif evt.kind == RIGHT_DOWN:
             self._ctrl.position = (evt.x, evt.y)
+            self._held.add("right")
             self._ctrl.press(mouse.Button.right)
         elif evt.kind == RIGHT_UP:
             self._ctrl.position = (evt.x, evt.y)
             self._ctrl.release(mouse.Button.right)
+            self._held.discard("right")
         elif evt.kind == MIDDLE_DOWN:
             self._ctrl.position = (evt.x, evt.y)
+            self._held.add("middle")
             self._ctrl.press(mouse.Button.middle)
         elif evt.kind == MIDDLE_UP:
             self._ctrl.position = (evt.x, evt.y)
             self._ctrl.release(mouse.Button.middle)
+            self._held.discard("middle")
         elif evt.kind == WHEEL:
             self._ctrl.position = (evt.x, evt.y)
             self._ctrl.scroll(0, evt.wheel)
@@ -344,13 +557,20 @@ class WindowsPlayer:
 
     def release_held(self, held: set[str]) -> None:
         mapping = {"left": mouse.Button.left, "right": mouse.Button.right, "middle": mouse.Button.middle}
+        error = None
         for name in held:
             btn = mapping.get(name)
             if btn:
-                self._ctrl.release(btn)
+                try:
+                    self._ctrl.release(btn)
+                    self._held.discard(name)
+                except Exception as caught:
+                    error = error or caught
+        if error:
+            raise error
 
     def close(self) -> None:
-        pass
+        self.release_held(set(self._held))
 
 
 # ================= Tasti rapidi globali =================
@@ -415,3 +635,5 @@ class GlobalHotkeys:
     def stop(self) -> None:
         if self._thread_id is not None:
             ctypes.windll.user32.PostThreadMessageW(self._thread_id, _WM_QUIT, 0, 0)
+        if self._thread and threading.current_thread() is not self._thread:
+            self._thread.join(timeout=2)
