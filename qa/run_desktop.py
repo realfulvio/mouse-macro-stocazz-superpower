@@ -24,6 +24,7 @@ from pynput import keyboard,mouse
 from PIL import ImageGrab
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
 U=C.windll.user32
@@ -352,7 +353,7 @@ def main():
         for name in (('Firefox',) if '--firefox-only' in sys.argv else ('Chrome','Firefox')):
             if name=='Chrome':
                 opts=ChromeOptions();opts.add_argument('--no-first-run');opts.add_argument('--no-default-browser-check');opts.add_argument('--disable-search-engine-choice-screen')
-                driver=webdriver.Chrome(options=opts)
+                driver=webdriver.Chrome(options=opts,service=ChromeService(log_output=str(OUT/'chromedriver.log'),service_args=['--verbose']))
             else:
                 opts=FirefoxOptions();opts.set_preference('browser.shell.checkDefaultBrowser',False);opts.set_preference('browser.tabs.warnOnClose',False)
                 driver=webdriver.Firefox(options=opts)

@@ -2,6 +2,7 @@
 import ctypes as C
 from ctypes import wintypes as W
 import hashlib
+from datetime import datetime,timezone
 import json
 import os
 from pathlib import Path
@@ -19,6 +20,12 @@ u.PostMessageW.argtypes=[W.HWND,W.UINT,W.WPARAM,W.LPARAM]
 result={"package_sha256":hashlib.sha256(archive.read_bytes()).hexdigest(),"passed":False}
 p=None
 try:
+    time.sleep(12)  # Fixture disconnects the virtual link after starting this task.
+    result["started_utc"]=datetime.now(timezone.utc).isoformat()
+    statuses=json.loads(subprocess.check_output(["powershell","-NoProfile","-Command", "@(Get-NetAdapter | Where-Object HardwareInterface | ForEach-Object { [string]$_.Status }) | ConvertTo-Json -Compress"],creationflags=subprocess.CREATE_NO_WINDOW,text=True))
+    if isinstance(statuses,str):statuses=[statuses]
+    result["hardware_adapter_statuses"]=statuses
+    assert statuses and all(status in ("Disconnected","Disabled","Not Present") for status in statuses),statuses
     assert not u.FindWindowW("MouseMacroSuperpower017",None),"Previous panel still open"
     with zipfile.ZipFile(archive) as z:z.extractall(out/"extracted")
     package=out/"extracted/MouseMacroStocazzSuperpower-Windows-v0.17.0-beta"

@@ -1,10 +1,12 @@
 # Windows v0.16 — acceptance results
 
-Validation date: 2026-10-04. Tested artifact: `MouseMacroStocazzSuperpower-Windows-v0.16.0-beta-by-codex.zip` (11,551,493 bytes).
+Validation date: 2026-10-04. Original validation artifact (retained privately before the attribution cleanup) (11,551,493 bytes).
 
 SHA256: `ebb488c8b58a0183d22702f6fa935350784a8806fd1e475ed58f645bfdbee4f2`.
 
 The exact ZIP was extracted and its launcher started on an interactive Windows 11 x64 desktop. No product rebuild followed acceptance. Selenium prepared a local test page and read DOM counters; recording and replay used native mouse input. No real Howrse account was used.
+
+This is a historical report. It does not certify v0.17; see the [current report](ESITO-COLLAUDO-v0.17.md).
 
 ## Results
 
