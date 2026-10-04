@@ -215,6 +215,21 @@ class InjectionFailureTests(unittest.TestCase):
         self.assertEqual(player._ctrl.release.call_count,2)
         self.assertEqual(len(player._held),1)
 
+    def test_global_recording_accepts_desktop_other_apps_and_browser_toolbar(self):
+        recorder = backend.WindowsRecorder(excluded_window=99, capture_snapshots=False)
+        with patch.object(backend, 'window_rect', return_value=[800, 0, 1200, 700]), \
+                patch.object(backend, 'browser_name', side_effect=AssertionError('No browser gate')), \
+                patch.object(backend, 'root_at', side_effect=AssertionError('No window gate')):
+            for x, y in ((100, 20), (200, 300), (400, 300)):
+                recorder._on_click(x, y, backend.mouse.Button.left, True)
+                recorder._on_click(x, y, backend.mouse.Button.left, False)
+            recorder._on_scroll(400, 300, 0, -1)
+            recorder._on_click(900, 300, backend.mouse.Button.left, True)
+            recorder._on_click(900, 300, backend.mouse.Button.left, False)
+        self.assertEqual([e.kind for e in recorder._events], [LEFT_DOWN, LEFT_UP]*3+[WHEEL])
+        self.assertEqual(recorder.error, '')
+        self.assertFalse(recorder._held_buttons)
+
     def test_recording_scroll_in_another_window_is_rejected(self):
         recorder=backend.WindowsRecorder(capture_snapshots=False,browser_only=True)
         with patch.object(backend,'root_at',return_value=2), \

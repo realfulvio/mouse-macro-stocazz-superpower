@@ -41,6 +41,19 @@ class Player:
 
 
 class SessionTests(unittest.TestCase):
+    def test_global_replay_does_not_select_browser_even_for_legacy_macro(self):
+        player = Player()
+        def forbidden(*args):
+            raise AssertionError('Playback must not require a browser')
+        player.select_browser = forbidden
+        session = Session(Recorder, lambda: player)
+        session.macro = Macro('windows', gesture(), layout={'window_rect': [0, 0, 900, 700], 'dpi': 96})
+        session.toggle_play(PlaybackOptions(repeat_count=1, min_click_hold_seconds=.01,
+                                          min_action_gap_seconds=.01), False)
+        session.worker.join(1)
+        self.assertEqual(session.state, State.READY)
+        self.assertEqual(player.seen, [LEFT_DOWN, LEFT_UP])
+
     def test_incompatible_commands_and_stop_long_pause_no_overlap(self):
         recorder, player = Recorder(), Player()
         session = Session(lambda:recorder, lambda:player)

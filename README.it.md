@@ -4,28 +4,28 @@
 
 Registra movimenti, clic, trascinamenti e rotella; ripeti la sequenza da una finestra Windows compatta ed espandibile, sempre in primo piano. Outfit, cavallini e palette prugna, rosa, viola e giallo riprendono la direzione grafica approvata.
 
-**[Scarica v0.18.0 beta per Windows](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.18.0-beta)** · Progetto e design: **hcok**.
+**[Scarica v0.18.1 beta per Windows](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.18.1-beta)** · Progetto e design: **hcok**.
 
-**v0.18.0-beta** disattiva il cambio scheda all’avvio e accelera anche le pause operative in Rapida 2×. Layout invariato rispetto alle schermate v0.17 qui sotto. [Modifiche, misure e stato del collaudo](docs/ESITO-COLLAUDO-v0.18.md) · [Build v0.18](BUILD-v0.18.md).
+**v0.18.1-beta** rimuove il blocco Chrome/Firefox: registra e riproduce anche fra programmi e desktop. Conserva le modifiche v0.18: disattiva il cambio scheda all’avvio e accelera anche le pause operative in Rapida 2×. Layout invariato rispetto alle schermate v0.17 qui sotto. [Modifiche, misure e stato del collaudo](docs/ESITO-COLLAUDO-v0.18.1.md) · [Build v0.18.1](BUILD-v0.18.1.md).
 
 ![Pannello Windows v0.17](docs/screenshots/v017-compact-100.png)
 
 ## Avvio
 
-1. Scarica `MouseMacroStocazzSuperpower-Windows-v0.18.0-beta.zip` dalla release.
+1. Scarica `MouseMacroStocazzSuperpower-Windows-v0.18.1-beta.zip` dalla release.
 2. Estrai **tutta** la cartella ZIP.
-3. Apri `Mouse Macro v0.18.0-beta.exe`.
+3. Apri `Mouse Macro v0.18.1-beta.exe`.
 
 Windows x64 con .NET Framework 4; collaudato su Windows 11. Python è incluso: nessuna installazione di Python e nessun download al primo avvio. Il launcher non è firmato. L’interfaccia Windows è in italiano. I controlli e i contatori sono reali; gli screenshot mostrano l’applicazione, senza simulare la UI con il mockup.
 
 ## Uso
 
-1. Attiva Chrome o Firefox e sposta il pannello fuori dalla zona delle azioni.
-2. Premi **F9**, esegui la sequenza su una scheda, premi di nuovo **F9**.
+1. Prepara le finestre da usare e sposta il pannello fuori dalla zona delle azioni.
+2. Premi **F9**, esegui la sequenza del mouse, premi di nuovo **F9**.
 3. Imposta le ripetizioni e la velocità. Premi **F10** per riprodurre o fermare.
 4. Per interrompere immediatamente usa **Ctrl+Alt+F11**.
 
-**Scheda successiva** parte disattivata; quando attivata invia Ctrl+Tab soltanto fra i giri, mai dopo l’ultimo: le schede devono essere già aperte nella stessa finestra. Per un’altra finestra devi attivarla manualmente. Posizione del browser, zoom, risoluzione e scala dello schermo devono restare coerenti con la registrazione.
+**Scheda successiva** parte disattivata; quando attivata invia Ctrl+Tab soltanto fra i giri, mai dopo l’ultimo: le schede devono essere già aperte nella stessa finestra. Il replay può cambiare finestre usando i click registrati. Mantieni posizione delle finestre, risoluzione e scala dello schermo coerenti con la registrazione.
 
 ![Applicazione reale: opzioni estese in Windows al 100%](docs/screenshots/v017-expanded-100.png)
 
@@ -35,16 +35,16 @@ Apri **Opzioni** per Salva/Carica, il preset di 20 ripetizioni, velocità e **Pa
 
 ## Verifica e limiti
 
-Il ZIP v0.18 ha superato **16 controlli interattivi mirati** su Windows 11 LTSC con Chrome: registrazione/caricamento, replay 1×/2×, click e doppio click, trascinamento, rotella, 20 giri, cambio scheda OFF/ON, stop F10/emergenza e Pagine lente. Zero click persi sul bersaglio locale. La macro realistica scende da **5,986 a 3,409 s**. Suite Windows: **110 test superati, 6 saltati**; suite Linux: 66 superati, 50 saltati. Le verifiche più estese di v0.17 non sono state ripetute sul nuovo ZIP.
+Il ZIP v0.18.1 ha superato **18 verifiche interattive** su Windows 11 LTSC: registrazione e replay fra due finestre native e desktop, più 14 regressioni browser (click/doppio click, drag, wheel, 20 giri, cambio scheda OFF/ON, F10 ed emergenza). Zero click persi. La sequenza fra finestre scende da **6,841 s a 1× a 3,855 s a 2×**. Suite Windows: **112 superati, 6 saltati**; Linux: **67 superati, 51 saltati**. [Esito e limiti](docs/ESITO-COLLAUDO-v0.18.1.md).
 
-Il programma invia input alle coordinate registrate: non conferma che un sito abbia accettato il clic e non riprova automaticamente. Non registra i tasti, non chiude schede e non offre ripetizione infinita nel nuovo pannello. Howrse reale, SentinelOne e Smart App Control non sono stati collaudati. Vedi il [rapporto completo](docs/ESITO-COLLAUDO-v0.18.md).
+Il programma invia input alle coordinate registrate: non conferma che un sito abbia accettato il clic e non riprova automaticamente. Non registra i tasti, non chiude schede e non offre ripetizione infinita nel nuovo pannello. Howrse reale, SentinelOne e Smart App Control non sono stati collaudati. Vedi il [rapporto completo](docs/ESITO-COLLAUDO-v0.18.1.md).
 
 ## Linux e sviluppo
 
 Linux mantiene l’interfaccia Flet storica IT/EN; questa release aggiorna Windows. I pacchetti Linux sono nella [release v0.14 beta](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.14-beta).
 
 - [Guida italiana](GUIDA-ITALIANA.md)
-- [Build e collaudo v0.18](BUILD-v0.18.md)
+- [Build e collaudo v0.18](BUILD-v0.18.1.md)
 - [Tutte le release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases)
 - [Implementazione della grafica approvata](docs/design/README.md)
 - [Licenza](LICENSE)

@@ -7,7 +7,7 @@ from pathlib import Path
 from .events import Macro, BUTTON_OF_DOWN, BUTTON_OF_UP
 from .engine import play, PlaybackEnd, PlaybackOptions
 
-VERSION = '0.18.0-beta'
+VERSION = '0.18.1-beta'
 
 
 class State(Enum):
@@ -35,7 +35,7 @@ def validate_gestures(events):
     if held:
         raise ValueError('Registrazione fermata con un pulsante premuto. Registra di nuovo il gesto completo.')
     if not any(e.kind in BUTTON_OF_DOWN or e.kind == 'wheel' for e in events):
-        raise ValueError('Nessun clic o rotella nella macro. Registra i task di un solo cavallo.')
+        raise ValueError('Nessun clic o rotella nella macro. Registra i gesti del mouse.')
 
 
 class Session:
@@ -45,7 +45,7 @@ class Session:
         self.notify = notify
         self.screen = screen
         self.state = State.READY
-        self.message = 'Registra i task di un solo cavallo.'
+        self.message = 'Registra i gesti del mouse.'
         self.macro = Macro('windows')
         self.stop_event = threading.Event()
         self.recorder = None
@@ -77,7 +77,7 @@ class Session:
                     return
                 self.recorder = recorder
                 self.state = State.RECORDING
-                self.message = 'Esegui i task nella pagina, poi F9.'
+                self.message = 'Esegui i gesti del mouse, poi F9.'
             else:
                 self.state = State.STOPPING
                 recorder = self.recorder
@@ -95,7 +95,7 @@ class Session:
                         event.t -= base
                     self.macro = Macro('windows', events, self.screen(), getattr(recorder, 'layout', {}))
                     self.state = State.READY
-                    self.message = 'Macro pronta. Attiva la prima scheda, poi F10.'
+                    self.message = 'Macro pronta. Ripristina lo stato iniziale, poi F10.'
                 except Exception as error:
                     self.error(error)
                 finally:
@@ -116,8 +116,9 @@ class Session:
                 validate_gestures(self.macro.events)
                 preflight(self.macro)
                 player = self.player_factory()
-                first = next(e for e in self.macro.events if e.kind in BUTTON_OF_DOWN or e.kind == 'wheel')
-                target = player.select_browser(first, self.macro.layout)
+                # Mouse macros may span applications, browser chrome and the desktop.
+                # Do not bind playback to a browser or a single foreground window.
+                target = 'Mouse'
                 if options.repeat_count is None or not 1 <= options.repeat_count <= 999:
                     raise ValueError('Imposta da 1 a 999 ripetizioni.')
             except Exception as error:
@@ -190,7 +191,7 @@ class Session:
                 return False
             self.macro = candidate
             self.state = State.READY
-            self.message = 'Macro caricata. Attiva il browser e premi F10.'
+            self.message = 'Macro caricata. Ripristina lo stato iniziale e premi F10.'
         self.notify()
         return True
 

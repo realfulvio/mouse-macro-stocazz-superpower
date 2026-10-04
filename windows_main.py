@@ -128,7 +128,7 @@ class Panel:
             f'Mouse Macro {VERSION} • hcok', self.style, x, y, w, h, None, None, self.instance, None)
         if not self.hwnd:
             raise C.WinError()
-        self.session = Session(lambda: WindowsRecorder(self.hwnd, capture_snapshots=False, browser_only=True),
+        self.session = Session(lambda: WindowsRecorder(self.hwnd, capture_snapshots=False),
                                WindowsPlayer, lambda: self.post('render'), screen_geometry)
         # Status text children remain available to accessibility/QA without
         # overlaying the vector card. All actions are actual Win32 buttons.
@@ -349,8 +349,6 @@ class Panel:
     def preflight(self, macro):
         if macro.screen and macro.screen != screen_geometry():
             raise ValueError('Schermo o monitor diversi. Ripristinali o registra di nuovo.')
-        if not macro.layout and U.GetDpiForWindow(self.hwnd) != 96:
-            raise ValueError('Macro precedente senza scala DPI. Registra di nuovo a questa scala.')
         r = window_rect(self.hwnd)
         held = set()
         for event in macro.events:
@@ -429,14 +427,14 @@ class Panel:
         elif choice == 104:
             self.dialog_open = True
             try:
-                U.MessageBoxW(self.hwnd, '1. Attiva Chrome o Firefox; registra un solo cavallo con F9.\n'
-                    '2. Ferma con F9 senza cambiare scheda durante la registrazione.\n'
-                    '3. Scegli le ripetizioni e premi F10 dalla prima scheda.\n'
+                U.MessageBoxW(self.hwnd, '1. Registra i gesti del mouse in qualsiasi programma con F9.\n'
+                    '2. Ferma la registrazione con F9.\n'
+                    '3. Ripristina lo stato iniziale, scegli i giri e premi F10.\n'
                     'Scheda successiva invia Ctrl+Tab soltanto TRA i giri.\n'
                     'Non registra i tasti della tastiera. Non chiude schede.\n\n'
                     'F10 ferma; Ctrl+Alt+F11 è lo stop di emergenza.\n'
                     'Sposta il pannello fuori dai gesti PRIMA di iniziare.\n'
-                    'Mantieni posizione, scala e zoom del browser.\n'
+                    'Mantieni posizione delle finestre e scala dello schermo.\n'
                     'Rapida 2× accelera movimenti e pause operative; conserva attese oltre 2 s.\n'
                     'Per pagine lente registra attese sufficienti e abilita Pagine lente.\n'
                     'Le pause non dimostrano che il sito abbia accettato un clic.\n'
