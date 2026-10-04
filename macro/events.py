@@ -45,11 +45,14 @@ class Macro:
     # [x, y, larghezza, altezza] del desktop al momento della registrazione (Windows):
     # se in riproduzione è diverso, le coordinate assolute non corrispondono più.
     screen: list[int] = field(default_factory=list)
+    # Optional v0.16 layout information. Old files remain readable.
+    layout: dict = field(default_factory=dict)
 
     def save(self, path: str) -> None:
         data = {
             "platform": self.platform,
             "screen": self.screen,
+            "layout": self.layout,
             "events": [asdict(e) for e in self.events],
         }
         target = Path(path)
@@ -95,4 +98,7 @@ class Macro:
             if event.kind not in kinds or not isinstance(event.snap, str):
                 raise ValueError("La macro contiene un tipo di evento non valido.")
             previous = event.t
-        return Macro(platform=data["platform"], events=events, screen=screen)
+        layout = data.get("layout", {})
+        if not isinstance(layout, dict):
+            raise ValueError("Le informazioni dello schermo non sono valide.")
+        return Macro(platform=data["platform"], events=events, screen=screen, layout=layout)
