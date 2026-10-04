@@ -105,10 +105,19 @@ class SessionTests(unittest.TestCase):
     def test_one_tab_change_between_cycles_and_none_after_last(self):
         player=Player();session=Session(Recorder,lambda:player)
         session.macro=Macro('windows',gesture())
-        session.toggle_play(PlaybackOptions(repeat_count=3,min_click_hold_seconds=.01,min_action_gap_seconds=.01))
+        session.toggle_play(PlaybackOptions(repeat_count=3,min_click_hold_seconds=.01,min_action_gap_seconds=.01), True)
         session.worker.join(1)
         self.assertEqual(session.completed,3)
         self.assertEqual(player.tabs,2)
+        self.assertEqual(player.seen,[LEFT_DOWN,LEFT_UP]*3)
+
+    def test_disabled_tab_change_repeats_without_ctrl_tab(self):
+        player=Player();session=Session(Recorder,lambda:player)
+        session.macro=Macro('windows',gesture())
+        session.toggle_play(PlaybackOptions(repeat_count=3,min_click_hold_seconds=.01,min_action_gap_seconds=.01), False)
+        session.worker.join(1)
+        self.assertEqual(session.completed,3)
+        self.assertEqual(player.tabs,0)
         self.assertEqual(player.seen,[LEFT_DOWN,LEFT_UP]*3)
 
     def test_double_click_is_preserved_without_shortening_other_action_gaps(self):
