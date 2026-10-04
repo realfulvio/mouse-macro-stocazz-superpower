@@ -38,7 +38,7 @@ U.IsWindowEnabled.argtypes=[W.HWND]
 U.IsWindow.argtypes=[W.HWND]
 U.PostMessageW.argtypes=[W.HWND,W.UINT,W.WPARAM,W.LPARAM]
 U.GetAsyncKeyState.argtypes=[C.c_int]
-OUT=Path(sys.argv[1]) if len(sys.argv)>1 else ROOT/'evidence'/'desktop'
+OUT=(Path(sys.argv[1]) if len(sys.argv)>1 else ROOT/'evidence'/'desktop').resolve()
 OUT.mkdir(parents=True,exist_ok=True)
 RESULT={'environment':{},'checks':[]}
 DPI_SMOKE='--dpi-smoke' in sys.argv
@@ -68,7 +68,8 @@ def text(hwnd):
 def state(): return text(U.GetDlgItem(APP,1)) if APP else ''
 
 def screenshot(name):
-    ImageGrab.grab(all_screens=True).save(OUT/(name+'.png'))
+    ImageGrab.grab(all_screens=True).save(OUT/(name+'-desktop.png'))
+    if APP and U.IsWindow(APP):ImageGrab.grab(bbox=tuple(B.window_rect(APP))).save(OUT/(name+'.png'))
 
 def tap(key):
     K.press(key);time.sleep(.045);K.release(key);time.sleep(.06)
@@ -85,12 +86,13 @@ def app_idle(timeout=90):
     if state()=='ERRORE':raise AssertionError(text(U.GetDlgItem(APP,2)))
 
 def configure(repeats=1,speed=1,next_tab=False):
-    # Real native child controls; the 20 preset uses the real popup menu
-    # elsewhere. Counter changes are deliberately visible OS mouse clicks.
+    expand_options()
+    # Real native child controls, including the visible preset button. Counter changes are deliberately visible OS mouse clicks.
     current=int(text(U.GetDlgItem(APP,22)))
     for _ in range(abs(repeats-current)):control(23 if repeats>current else 21)
     control(31 if speed==1 else 32)
-    checked=bool(U.SendMessageW(U.GetDlgItem(APP,40),0xF0,0,0))
+    # Read explicit accessible toggle state from native control text.
+    checked=text(U.GetDlgItem(APP,40)).endswith('attivo')
     if checked!=next_tab: control(40)
     assert int(text(U.GetDlgItem(APP,22)))==repeats
 
@@ -127,7 +129,10 @@ Math.round((window.screenY+window.outerHeight-window.innerHeight+r.y+r.height/2)
 
 def counts(driver):return driver.execute_script('return counts()')
 
-def reset(driver):driver.execute_script('reset()');time.sleep(.05)
+def reset(driver):
+    driver.execute_script('reset()')
+    # The page resets counters immediately; let its pointer-up layout settle too.
+    time.sleep(.2)
 
 
 def record(driver, panel=False, full=True):
@@ -136,6 +141,9 @@ def record(driver, panel=False, full=True):
     wait(lambda:state()=='REGISTRAZIONE',3,'recording')
     wait(lambda:not U.IsWindowEnabled(U.GetDlgItem(APP,11)),2,'play control disabled while recording')
     click(*point(driver,'a'));time.sleep(.7)
+    screenshot('recording-'+str(U.GetDpiForWindow(APP)))
+    assert int(text(U.GetDlgItem(APP,3)))>0
+    first_duration=text(U.GetDlgItem(APP,4))
     click(*point(driver,'b'));time.sleep(.7)
     if full:
         p=point(driver,'double')
@@ -151,6 +159,7 @@ def record(driver, panel=False, full=True):
             M.position=(int(start[0]+(end[0]-start[0])*i/10),start[1]);time.sleep(.04)
         M.release(mouse.Button.left);time.sleep(.7)
         M.position=tuple(point(driver,'scroll'));time.sleep(.05);M.scroll(0,-1);time.sleep(.15)
+    assert text(U.GetDlgItem(APP,4))!=first_duration,'Recording duration did not advance'
     control(10) if panel else tap(keyboard.Key.f9)
     app_idle(5)
     observed=counts(driver)
@@ -160,14 +169,15 @@ def record(driver, panel=False, full=True):
     return observed
 
 
+def expand_options():
+    if not U.IsWindowVisible(U.GetDlgItem(APP,21)):
+        control(24)
+        wait(lambda:U.IsWindowVisible(U.GetDlgItem(APP,21)),3,'options expanded')
+
+
 def choose_menu(index):
-    U.GetMenuItemRect.argtypes=[W.HWND,W.HMENU,W.UINT,C.POINTER(W.RECT)]
-    control(24)
-    pop=wait(lambda:U.FindWindowW('#32768',None),3,'menu popup')
-    menu=U.SendMessageW(pop,0x1e1,0,0)
-    rect=W.RECT()
-    assert U.GetMenuItemRect(None,menu,index,C.byref(rect))
-    click((rect.left+rect.right)//2,(rect.top+rect.bottom)//2)
+    expand_options()
+    control({0:101,1:102,3:41,4:104,6:25}[index])
 
 
 def file_dialog(path, save=False):
@@ -224,10 +234,14 @@ def extras(driver,name):
     invalid=OUT/(name+'-invalid.mmr');invalid.write_text('{"events":[]}')
     file_dialog(invalid)
     assert state()=='ERRORE'
+    screenshot('error-invalid-file-'+name)
     reset(driver);focus(driver);tap(keyboard.Key.f10);wait(lambda:state()=='RIPRODUZIONE',3);app_idle(15)
     assert counts(driver)['a']==1
     log(name+'_invalid_file_recovery',passed=True,prior_macro_preserved=True)
     from macro.events import Macro,MacroEvent,LEFT_DOWN,LEFT_UP,MOVE_ABS
+    # Pointer-up schedules the fixture's draggable return after 100 ms.
+    # Derive synthetic long-pause coordinates from the settled fixture.
+    time.sleep(.2)
     a=point(driver,'a');b=point(driver,'b');drag=point(driver,'drag')
     longfile=OUT/(name+'-pause10.mmr')
     Macro('windows',[MacroEvent(0,LEFT_DOWN,x=a[0],y=a[1]),MacroEvent(.15,LEFT_UP,x=a[0],y=a[1]),
@@ -291,19 +305,23 @@ def extras(driver,name):
 
 def main():
     global APP,PROC
-    # Stop only the earlier Codex panel, if any. Never close unrelated windows.
-    old=U.FindWindowW('MouseMacroCompact016',None)
+    if '--set-resolution' in sys.argv:
+        import runpy
+        runpy.run_path(str(Path(__file__).with_name('set_test_display.py')))
+    tap(keyboard.Key.esc);tap(keyboard.Key.esc)
+    # Stop only the earlier application panel, if any. Never close unrelated windows.
+    old=U.FindWindowW('MouseMacroSuperpower017',None)
     if old:U.PostMessageW(old,0x10,0,0);wait(lambda:not U.IsWindow(old),4,'old close')
-    archive=ROOT/'dist'/'windows'/'MouseMacroStocazzSuperpower-Windows-v0.16.0-beta-by-codex.zip'
+    archive=ROOT/'dist'/'windows'/'MouseMacroStocazzSuperpower-Windows-v0.17.0-beta.zip'
     install=OUT/'extracted'
     install.mkdir(exist_ok=True)
     with zipfile.ZipFile(archive) as z:z.extractall(install)
-    package=install/'MouseMacroStocazzSuperpower-Windows-v0.16.0-beta-by-codex'
-    exe=package/'Mouse Macro v0.16.0-beta-by-codex.exe'
+    package=install/'MouseMacroStocazzSuperpower-Windows-v0.17.0-beta'
+    exe=package/'Mouse Macro v0.17.0-beta.exe'
     # Omit installed Python from the launcher PATH, proving bundled runtime use.
     env=os.environ.copy();env['PATH']=r'C:\Windows\System32;C:\Windows'
     started=time.perf_counter();PROC=subprocess.Popen([str(exe)],cwd=package,env=env)
-    APP=wait(lambda:U.FindWindowW('MouseMacroCompact016',None),15,'package startup')
+    APP=wait(lambda:U.FindWindowW('MouseMacroSuperpower017',None),15,'package startup')
     startup=time.perf_counter()-started
     geometry=B.screen_geometry();panel_rect=B.window_rect(APP)
     U.SetWindowPos(APP,W.HWND(-1),geometry[2]-(panel_rect[2]-panel_rect[0])-2,20,0,0,0x11)
@@ -313,9 +331,16 @@ def main():
         'package_runtime':'official embedded Python 3.13.16','headless':False}
     RESULT['environment']['scope']='dpi_smoke' if DPI_SMOKE else 'full_acceptance'
     if DPI_SMOKE:assert U.GetDpiForWindow(APP)>96,'Higher DPI fixture was not applied'
+    screenshot('compact-empty-'+str(U.GetDpiForWindow(APP)))
+    assert not U.IsWindowEnabled(U.GetDlgItem(APP,11))
+    expand_options()
+    assert not U.IsWindowEnabled(U.GetDlgItem(APP,101))
+    control(25);assert text(U.GetDlgItem(APP,22))=='20'
+    screenshot('expanded-empty-'+str(U.GetDpiForWindow(APP)))
+    log('new_ui_empty_macro_and_preset',passed=True,play_disabled=True,save_disabled=True,preset=20)
     log('package_startup',passed=True,seconds=startup,panel_rect=B.window_rect(APP),python_not_in_path=True)
     duplicate=subprocess.Popen([str(exe)],cwd=package,env=env);duplicate.wait(5)
-    assert duplicate.returncode==0 and U.FindWindowW('MouseMacroCompact016',None)==APP
+    assert duplicate.returncode==0 and U.FindWindowW('MouseMacroSuperpower017',None)==APP
     log('duplicate_launch',passed=True,second_exit=duplicate.returncode,original_panel_preserved=True)
     class Handler(http.server.SimpleHTTPRequestHandler):
         def log_message(self, *args): pass
@@ -343,13 +368,13 @@ def main():
             assert U.GetWindowLongW(APP,-20)&8
             screenshot(name.lower()+'-panel-dpi'+str(U.GetDpiForWindow(APP)))
             log(name+'_record_panel',passed=True,counts=observed,foreground_preserved=True)
-            previous=json.loads(Path(sys.argv[2]).read_text('utf-8')) if len(sys.argv)>2 and not DPI_SMOKE and name=='Chrome' else None
+            previous=json.loads(Path(sys.argv[2]).read_text('utf-8')) if len(sys.argv)>2 and not sys.argv[2].startswith('--') and not DPI_SMOKE else None
             speeds=(1,2)
             if previous:
-                prior=[c for c in previous['checks'] if c['name']=='Chrome_twenty_cycles' and c.get('passed')]
+                prior=[c for c in previous['checks'] if c['name']==name+'_twenty_cycles' and c.get('passed')]
                 assert previous['environment']['package_sha256']==RESULT['environment']['package_sha256']
                 assert {c['speed'] for c in prior}=={1,2}
-                log('Chrome_twenty_cycles_reused',source=str(Path(sys.argv[2])),package_sha256=RESULT['environment']['package_sha256'])
+                log(name+'_twenty_cycles_reused',source=str(Path(sys.argv[2])),package_sha256=RESULT['environment']['package_sha256'])
                 speeds=()
             for speed in speeds:
                 cycles=2 if DPI_SMOKE else 20
@@ -358,6 +383,8 @@ def main():
                 control(11) if speed==1 else tap(keyboard.Key.f10)
                 wait(lambda:state()=='RIPRODUZIONE',3,'playing')
                 wait(lambda:not U.IsWindowEnabled(U.GetDlgItem(APP,10)),2,'record control disabled while playing')
+                assert not U.IsWindowEnabled(U.GetDlgItem(APP,102))
+                screenshot(name.lower()+'-playing-speed'+str(speed))
                 assert U.GetForegroundWindow()==hwnd
                 app_idle(180);elapsed=time.perf_counter()-before
                 got=counts(driver)

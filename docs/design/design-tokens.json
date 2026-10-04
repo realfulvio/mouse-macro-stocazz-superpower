@@ -1,0 +1,53 @@
+{
+  "font": {
+    "family": "Outfit",
+    "fallback": "Segoe UI, Arial, sans-serif",
+    "weights": {
+      "regular": 400,
+      "medium": 500,
+      "semibold": 600,
+      "bold": 700
+    }
+  },
+  "colors": {
+    "background": "#1A0F2E",
+    "surface": "#2A1642",
+    "surface_alt": "#3B1D6B",
+    "border": "#4B2A7A",
+    "text_primary": "#F9F7FF",
+    "text_secondary": "#C7B8E6",
+    "record": "#FF2D93",
+    "record_hover": "#FF55A8",
+    "record_pressed": "#C91F6C",
+    "play": "#8B5CF6",
+    "play_hover": "#A78BFA",
+    "play_pressed": "#6D48D7",
+    "ready": "#3ED072",
+    "warning": "#FFC83D",
+    "error": "#FF4D6D",
+    "disabled_bg": "#493A67",
+    "disabled_fg": "#8E82A9"
+  },
+  "radii_px": {
+    "window": 18,
+    "card": 14,
+    "button": 16,
+    "control": 12
+  },
+  "spacing_px": {
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24
+  },
+  "sizes_px": {
+    "compact_width": 340,
+    "expanded_width": 640,
+    "main_button_height": 64,
+    "secondary_button_height": 44,
+    "status_card_height": 116,
+    "icon": 24,
+    "status_dot": 14
+  }
+}

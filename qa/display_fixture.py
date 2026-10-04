@@ -9,8 +9,8 @@ from PIL import ImageGrab
 from pynput import mouse, keyboard
 u=C.windll.user32
 u.SetProcessDpiAwarenessContext(C.c_void_p(-4))
-out=Path(r"C:\Projects\mouse-macro-v016\evidence\display-fixture")
-out.mkdir(exist_ok=True)
+out=Path(__file__).resolve().parents[1]/'evidence'/'display-fixture'
+out.mkdir(parents=True,exist_ok=True)
 action=sys.argv[1]
 if action=="show":
     import runpy

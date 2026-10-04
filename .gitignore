@@ -17,3 +17,6 @@ backup_*/
 *.tmp
 RECAP.md
 Mouse Macro Stocazz Superpower.desktop.txt
+
+# Private acceptance runs are exported separately; publish only curated results.
+evidence/
