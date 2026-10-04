@@ -26,8 +26,8 @@ jobs:
         with:
           name: windows-v018-candidate
           path: |
-            dist/windows/MouseMacroStocazzSuperpower-Windows-v0.18.0-beta.zip
-            dist/windows/SHA256SUMS-v0.18.txt
+            dist/windows/MouseMacroStocazzSuperpower-Windows-v0.18.1-beta.zip
+            dist/windows/SHA256SUMS-v0.18.1.txt
           if-no-files-found: error
 # A build artifact is a candidate. Interactive acceptance must be repeated on
 # its exact ZIP before it replaces an accepted release asset.

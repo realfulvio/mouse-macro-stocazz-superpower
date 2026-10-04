@@ -6,8 +6,8 @@ using System.Windows.Forms;
 using System.Reflection;
 [assembly: AssemblyTitle("Mouse Macro Stocazz Superpower")]
 [assembly: AssemblyCompany("hcok")]
-[assembly: AssemblyVersion("0.18.0.0")]
-[assembly: AssemblyFileVersion("0.18.0.0")]
+[assembly: AssemblyVersion("0.18.1.0")]
+[assembly: AssemblyFileVersion("0.18.1.0")]
 class Launcher {
     [STAThread] static int Main() {
         string root = AppDomain.CurrentDomain.BaseDirectory;
