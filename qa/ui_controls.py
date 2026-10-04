@@ -14,6 +14,10 @@ r.OUT=out
 archive=root/'dist'/'windows'/f'MouseMacroStocazzSuperpower-Windows-v{VERSION}.zip'
 with zipfile.ZipFile(archive) as z:z.extractall(out/'extracted')
 package=out/'extracted'/f'MouseMacroStocazzSuperpower-Windows-v{VERSION}'
+r.tap(r.keyboard.Key.esc);time.sleep(.5);r.tap(r.keyboard.Key.esc)
+old=u.FindWindowW('MouseMacroSuperpower017',None)
+if old:
+ u.PostMessageW(old,0x10,0,0);r.wait(lambda:not u.IsWindow(old),5,'prior panel close')
 p=subprocess.Popen([str(package/f'Mouse Macro v{VERSION}.exe')],cwd=package)
 r.APP=r.wait(lambda:u.FindWindowW('MouseMacroSuperpower017',None),15,'startup');app=r.APP
 r.RESULT['environment']={'package_sha256':hashlib.sha256(archive.read_bytes()).hexdigest(),'dpi':u.GetDpiForWindow(app)}
@@ -33,12 +37,12 @@ try:
  r.control(24);assert r.text(u.GetDlgItem(app,22))=='20'
  r.log('expand_collapse_retains_options',passed=True,preset=20)
  r.control(102);dialog=r.wait(lambda:u.FindWindowW('#32770','Carica macro'),3,'load dialog')
- r.tap(r.keyboard.Key.esc);r.wait(lambda:not u.IsWindow(dialog),3)
+ time.sleep(.6);r.tap(r.keyboard.Key.esc);r.wait(lambda:not u.IsWindow(dialog),3)
  assert not u.IsWindowEnabled(u.GetDlgItem(app,11))
  r.log('cancel_load_preserves_empty_macro',passed=True)
  r.control(104);dialog=r.wait(lambda:u.FindWindowW('#32770',f'Mouse Macro {VERSION} · hcok'),3,'guide')
  r.screenshot('guide-panel');r.ImageGrab.grab(bbox=tuple(r.B.window_rect(dialog))).save(out/'guide.png')
- r.tap(r.keyboard.Key.esc);r.wait(lambda:not u.IsWindow(dialog),3)
+ time.sleep(.6);r.tap(r.keyboard.Key.esc);r.wait(lambda:not u.IsWindow(dialog),3)
  r.log('guide_open_close',passed=True)
  # Explicit activation is distinct from the no-activation browser workflow.
  r.K.press(r.keyboard.Key.alt);r.K.release(r.keyboard.Key.alt);u.SetForegroundWindow(app)

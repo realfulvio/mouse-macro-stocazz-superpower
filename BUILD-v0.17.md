@@ -1,7 +1,7 @@
-# Build Windows v0.16 — by codex
+# Build Windows v0.17
 
-Base: tag `v0.15.1-beta`, commit `7dbdc83b44dacd6c3853584b10e011c647be93d1`.
-Questo ramo locale usa il nuovo pannello Win32; la UI Flet resta per Linux.
+Motore Windows: base v0.16.0-beta. Revisione UI: v0.17.0-beta.
+La UI Windows usa controlli Win32, disegno GDI+ e asset/font inclusi; la UI Flet resta per Linux.
 Gli script storici di build sono conservati; per **questa** consegna Windows usare quello seguente.
 
 Su Windows x64 con Python **3.13.16** e .NET Framework 4 (presente nella VM Windows 11):
@@ -14,7 +14,7 @@ python -m venv .venv_win
 
 Per aprire il pannello direttamente dai sorgenti Windows: `.\.venv_win\Scripts\python.exe windows_main.py` oppure `main.py`. Il launcher distribuito avvia esplicitamente `windows_main.py`.
 
-Risultato: `dist/windows/MouseMacroStocazzSuperpower-Windows-v0.16.0-beta-by-codex.zip` e `SHA256SUMS-v0.16.txt`.
+Risultato: `dist/windows/MouseMacroStocazzSuperpower-Windows-v0.17.0-beta.zip` e `SHA256SUMS-v0.17.txt`.
 
 Se Windows non è raggiungibile, è disponibile anche la compilazione del launcher su Linux:
 
@@ -48,4 +48,8 @@ Il banco estrae il ZIP, avvia il suo launcher con Python escluso dal PATH e conf
 
 `qa/run_desktop.py <output> --dpi-smoke` controlla due giri per velocità e cinque schede/due finestre a DPI maggiori di 96. `--firefox-only` limita la prova a Firefox.
 
-`qa/offline_startup.py` verifica l’avvio del pacchetto con il runtime incluso. Per provare l’assenza di rete disconnettere solo la scheda virtuale della VM. Gli esiti della release sono in [docs/ESITO-COLLAUDO-v0.16.md](docs/ESITO-COLLAUDO-v0.16.md).
+`qa/offline_startup.py` verifica l’avvio del pacchetto con il runtime incluso. Il banco attende 12 secondi prima dell’avvio: in quel tempo disconnettere solo la scheda virtuale della VM; richiede che Windows riporti gli adattatori hardware disconnessi. Riattivare il collegamento dopo la prova. Gli esiti della release sono in [docs/ESITO-COLLAUDO-v0.17.md](docs/ESITO-COLLAUDO-v0.17.md).
+
+`qa/ui_controls.py` prova trascinamento della finestra, espansione/riduzione, preset, annullamento di Carica, Guida, Tab/Spazio, riduzione a icona e chiusura sullo ZIP esatto. Il banco usa percorsi assoluti nei dialoghi e conserva separatamente eventuali run interrotte.
+
+Prima di una run sul desktop di test, chiudere richieste di prima esecuzione dei browser (per esempio l’aggiunta alla barra delle applicazioni). Una richiesta di sistema che sottrae il primo piano deve far arrestare la macro; non va nascosta disattivando la guardia dell’applicazione. `--set-resolution` imposta 1920×1200 nel solo ambiente di test; `--dpi-smoke` richiede una scala effettiva maggiore del 100%.
