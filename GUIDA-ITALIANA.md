@@ -1,14 +1,14 @@
-# Mouse Macro 0.17 — guida rapida
+# Mouse Macro 0.18 — guida rapida
 
 Progetto e design: **hcok**.
 
-Estrai **tutto** lo ZIP in una cartella e apri `Mouse Macro v0.17.0-beta.exe`.
+Estrai **tutto** lo ZIP in una cartella e apri `Mouse Macro v0.18.0-beta.exe`.
 Non occorre installare Python. Tieni insieme `runtime`, `app` ed eseguibile.
 
 1. Apri le schede dei cavalli nella stessa finestra di Chrome o Firefox, nell’ordine di lavoro. Attiva la prima. Sposta il pannello fuori dai punti che userai.
 2. Premi **F9** (o Registra). Esegui i task di **un solo cavallo**, con le attese necessarie. Non cambiare scheda mentre registri. Premi **F9** per terminare.
-3. Apri **Opzioni** e scegli **Ripetizioni** con −/+ oppure **Preset 20**. Il numero comprende la prima scheda. Attiva **Scheda successiva tra i giri**: il programma invia **Ctrl+Tab una sola volta fra i giri**, senza chiudere schede e senza cambiare dopo l’ultimo. Se il toggle è spento, ripete nella stessa scheda.
-4. Scegli Normale o Rapida 2×. Attiva la prima scheda da lavorare e premi **F10** (o Riproduci). Rapida accelera movimenti e intervalli brevi; le pressioni e le pause necessarie restano protette.
+3. Apri **Opzioni** e scegli **Ripetizioni** con −/+ oppure **Preset 20**. Il numero comprende la prima scheda. **Scheda successiva tra i giri** parte disattivata. Attivala se vuoi cambiare scheda: il programma invia **Ctrl+Tab una sola volta fra i giri**, senza chiudere schede e senza cambiare dopo l’ultimo. Se il toggle è spento, ripete nella stessa scheda.
+4. Scegli Normale o Rapida 2×. Attiva la prima scheda da lavorare e premi **F10** (o Riproduci). Rapida accelera movimenti e pause operative fino a 2 secondi; le attese oltre 2 secondi restano a 1×. Pressione minima: 120 ms; pausa minima fra azioni: 650 ms in Normale, 325 ms in Rapida. I doppi click restano protetti. **Pagine lente** conserva il profilo prudente precedente (pausa minima 1,2 s e attese oltre 350 ms a 1×).
 5. Premi **F10** o il pulsante **FERMA** per interrompere. **Ctrl+Alt+F11** è lo stop globale di emergenza, anche con Chrome o Firefox attivi.
 
 Gli eventi e la durata si aggiornano nella card di stato. Durante la registrazione e la riproduzione i controlli delle opzioni sono disabilitati. Per trascinare la finestra usa la fascia superiore; i tre comandi in alto riducono a icona, espandono/riducono le opzioni e chiudono. Per usare i controlli da tastiera attiva esplicitamente il pannello con Alt+Tab, quindi usa Tab/Shift+Tab e Spazio.

@@ -88,7 +88,7 @@ class Panel:
         self.queue = queue.SimpleQueue()
         self.repeats = 1
         self.speed = 1.0
-        self.next_tab = True
+        self.next_tab = False
         self.slow = False
         self.closing = False
         self.dialog_open = False
@@ -338,8 +338,11 @@ class Panel:
 
     def options(self):
         return PlaybackOptions(repeat_count=self.repeats, speed=self.speed,
+            # Ordinary interaction scales at 2x; only genuine long waits stay at 1x.
+            # Slow pages retain the previous conservative timing policy.
+            pause_threshold_seconds=.35 if self.slow else 2.0,
             max_pause_speedup=1.0, min_click_hold_seconds=.12,
-            min_action_gap_seconds=1.2 if self.slow else .65,
+            min_action_gap_seconds=1.2 if self.slow else .65/self.speed,
             double_click_seconds=U.GetDoubleClickTime()/1000,
             double_click_gap_seconds=.08, protect_wheel_actions=True)
 
@@ -434,7 +437,7 @@ class Panel:
                     'F10 ferma; Ctrl+Alt+F11 è lo stop di emergenza.\n'
                     'Sposta il pannello fuori dai gesti PRIMA di iniziare.\n'
                     'Mantieni posizione, scala e zoom del browser.\n'
-                    'Rapida 2× accelera i movimenti, conserva le pause lunghe.\n'
+                    'Rapida 2× accelera movimenti e pause operative; conserva attese oltre 2 s.\n'
                     'Per pagine lente registra attese sufficienti e abilita Pagine lente.\n'
                     'Le pause non dimostrano che il sito abbia accettato un clic.\n'
                     'Non è stato verificato su account Howrse o con SentinelOne/SAC.',

@@ -1,7 +1,7 @@
 """Reproducible Windows build procedure: official embed + pinned pure Python wheels."""
 from pathlib import Path
 import argparse, hashlib, json, shutil, subprocess, sys, urllib.request, zipfile
-VERSION = '0.17.0-beta'
+VERSION = '0.18.0-beta'
 ROOT = Path(__file__).resolve().parent
 PACKAGE = f'MouseMacroStocazzSuperpower-Windows-v{VERSION}'
 
@@ -84,7 +84,7 @@ def main():
             if p.is_file():
                 z.write(p,p.relative_to(stage.parent))
     digest = hashlib.sha256(target.read_bytes()).hexdigest()
-    (out/'SHA256SUMS-v0.17.txt').write_text(digest+'  '+target.name+'\n','ascii')
+    (out/'SHA256SUMS-v0.18.txt').write_text(digest+'  '+target.name+'\n','ascii')
     print(str(target),digest,flush=True)
 
 if __name__=='__main__':
