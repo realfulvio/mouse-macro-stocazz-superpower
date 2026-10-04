@@ -18,6 +18,7 @@ class WindowsBackendTests(unittest.TestCase):
         with patch.object(backend.mouse,'Listener') as listener, \
                 patch.object(backend,'grab_region',return_value=pixels), \
                 patch.object(backend.time,'perf_counter',side_effect=[100,100.1,100.2,100.3,100.4,100.5,100.6,100.7]):
+            listener.return_value.is_alive.return_value=False
             recorder.start()
             recorder._on_move(-10,20)
             for button in (backend.mouse.Button.left,backend.mouse.Button.right,backend.mouse.Button.middle):
@@ -35,7 +36,7 @@ class WindowsBackendTests(unittest.TestCase):
         self.assertTrue(all(not events[i].snap for i in (0,2,4,6,7)))
 
     def player(self):
-        with patch.object(backend.mouse,'Controller'),patch.object(backend.keyboard,'Controller'):
+        with patch.object(backend,'CheckedMouse'),patch.object(backend,'CheckedKeyboard'):
             return backend.WindowsPlayer()
 
     def test_playback_routes_positions_all_buttons_and_scroll(self):
@@ -184,3 +185,54 @@ class WindowsBackendTests(unittest.TestCase):
 
 if __name__=='__main__':
     unittest.main()
+
+@unittest.skipUnless(sys.platform == 'win32', 'Windows native injection')
+class InjectionFailureTests(unittest.TestCase):
+    def test_failed_native_injection_is_visible(self):
+        with patch.object(backend,'SendInput',return_value=0):
+            with self.assertRaisesRegex(OSError,'non ha accettato'):
+                backend.CheckedMouse().press(backend.mouse.Button.left)
+    def test_failure_during_tab_switch_releases_both_keys(self):
+        player=WindowsBackendTests().player()
+        player._kbd.press.side_effect=[None,OSError('tab failed')]
+        with self.assertRaises(OSError):
+            player.next_tab(threading.Event())
+        self.assertEqual(player._kbd.release.call_count,2)
+
+    def test_failed_tab_release_still_releases_control(self):
+        player=WindowsBackendTests().player()
+        player._kbd.release.side_effect=[OSError('release failed'),None]
+        with self.assertRaises(OSError):
+            player.next_tab(threading.Event())
+        self.assertEqual(player._kbd.release.call_count,2)
+
+    def test_failed_button_release_still_attempts_remaining_buttons(self):
+        player=WindowsBackendTests().player()
+        player._held={'left','right'}
+        player._ctrl.release.side_effect=[OSError('release failed'),None]
+        with self.assertRaises(OSError):
+            player.close()
+        self.assertEqual(player._ctrl.release.call_count,2)
+        self.assertEqual(len(player._held),1)
+
+    def test_recording_scroll_in_another_window_is_rejected(self):
+        recorder=backend.WindowsRecorder(capture_snapshots=False,browser_only=True)
+        with patch.object(backend,'root_at',return_value=2), \
+                patch.object(backend._user32,'GetForegroundWindow',return_value=1):
+            recorder._on_scroll(100,200,0,-1)
+        self.assertEqual(recorder._events,[])
+        self.assertIn('Chrome o Firefox',recorder.error)
+
+    def test_wheel_only_recording_locks_layout(self):
+        recorder=backend.WindowsRecorder(capture_snapshots=False,browser_only=True)
+        layout={'dpi':96,'window_rect':[0,0,900,700]}
+        with patch.object(backend,'root_at',return_value=1), \
+                patch.object(backend._user32,'GetForegroundWindow',return_value=1), \
+                patch.object(backend,'browser_name',return_value='Chrome'), \
+                patch.object(backend,'window_rect',return_value=[0,0,900,700]), \
+                patch.object(backend._user32,'GetDpiForWindow',return_value=96), \
+                patch.object(backend,'browser_layout',return_value=layout):
+            recorder._on_scroll(100,200,0,-1)
+        self.assertEqual(recorder.target_window,1)
+        self.assertEqual(recorder.layout,layout)
+        self.assertEqual([e.kind for e in recorder._events],[WHEEL])

@@ -1,3 +1,11 @@
+# Verifica v0.16 beta — 04/10/2026
+
+41 verifiche di accettazione del pacchetto Windows superate. Chrome e Firefox, dialoghi nativi, cinque schede/due finestre, scale 100%/150% e avvio offline. [Risultati, hash e limiti](docs/ESITO-COLLAUDO-v0.16.md).
+
+Le verifiche delle versioni precedenti sono conservate di seguito come storico.
+
+---
+
 # Verifica v0.15 beta — 01/10/2026
 
 20 prove native Windows superate dopo il ricontrollo; 85 test automatici superati e 6 esclusi (Linux).

@@ -42,6 +42,36 @@ class PlaybackOptions:
     # Modalità opzionale: aggiunge attese casuali senza cambiare le coordinate.
     # Zero mantiene esattamente il comportamento precedente.
     timing_variation_seconds: float = 0.0
+    # Windows panel enables explicit double-click preservation; legacy callers
+    # keep their original timing policy.
+    double_click_seconds: float = 0.0
+    double_click_gap_seconds: float = 0.08
+    protect_wheel_actions: bool = False
+
+
+def _double_click_indices(events: list[MacroEvent], options: PlaybackOptions) -> set[int]:
+    pairs: set[int] = set()
+    previous_down = None
+    released = False
+    for i, event in enumerate(events):
+        if event.kind in BUTTON_OF_DOWN:
+            if (previous_down is not None and released and options.double_click_seconds > 0
+                    and event.kind == previous_down.kind
+                    and 0 < event.t - previous_down.t <= options.double_click_seconds
+                    and abs(event.x - previous_down.x) <= 4
+                    and abs(event.y - previous_down.y) <= 4):
+                pairs.add(i)
+                previous_down = None  # three clicks are not two overlapping pairs
+            else:
+                previous_down = event
+            released = False
+        elif event.kind in BUTTON_OF_UP:
+            released = previous_down is not None and BUTTON_OF_UP[event.kind] == BUTTON_OF_DOWN[previous_down.kind]
+        elif event.kind == WHEEL or (event.kind == "move_abs" and previous_down is not None
+                and (abs(event.x - previous_down.x) > 4 or abs(event.y - previous_down.y) > 4)):
+            previous_down = None
+            released = False
+    return pairs
 
 
 @dataclass
@@ -106,9 +136,10 @@ def _compute_scaled_times(events: list[MacroEvent], options: PlaybackOptions) ->
             if not held:
                 idle_start = i
         elif evt.kind == WHEEL:
-            idle_start = None  # lo scroll è un'altra azione, non un movimento inerte
+            idle_start = i if options.protect_wheel_actions and not held else None
     _enforce_min_click_hold(events, scaled, options.min_click_hold_seconds,
-                            options.min_action_gap_seconds)
+                            options.min_action_gap_seconds, _double_click_indices(events, options),
+                            options.double_click_gap_seconds, options.protect_wheel_actions)
     return scaled
 
 
@@ -137,7 +168,8 @@ def _vary_times(
 
 
 def _enforce_min_click_hold(events: list[MacroEvent], scaled: list[float], min_hold: float,
-                            min_gap: float = 0.15) -> None:
+                            min_gap: float = 0.15, double_indices: set[int] | None = None,
+                            double_gap: float = 0.08, protect_wheel: bool = False) -> None:
     """Garantisce, spostando in avanti (in-place) l'evento e tutti i successivi, che:
     - tra la pressione e il rilascio dello stesso tasto passino almeno min_hold secondi;
     - tra un rilascio e la pressione successiva (di qualsiasi tasto) passino almeno
@@ -153,8 +185,9 @@ def _enforce_min_click_hold(events: list[MacroEvent], scaled: list[float], min_h
     for i, evt in enumerate(events):
         scaled[i] += shift
         if evt.kind in BUTTON_OF_DOWN:
-            if not down_time and last_up is not None and (scaled[i] - last_up) < min_gap:
-                extra = min_gap - (scaled[i] - last_up)
+            gap = double_gap if double_indices and i in double_indices else min_gap
+            if not down_time and last_up is not None and (scaled[i] - last_up) < gap:
+                extra = gap - (scaled[i] - last_up)
                 scaled[i] += extra
                 shift += extra
             down_time[BUTTON_OF_DOWN[evt.kind]] = scaled[i]
@@ -162,6 +195,12 @@ def _enforce_min_click_hold(events: list[MacroEvent], scaled: list[float], min_h
             t0 = down_time.pop(BUTTON_OF_UP[evt.kind], None)
             if t0 is not None and (scaled[i] - t0) < min_hold:
                 extra = min_hold - (scaled[i] - t0)
+                scaled[i] += extra
+                shift += extra
+            last_up = scaled[i]
+        elif evt.kind == WHEEL and protect_wheel and not down_time:
+            if last_up is not None and scaled[i] - last_up < min_gap:
+                extra = min_gap - (scaled[i] - last_up)
                 scaled[i] += extra
                 shift += extra
             last_up = scaled[i]
@@ -216,6 +255,7 @@ def play(
     actual_last_up: float | None = None
     minimum = max(0.0, options.min_click_hold_seconds)
     action_gap = max(0.0, options.min_action_gap_seconds)
+    double_indices = _double_click_indices(events, options)
     loop = 0
     extra_delay = 0.0
     loop_start_offset = 0.0
@@ -241,15 +281,16 @@ def play(
             cycle_times = _vary_times(events, scaled_times, variation, rng) if rng else scaled_times
 
             click = 0
-            for evt, relative in zip(events, cycle_times):
+            for index, (evt, relative) in enumerate(zip(events, cycle_times)):
                 if evt.kind in BUTTON_OF_DOWN:
                     click += 1
                 target = start + loop_start_offset + relative + extra_delay
                 # Se il backend o Windows ritarda, sposta tutto il seguito invece
                 # di recuperare il ritardo inviando pressioni/rilasci in raffica.
                 earliest = time.perf_counter()
-                if evt.kind in BUTTON_OF_DOWN and not held and actual_last_up is not None:
-                    earliest = max(earliest, actual_last_up + action_gap)
+                if (evt.kind in BUTTON_OF_DOWN or (options.protect_wheel_actions and evt.kind == WHEEL)) and not held and actual_last_up is not None:
+                    gap = options.double_click_gap_seconds if index in double_indices else action_gap
+                    earliest = max(earliest, actual_last_up + gap)
                 elif evt.kind in BUTTON_OF_UP:
                     pressed_at = actual_down.get(BUTTON_OF_UP[evt.kind])
                     if pressed_at is not None:
@@ -276,9 +317,12 @@ def play(
                 if stop_event.is_set():
                     end = PlaybackEnd.STOPPED
                     break
+                if evt.kind in BUTTON_OF_DOWN:
+                    # Include a possibly partially injected press in cleanup even
+                    # if the backend raises after sending it.
+                    held.add(BUTTON_OF_DOWN[evt.kind])
                 apply_event(evt)
                 if evt.kind in BUTTON_OF_DOWN:
-                    held.add(BUTTON_OF_DOWN[evt.kind])
                     actual_down[BUTTON_OF_DOWN[evt.kind]] = time.perf_counter()
                     report("input_sent", click=click, kind=evt.kind,
                            since_last_release_seconds=None if actual_last_up is None
@@ -289,11 +333,15 @@ def play(
                     actual_last_up = time.perf_counter()
                     report("input_sent", click=click, kind=evt.kind,
                            hold_seconds=None if pressed_at is None else actual_last_up - pressed_at)
+                elif evt.kind == WHEEL and not held:
+                    if options.protect_wheel_actions:
+                        actual_last_up = time.perf_counter()
+                    report("input_sent", click=click, kind=evt.kind)
 
             if end != PlaybackEnd.DONE:
                 break
 
-            # Protegge anche l'ultima azione, prima di Ctrl+W e prima di dichiarare
+            # Protegge anche l'ultima azione, prima del cambio scheda e prima di dichiarare
             # il giro finito. È un'attesa temporale, non una conferma del sito.
             if actual_last_up is not None and not held:
                 before = time.perf_counter()

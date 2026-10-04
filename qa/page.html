@@ -1,0 +1,20 @@
+<!doctype html><html lang="it"><meta charset="utf-8"><title>Banco Mouse Macro</title>
+<style>
+body{font:16px Segoe UI;margin:20px;background:#f5f1f7;color:#30223a}h1{font-size:22px;margin:0 0 12px}button{font:18px Segoe UI;border:2px solid #5e3779;border-radius:6px;background:#d9c4ec;color:#30223a;width:160px;height:70px}button:disabled{background:#aaa;color:#333}
+#tasks{display:flex;gap:24px}#double{margin-top:24px;background:#cce7d9;width:344px}#track{margin-top:24px;width:340px;height:75px;background:#ddd;position:relative}#drag{position:absolute;width:60px;height:55px;background:#bc8ad8;left:5px;top:10px;touch-action:none}#drop{position:absolute;left:260px;width:75px;height:75px;background:#9dd3b0}#scroll{margin-top:24px;width:344px;height:95px;overflow:auto;background:white;border:2px solid #777}#inner{height:600px;padding:10px}pre{position:absolute;left:400px;top:90px;white-space:pre-wrap}
+</style><h1 id="title"></h1><div id="tasks"><button id="a">Task A</button><button id="b">Task B</button></div>
+<button id="double">Doppio clic</button><div id="track"><div id="drop">Traguardo</div><div id="drag">Trascina</div></div>
+<div id="scroll"><div id="inner">Rotella qui</div></div><pre id="result"></pre>
+<script>
+const q=new URLSearchParams(location.search), delay=Number(q.get('delay')||0), id=q.get('id')||'1';
+const state={id,a:0,b:0,receivedA:0,receivedB:0,lost:0,doubleClicks:0,doubleSingles:0,drags:0,wheel:0,wheelEvents:0,down:0,up:0,lastDragX:0};let busyUntil=0, dragging=false, startX=0;
+window.reset=()=>{for(const k in state)if(k!=='id')state[k]=0;busyUntil=0;update()};
+window.counts=()=>({...state});
+function update(){document.getElementById('result').textContent=JSON.stringify(state,null,2)}
+document.title='Banco Mouse Macro '+id;document.getElementById('title').textContent='Scheda '+id+' — ritardo '+delay+' ms';
+for(const name of ['a','b'])document.getElementById(name).addEventListener('click',()=>{state[name==='a'?'receivedA':'receivedB']++;let now=performance.now();if(now<busyUntil){state.lost++;update();return}state[name]++;busyUntil=now+delay;update()});
+document.getElementById('double').addEventListener('click',()=>{state.doubleSingles++;update()});document.getElementById('double').addEventListener('dblclick',()=>{state.doubleClicks++;update()});
+const drag=document.getElementById('drag');drag.addEventListener('pointerdown',e=>{dragging=true;startX=e.clientX;drag.setPointerCapture(e.pointerId);state.down++;update()});drag.addEventListener('pointermove',e=>{if(dragging)drag.style.left=Math.min(278,Math.max(5,e.clientX-startX+5))+'px'});drag.addEventListener('pointerup',e=>{if(dragging){dragging=false;state.up++;state.lastDragX=parseInt(drag.style.left||'5');if(state.lastDragX>=250)state.drags++;setTimeout(()=>drag.style.left='5px',100);update()}});
+document.getElementById('scroll').addEventListener('wheel',e=>{state.wheelEvents++;state.wheel+=Math.sign(e.deltaY);update()});
+update();
+</script></html>
