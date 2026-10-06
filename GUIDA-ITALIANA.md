@@ -1,8 +1,8 @@
-# Mouse Macro 0.19.1 — guida rapida
+# Mouse Macro 0.19.2 — guida rapida
 
 Progetto e design: **hcok**.
 
-Estrai **tutto** lo ZIP in una cartella e apri `Mouse Macro v0.19.1-beta.exe`.
+Estrai **tutto** lo ZIP in una cartella e apri `Mouse Macro v0.19.2-beta.exe`.
 Non occorre installare Python. Tieni insieme `runtime`, `app` ed eseguibile.
 
 1. Prepara i programmi e le finestre da usare. Sposta il pannello fuori dai punti che userai.
