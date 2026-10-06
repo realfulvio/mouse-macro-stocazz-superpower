@@ -72,4 +72,4 @@ python build_native_windows.py
 
 Dettagli in [BUILD-v0.19.1.md](BUILD-v0.19.1.md). La vecchia versione Linux (Flet, IT/EN) è nella [release v0.14](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.14-beta).
 
-[Tutte le release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases) · [Note di design](docs/design/README.md) · [Licenza MIT](LICENSE) · Progetto e design: **hcok**
+[Tutte le release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases) · [Note di design](docs/design/README.md) · [Licenza MIT](LICENSE) · [Licenze di terze parti](THIRD-PARTY-NOTICES.md) · Progetto e design: **hcok**
