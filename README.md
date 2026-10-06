@@ -8,15 +8,17 @@ Un piccolo pannello sempre in primo piano per Windows: niente installer, niente 
 </p>
 
 <p align="center">
-<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.0.1"><b>⬇ Scarica per Windows</b></a>
+<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.1.0"><b>⬇ Scarica per Windows</b></a>
 · <a href="GUIDA-ITALIANA.md">Guida italiana</a>
-· <a href="docs/ESITO-COLLAUDO-v1.0.1.md">Esito dei controlli</a>
+· <a href="docs/ESITO-COLLAUDO-v1.1.0.md">Esito dei controlli</a>
 </p>
 
 <p align="center">
-<img src="docs/screenshots/v100-compact.png" alt="Pannello principale" width="260">
+<img src="docs/screenshots/v110-unicorno-compatto.png" alt="Skin Unicorno" width="230">
 &nbsp;
-<img src="docs/screenshots/v100-playing.png" alt="Barra durante la riproduzione" width="288">
+<img src="docs/screenshots/v110-palio-compatto.png" alt="Skin Palio" width="230">
+&nbsp;
+<img src="docs/screenshots/v110-palio-registrazione.png" alt="Barra" width="288">
 </p>
 
 ## Avvio rapido da PowerShell
@@ -39,15 +41,15 @@ Lo script scarica la release ufficiale da GitHub, ne verifica lo SHA-256, la est
 
 ## Altri modi di installare
 
-1. Scarica `MouseMacroStocazzSuperpower-Windows-v1.0.1.zip` dalla [release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.0.1).
+1. Scarica `MouseMacroStocazzSuperpower-Windows-v1.1.0.zip` dalla [release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.1.0).
 2. Estrai **tutto** lo ZIP in una cartella.
-3. Apri `Mouse Macro v1.0.1.exe`. Se Windows lo blocca, apri invece `Mouse Macro v1.0.1 (senza exe).cmd`.
+3. Apri `Mouse Macro v1.1.0.exe`. Se Windows lo blocca, apri invece `Mouse Macro v1.1.0 (senza exe).cmd`.
 
 Serve Windows x64; l'exe richiede anche .NET Framework 4 (già presente in Windows 10/11), il `.cmd` no. Python è incluso. L'interfaccia è in italiano. Lo SHA-256 dello ZIP è pubblicato con ogni release.
 
 ### Windows blocca l'exe?
 
-Il launcher `.exe` non è firmato: SmartScreen o il *Controllo intelligente delle app* (Smart App Control) di Windows 11 possono bloccarlo (*"Un criterio di controllo dell'applicazione ha bloccato il file"*). Le due vie senza exe, cioè il comando PowerShell qui sopra e il file **`Mouse Macro v1.0.1 (senza exe).cmd`** nello ZIP, sono **state provate con Smart App Control attivo** (Windows 11 build 26300, [rapporto](docs/ESITO-COLLAUDO-v1.0.1.md)). Il `.cmd` avvia direttamente il `pythonw.exe` firmato PSF con gli stessi file. Se SmartScreen avvisa, usa *Ulteriori informazioni → Esegui comunque*; se blocca ancora, tasto destro sullo ZIP → *Proprietà* → **Sblocca** prima di estrarlo.
+Il launcher `.exe` non è firmato: SmartScreen o il *Controllo intelligente delle app* (Smart App Control) di Windows 11 possono bloccarlo (*"Un criterio di controllo dell'applicazione ha bloccato il file"*). Le due vie senza exe, cioè il comando PowerShell qui sopra e il file **`Mouse Macro v1.1.0 (senza exe).cmd`** nello ZIP, sono **state provate con Smart App Control attivo** (Windows 11 build 26300, [rapporto](docs/ESITO-COLLAUDO-v1.1.0.md)). Il `.cmd` avvia direttamente il `pythonw.exe` firmato PSF con gli stessi file. Se SmartScreen avvisa, usa *Ulteriori informazioni → Esegui comunque*; se blocca ancora, tasto destro sullo ZIP → *Proprietà* → **Sblocca** prima di estrarlo.
 
 Se anche queste vie vengono bloccate sul tuo PC, scrivilo nelle [Issues](https://github.com/realfulvio/mouse-macro-stocazz-superpower/issues).
 
@@ -58,8 +60,23 @@ Se anche queste vie vengono bloccate sul tuo PC, scrivilo nelle [Issues](https:/
 - Durante registrazione e replay il pannello diventa una piccola barra semitrasparente con contatori e pulsante **Stop**, per non dare fastidio.
 - Salva e carica le macro in file `.mmr`.
 - **Ctrl+Tab tra un giro e l'altro** (facoltativo) per scorrere le schede del browser: spento all'avvio, mai dopo l'ultimo giro.
-- Registra solo il mouse: niente tastiera, niente schermate, nessun accesso alla rete.
+- **Movimento umano** (facoltativo, spento all'avvio): a ogni giro il cursore segue una curva leggermente diversa, con velocità non uniforme, e le pause variano un poco. I clic cadono sempre negli stessi punti registrati; i trascinamenti e la rotella non cambiano. Non rende invisibile l'automazione: molti siti la vietano nei loro termini.
+- Registra solo il mouse: niente tastiera, niente schermate. L'unico accesso alla rete è il controllo aggiornamenti, anonimo e disattivabile.
 
+
+## Skin e aggiornamenti
+
+<p align="center">
+<img src="docs/screenshots/v110-unicorno-compatto.png" alt="Skin Unicorno" width="250">
+&nbsp;
+<img src="docs/screenshots/v110-palio-compatto.png" alt="Skin Palio" width="250">
+&nbsp;
+<img src="docs/screenshots/v110-palio-esteso.png" alt="Skin Palio con le opzioni aperte" width="420">
+</p>
+
+- **Skin**: il tondo con i puntini in alto, accanto ai pulsanti della finestra, apre il menu delle skin: *Unicorno* (viola scuro, predefinita) e *Palio* (chiara, un sauro con i nastri di contrada). La scelta viene ricordata. Durante registrazione e riproduzione il pannello torna alla barra compatta, con il cavallo della skin scelta.
+- **Aggiornamenti**: il pallino accanto al tondo è **verde** se hai l'ultima versione, **giallo** se ne è uscita una nuova, **grigio** se non si riesce a controllare. Cliccandolo puoi controllare subito, scaricare e installare l'ultima versione (verifica lo SHA-256 e poi riavvia) oppure disattivare il controllo all'avvio.
+- **Rete**: l'unica richiesta di rete del programma è la lettura anonima dell'ultima release su GitHub. Non viene scaricato né installato nulla senza un tuo clic, e il controllo si può spegnere dal menu del pallino.
 
 ## Uso
 
@@ -81,11 +98,11 @@ Se anche queste vie vengono bloccate sul tuo PC, scrivilo nelle [Issues](https:/
 - Il pannello non deve coprire un click registrato: l'app sposta la barra in un punto libero oppure non parte.
 - Il programma non sa se un sito ha accettato il click e non riprova mai.
 - Non coperti: UAC / desktop sicuro e applicazioni con privilegi elevati.
-- Non certificato con SentinelOne. Con Smart App Control attivo l'exe è bloccato, mentre il `.cmd` e il comando PowerShell sono stati provati e funzionano. Nessuna protezione viene modificata o aggirata.
+- Non certificato con SentinelOne. Con Smart App Control attivo l'exe non firmato è stato bloccato in una prova e avviato in un'altra, perché dipende dalla reputazione che Microsoft gli assegna; il `.cmd` e il comando PowerShell sono sempre partiti. Nessuna protezione viene modificata o aggirata.
 
 ## Stato
 
-Stabile. La v1.0.1 aggiunge solo le vie di avvio senza exe; il codice di registrazione e replay è identico alla v1.0.0. Controlli su questa release ([rapporto](docs/ESITO-COLLAUDO-v1.0.1.md)): 141 test automatici (135 superati, 6 solo-Linux saltati), integrità del pacchetto e avvio reale del `.cmd` e del comando PowerShell con Smart App Control attivo (l'exe non firmato viene bloccato, come previsto). La prova fisica di registrazione/replay resta quella del [rapporto v1.0.0](docs/ESITO-COLLAUDO-v1.0.0.md) e non è stata ripetuta. Non coperti: UAC/applicazioni elevate, altre scale DPI su monitor reali.
+Stabile. La v1.1.0 aggiunge le skin (Unicorno e Palio), il pallino aggiornamenti e le vie di avvio senza exe; il motore di registrazione e replay è invariato. Controlli su questa release ([rapporto](docs/ESITO-COLLAUDO-v1.1.0.md)): test automatici (compresi quelli del modulo di aggiornamento, con rete simulata), integrità del pacchetto, avvio reale dell'interfaccia con entrambe le skin, controllo aggiornamenti contro GitHub e avvio da PowerShell e `.cmd` con Smart App Control attivo (l'exe non firmato è stato bloccato in una prova e avviato in un'altra). La prova fisica di registrazione/replay resta quella del [rapporto v1.0.0](docs/ESITO-COLLAUDO-v1.0.0.md). Non coperti: UAC/applicazioni elevate, altre scale DPI su monitor reali.
 
 ## Compilare dai sorgenti
 
@@ -95,6 +112,6 @@ python -m unittest discover -v
 python build_native_windows.py
 ```
 
-Dettagli in [BUILD-v1.0.1.md](BUILD-v1.0.1.md). La vecchia versione Linux (Flet, IT/EN) è nella [release v0.14](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.14-beta).
+Dettagli in [BUILD-v1.1.0.md](BUILD-v1.1.0.md). La vecchia versione Linux (Flet, IT/EN) è nella [release v0.14](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.14-beta).
 
 [Tutte le release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases) · [Note di design](docs/design/README.md) · [Licenza PolyForm Noncommercial](LICENSE): uso libero personale e non commerciale, vietata la rivendita · [Licenze di terze parti](THIRD-PARTY-NOTICES.md) · Progetto e design: **hcok**

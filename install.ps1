@@ -3,22 +3,34 @@
 # Scarica la release ufficiale da GitHub, verifica lo SHA-256, la estrae in
 # %LOCALAPPDATA% e avvia il pythonw.exe firmato PSF. Nessun exe non firmato,
 # nessun file con Mark of the Web, nessuna protezione modificata.
+# Se esiste gia' una versione installata uguale o piu' recente (anche aggiornata
+# dall'app) avvia quella senza scaricare nulla.
 # Usa solo cmdlet base (compatibile con Constrained Language Mode).
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-$Version = '1.0.1'
+$Version = '1.1.0'
 $Repo    = 'realfulvio/mouse-macro-stocazz-superpower'
 $Base    = "https://github.com/$Repo/releases/download/v$Version"
 $Zip     = "MouseMacroStocazzSuperpower-Windows-v$Version.zip"
-$Package = "MouseMacroStocazzSuperpower-Windows-v$Version"
+$Prefix  = 'MouseMacroStocazzSuperpower-Windows-v'
 $Root    = Join-Path $env:LOCALAPPDATA 'MouseMacroStocazzSuperpower\Portable'
-$Target  = Join-Path $Root $Package
-$Python  = Join-Path $Target 'runtime\pythonw.exe'
-$Main    = Join-Path $Target 'app\windows_main.py'
 
-if (-not ((Test-Path $Python) -and (Test-Path $Main))) {
+function Find-Installed {
+    $best = $null
+    if (Test-Path $Root) {
+        foreach ($dir in Get-ChildItem -Path $Root -Directory -Filter "$Prefix*") {
+            if (-not ((Test-Path (Join-Path $dir.FullName 'runtime\pythonw.exe')) -and (Test-Path (Join-Path $dir.FullName 'app\windows_main.py')))) { continue }
+            $v = [version]($dir.Name.Substring($Prefix.Length))
+            if (($null -eq $best) -or ($v -gt $best.Version)) { $best = [pscustomobject]@{ Version = $v; Path = $dir.FullName } }
+        }
+    }
+    return $best
+}
+
+$found = Find-Installed
+if (($null -eq $found) -or ($found.Version -lt [version]$Version)) {
     $Work = Join-Path $env:TEMP ('mmss-' + [guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory -Path $Work | Out-Null
     try {
@@ -35,7 +47,8 @@ if (-not ((Test-Path $Python) -and (Test-Path $Main))) {
     } finally {
         Remove-Item -Recurse -Force $Work -ErrorAction SilentlyContinue
     }
+    $found = Find-Installed
 }
-if (-not ((Test-Path $Python) -and (Test-Path $Main))) { throw 'Installazione incompleta.' }
-Write-Host 'Avvio Mouse Macro...'
-Start-Process -FilePath $Python -ArgumentList @('-B', "`"$Main`"") -WorkingDirectory $Target
+if ($null -eq $found) { throw 'Installazione incompleta.' }
+Write-Host "Avvio Mouse Macro v$($found.Version)..."
+Start-Process -FilePath (Join-Path $found.Path 'runtime\pythonw.exe') -ArgumentList @('-B', "`"$(Join-Path $found.Path 'app\windows_main.py')`"") -WorkingDirectory $found.Path

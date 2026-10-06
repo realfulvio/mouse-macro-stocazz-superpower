@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 import queue
 import sys
+import tempfile
 import threading
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -29,7 +30,8 @@ def panel_settings():
         if isinstance(n, ast.Assign) and isinstance(n.value, ast.Call)
         and isinstance(n.value.func, ast.Name) and n.value.func.id == 'Theme')]
     panel.body = [init, next(n for n in panel.body if isinstance(n, ast.FunctionDef) and n.name == 'options')]
-    namespace = {'queue': queue, 'PlaybackOptions': PlaybackOptions,
+    namespace = {'queue': queue, 'PlaybackOptions': PlaybackOptions, 'json': json,
+                 'FOLDER': Path(tempfile.gettempdir())/'mmss-timing-test', 'apply_skin': lambda name: name,
                  'U': SimpleNamespace(GetDoubleClickTime=lambda: 500)}
     exec(compile(ast.Module(body=[panel], type_ignores=[]), str(ROOT/'windows_main.py'), 'exec'), namespace)
     return namespace['Panel']()
