@@ -8,9 +8,9 @@ Un piccolo pannello sempre in primo piano per Windows: niente installer, niente 
 </p>
 
 <p align="center">
-<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.19.1-beta"><b>⬇ Scarica per Windows</b></a>
+<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.19.2-beta"><b>⬇ Scarica per Windows</b></a>
 · <a href="GUIDA-ITALIANA.md">Guida italiana</a>
-· <a href="docs/ESITO-COLLAUDO-v0.19.1.md">Esito dei controlli</a>
+· <a href="docs/ESITO-COLLAUDO-v0.19.2.md">Esito dei controlli</a>
 </p>
 
 <p align="center">
@@ -30,9 +30,9 @@ Un piccolo pannello sempre in primo piano per Windows: niente installer, niente 
 
 ## Installazione
 
-1. Scarica `MouseMacroStocazzSuperpower-Windows-v0.19.1-beta.zip` dall'[ultima release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.19.1-beta).
+1. Scarica `MouseMacroStocazzSuperpower-Windows-v0.19.2-beta.zip` dall'[ultima release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.19.2-beta).
 2. Estrai **tutto** lo ZIP in una cartella.
-3. Apri `Mouse Macro v0.19.1-beta.exe`.
+3. Apri `Mouse Macro v0.19.2-beta.exe`.
 
 Serve Windows x64 con .NET Framework 4 (già presente in Windows 10/11). Python è incluso. L'interfaccia è in italiano. Il launcher non è firmato: al primo avvio SmartScreen può segnalarlo; lo SHA-256 dello ZIP è pubblicato con ogni release.
 
@@ -60,7 +60,7 @@ Serve Windows x64 con .NET Framework 4 (già presente in Windows 10/11). Python 
 
 ## Stato
 
-Beta. Gli ultimi controlli sono nel [rapporto v0.19.1](docs/ESITO-COLLAUDO-v0.19.1.md): suite automatica da 141 test (135 superati, 6 solo-Linux saltati), integrità del pacchetto e avvio reale dell'exe distribuito. La prova fisica di registrazione/replay è stata fatta sulla v0.19.0 e non è ancora ripetuta sulla v0.19.1: il rapporto elenca con precisione cosa resta aperto.
+Beta. Gli ultimi controlli sono nel [rapporto v0.19.2](docs/ESITO-COLLAUDO-v0.19.2.md): suite automatica da 141 test (135 superati, 6 solo-Linux saltati), integrità del pacchetto e avvio reale dell'exe distribuito. La prova fisica di registrazione/replay è stata fatta sulla v0.19.0 e non è ancora ripetuta sulla v0.19.2: il rapporto elenca con precisione cosa resta aperto.
 
 ## Compilare dai sorgenti
 
@@ -70,6 +70,6 @@ python -m unittest discover -v
 python build_native_windows.py
 ```
 
-Dettagli in [BUILD-v0.19.1.md](BUILD-v0.19.1.md). La vecchia versione Linux (Flet, IT/EN) è nella [release v0.14](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.14-beta).
+Dettagli in [BUILD-v0.19.2.md](BUILD-v0.19.2.md). La vecchia versione Linux (Flet, IT/EN) è nella [release v0.14](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.14-beta).
 
 [Tutte le release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases) · [Note di design](docs/design/README.md) · [Licenza PolyForm Noncommercial](LICENSE): uso libero personale e non commerciale, vietata la rivendita · [Licenze di terze parti](THIRD-PARTY-NOTICES.md) · Progetto e design: **hcok**
