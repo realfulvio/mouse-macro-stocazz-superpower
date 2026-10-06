@@ -8,7 +8,7 @@ Un piccolo pannello sempre in primo piano per Windows: niente installer, niente 
 </p>
 
 <p align="center">
-<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/latest"><b>⬇ Scarica per Windows</b></a>
+<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.19.1-beta"><b>⬇ Scarica per Windows</b></a>
 · <a href="GUIDA-ITALIANA.md">Guida italiana</a>
 · <a href="docs/ESITO-COLLAUDO-v0.19.1.md">Esito dei controlli</a>
 </p>
@@ -30,7 +30,7 @@ Un piccolo pannello sempre in primo piano per Windows: niente installer, niente 
 
 ## Installazione
 
-1. Scarica `MouseMacroStocazzSuperpower-Windows-v0.19.1-beta.zip` dall'[ultima release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/latest).
+1. Scarica `MouseMacroStocazzSuperpower-Windows-v0.19.1-beta.zip` dall'[ultima release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.19.1-beta).
 2. Estrai **tutto** lo ZIP in una cartella.
 3. Apri `Mouse Macro v0.19.1-beta.exe`.
 

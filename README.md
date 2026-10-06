@@ -8,7 +8,7 @@ A small always-on-top panel for Windows: no installer, no Python to install.
 </p>
 
 <p align="center">
-<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/latest"><b>⬇ Download for Windows</b></a>
+<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.19.1-beta"><b>⬇ Download for Windows</b></a>
 · <a href="GUIDA-ITALIANA.md">Italian guide</a>
 · <a href="docs/ESITO-COLLAUDO-v0.19.1.md">Test report</a>
 </p>
@@ -30,7 +30,7 @@ A small always-on-top panel for Windows: no installer, no Python to install.
 
 ## Install
 
-1. Download `MouseMacroStocazzSuperpower-Windows-v0.19.1-beta.zip` from the [latest release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/latest).
+1. Download `MouseMacroStocazzSuperpower-Windows-v0.19.1-beta.zip` from the [latest release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.19.1-beta).
 2. Extract the **whole** ZIP into a folder.
 3. Run `Mouse Macro v0.19.1-beta.exe`.
 
