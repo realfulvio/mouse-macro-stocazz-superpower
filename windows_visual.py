@@ -13,9 +13,44 @@ D = C.windll.gdiplus
 G = C.windll.gdi32
 U = C.windll.user32
 ROOT = Path(__file__).resolve().parent / 'assets'
-COLORS = dict(background='#1A0F2E', surface='#2A1642', alt='#3B1D6B', border='#4B2A7A',
-              text='#F9F7FF', muted='#C7B8E6', record='#FF2D93', play='#8B5CF6',
-              ready='#3ED072', warning='#FFC83D', error='#FF4D6D', disabled='#493A67', faded='#8E82A9')
+STATES = ('pronto', 'registrazione', 'riproduzione', 'errore')
+UNICORN = dict(background='#1A0F2E', surface='#2A1642', alt='#3B1D6B', border='#4B2A7A',
+               text='#F9F7FF', muted='#C7B8E6', record='#FF2D93', play='#8B5CF6',
+               ready='#3ED072', warning='#FFC83D', error='#FF4D6D', disabled='#493A67', faded='#8E82A9',
+               header_top='#332049', header_bottom='#251735', header_text='#F9F7FF', header_muted='#C7B8E6',
+               header_a='#FFC83D', header_b='#FF2D93', chrome='#322047', chrome_hover='#3B1D6B',
+               surface_bottom='#21132F', surface_hover='#36234E', input='#21132F',
+               button='#322047', button_hover='#3B1D6B', on_accent='#F9F7FF',
+               record_hover='#FF55A8', record_pressed='#C91F6C', record_bottom='#E61980', record_edge='#FF76BB',
+               play_hover='#A78BFA', play_pressed='#6D48D7', play_bottom='#6740AF',
+               dot_ok='#3ED072', dot_new='#FFC83D', dot_off='#8E82A9')
+PALIO = dict(background='#F6E7C8', surface='#FFF6DF', alt='#EBD3A0', border='#D2AE6B',
+             text='#3A1710', muted='#6E5238', record='#C23B22', play='#1F5D8C',
+             ready='#2E8B4F', warning='#8A5A00', error='#B3261E', disabled='#D9C9A6', faded='#9A8A6C',
+             header_top='#9A2F1E', header_bottom='#7A2216', header_text='#FFF1D2', header_muted='#E8C9A8',
+             header_a='#F2B632', header_b='#FFE2B0', chrome='#8A2818', chrome_hover='#A8402C',
+             surface_bottom='#F4E3BE', surface_hover='#F6E7C8', input='#FFFDF5',
+             button='#F1DDB0', button_hover='#EBD3A0', on_accent='#FFF6DF',
+             record_hover='#D9533A', record_pressed='#9E2D18', record_bottom='#A93018', record_edge='#E8745C',
+             play_hover='#2F78AD', play_pressed='#164767', play_bottom='#184E78',
+             dot_ok='#7BE0A0', dot_new='#FFD36B', dot_off='#D9B7A0')
+# `regions` crops the supplied unicorn PNGs (they carry catalog captions);
+# None means the whole, already tight-cropped, image.
+SKINS = {
+    'unicorno': dict(label='Unicorno', prefix='unicorn', colors=UNICORN,
+                     regions={'pronto': (180, 194, 126, 113), 'registrazione': (184, 191, 144, 114),
+                              'riproduzione': (179, 181, 151, 119), 'errore': (209, 181, 134, 123)}),
+    'palio': dict(label='Palio', prefix='palio', colors=PALIO, regions=None),
+}
+DEFAULT_SKIN = 'unicorno'
+CURRENT = {'skin': DEFAULT_SKIN}
+COLORS = dict(UNICORN)
+
+def apply_skin(name):
+    name = name if name in SKINS else DEFAULT_SKIN
+    COLORS.update(SKINS[name]['colors'])
+    CURRENT['skin'] = name
+    return name
 
 class RectF(C.Structure):
     _fields_ = [('x',F),('y',F),('width',F),('height',F)]
@@ -81,10 +116,20 @@ class Theme:
                 raise RuntimeError('Font Outfit non disponibile')
         self.family=ptrcall(D.GdipCreateFontFamilyFromName,'Outfit',self.collection)
         self.body_family=ptrcall(D.GdipCreateFontFamilyFromName,'Segoe UI',None)
-        self.fonts={};self.images={};self.icons={}
-        for state in ('pronto','registrazione','riproduzione','errore'):
-            self.images[state]=ptrcall(D.GdipLoadImageFromFile,str(ROOT/'horses'/f'unicorn_{state}.png'))
+        self.fonts={};self.images={};self.sizes={};self.icons={}
+        self.load_images()
         for path in (ROOT/'icons').glob('*.svg'): self.icons[path.stem]=ET.parse(path).getroot()
+    def load_images(self):
+        """(Re)load the mascot of the skin selected with apply_skin()."""
+        prefix=SKINS[CURRENT['skin']]['prefix']
+        images={state:ptrcall(D.GdipLoadImageFromFile,str(ROOT/'horses'/f'{prefix}_{state}.png')) for state in STATES}
+        sizes={}
+        for state,image in images.items():
+            w=C.c_uint();h=C.c_uint()
+            D.GdipGetImageWidth(image,C.byref(w));D.GdipGetImageHeight(image,C.byref(h))
+            sizes[state]=(0,0,w.value,h.value)
+        for p in self.images.values():D.GdipDisposeImage(p)
+        self.images,self.sizes=images,sizes
     def close(self):
         for p in self.fonts.values():D.GdipDeleteFont(p)
         for p in self.images.values():D.GdipDisposeImage(p)
@@ -146,8 +191,7 @@ class Canvas:
     def horse(self,state,x,y,w,h):
         # Supplied PNGs include catalog captions. Display the illustration region
         # only; original files are preserved byte for byte in assets/horses.
-        regions={'pronto':(180,194,126,113),'registrazione':(184,191,144,114),
-                 'riproduzione':(179,181,151,119),'errore':(209,181,134,123)}
+        regions=SKINS[CURRENT['skin']]['regions'] or self.theme.sizes
         sx,sy,sw,sh=regions[state]
         ratio=min(w/sw,h/sh);dw,dh=sw*ratio,sh*ratio
         D.GdipDrawImageRectRect(self.g,self.theme.images[state],x+(w-dw)/2,y+(h-dh)/2,dw,dh,sx,sy,sw,sh,2,None,None,None)

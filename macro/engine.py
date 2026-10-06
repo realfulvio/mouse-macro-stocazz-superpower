@@ -4,14 +4,15 @@ backend di sistema (Linux/Windows) usato per registrare e iniettare gli eventi.
 """
 from __future__ import annotations
 
+import math
 import random
 import threading
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import Enum
 from typing import Callable, Iterable
 
-from .events import BUTTON_OF_DOWN, BUTTON_OF_UP, WHEEL, MacroEvent
+from .events import BUTTON_OF_DOWN, BUTTON_OF_UP, MOVE_ABS, WHEEL, MacroEvent
 
 
 class LoopMode(Enum):
@@ -42,6 +43,11 @@ class PlaybackOptions:
     # Modalità opzionale: aggiunge attese casuali senza cambiare le coordinate.
     # Zero mantiene esattamente il comportamento precedente.
     timing_variation_seconds: float = 0.0
+    # Modalita' opzionale "movimento umano" (spenta di default): a ogni giro i tragitti
+    # fra due gesti seguono una curva leggermente diversa e con velocita' non uniforme,
+    # e le pause variano. Pressioni, rilasci e rotella restano esattamente dove
+    # sono stati registrati; solo i movimenti liberi del cursore cambiano.
+    humanize: bool = False
     # Windows panel enables explicit double-click preservation; legacy callers
     # keep their original timing policy.
     double_click_seconds: float = 0.0
@@ -72,6 +78,76 @@ def _double_click_indices(events: list[MacroEvent], options: PlaybackOptions) ->
             previous_down = None
             released = False
     return pairs
+
+
+HUMAN_PAUSE_SECONDS = 0.25   # variazione massima delle pause con il movimento umano
+HUMAN_MAX_DEVIATION = 28.0   # px: scostamento massimo dal tragitto registrato
+HUMAN_MIN_CHORD = 12.0       # px: tragitti piu' corti restano identici
+
+
+def _smoothstep(u: float) -> float:
+    return u * u * (3.0 - 2.0 * u)
+
+
+def _humanize_cycle(events: list[MacroEvent], times: list[float],
+                    rng: random.Random) -> tuple[list[MacroEvent], list[float]]:
+    """Restituisce una copia del giro con percorsi e velocita' dei soli movimenti liberi
+    (cursore senza tasti premuti) variati. Non cambia numero, ordine, tipo e tempo di
+    pressioni/rilasci/rotella; primo e ultimo punto di ogni tragitto restano esatti,
+    quindi i clic arrivano sempre sulle stesse coordinate."""
+    out = [replace(e) for e in events]
+    new_times = list(times)
+    held: set[str] = set()
+    i = 0
+    n = len(events)
+    while i < n:
+        evt = events[i]
+        if evt.kind in BUTTON_OF_DOWN:
+            held.add(BUTTON_OF_DOWN[evt.kind])
+        elif evt.kind in BUTTON_OF_UP:
+            held.discard(BUTTON_OF_UP[evt.kind])
+        if evt.kind != MOVE_ABS or held:
+            i += 1
+            continue
+        j = i
+        while j + 1 < n and events[j + 1].kind == MOVE_ABS:
+            j += 1
+        _humanize_run(events, out, times, new_times, i, j, rng)
+        i = j + 1
+    return out, new_times
+
+
+def _humanize_run(events, out, times, new_times, a, b, rng) -> None:
+    """Varia i movimenti a..b (consecutivi, senza tasti premuti)."""
+    if b - a < 2:
+        return
+    x0, y0, x1, y1 = events[a].x, events[a].y, events[b].x, events[b].y
+    chord = math.hypot(x1 - x0, y1 - y0)
+    if chord < HUMAN_MIN_CHORD:
+        return
+    # Velocita': il tragitto parte piano, accelera e rallenta vicino al bersaglio, e puo'
+    # finire un po' prima del momento registrato (poi il cursore resta fermo fino al gesto).
+    anchor = times[a - 1] if a > 0 else times[a]
+    span = times[b] - anchor
+    ease = rng.uniform(0.3, 0.8)
+    pace = rng.uniform(0.8, 1.0)
+    # Percorso: arco laterale piu' una leggera "S", nulli agli estremi.
+    nx, ny = -(y1 - y0) / chord, (x1 - x0) / chord
+    arc = min(HUMAN_MAX_DEVIATION, chord * rng.uniform(0.02, 0.08)) * rng.choice((-1, 1))
+    wave = min(HUMAN_MAX_DEVIATION / 3, chord * rng.uniform(0.0, 0.03)) * rng.choice((-1, 1))
+    for k in range(a, b + 1):
+        u = (k - a) / (b - a)
+        if 0 < k - a < b - a:
+            d = arc * math.sin(math.pi * u) + wave * math.sin(2.0 * math.pi * u)
+            out[k].x = int(round(events[k].x + nx * d + rng.uniform(-0.8, 0.8)))
+            out[k].y = int(round(events[k].y + ny * d + rng.uniform(-0.8, 0.8)))
+        if span > 0:
+            tu = (times[k] - anchor) / span
+            eased = tu + ease * (_smoothstep(tu) - tu)
+            new_times[k] = anchor + span * pace * eased
+    # I tempi restano non decrescenti anche con il rumore numerico.
+    for k in range(a + 1, b + 1):
+        new_times[k] = max(new_times[k], new_times[k - 1])
 
 
 @dataclass
@@ -247,6 +323,8 @@ def play(
 
     scaled_times = _compute_scaled_times(events, options)
     variation = max(0.0, min(1.0, options.timing_variation_seconds))
+    if options.humanize:
+        variation = max(variation, HUMAN_PAUSE_SECONDS)
     rng = random.Random() if variation else None
 
     start = time.perf_counter()
@@ -278,10 +356,13 @@ def play(
             if options.mode == LoopMode.REPEAT_COUNT and loop >= options.repeat_count:
                 break
 
-            cycle_times = _vary_times(events, scaled_times, variation, rng) if rng else scaled_times
+            cycle_events, base_times = events, scaled_times
+            if options.humanize and rng:
+                cycle_events, base_times = _humanize_cycle(events, scaled_times, rng)
+            cycle_times = _vary_times(events, base_times, variation, rng) if rng else base_times
 
             click = 0
-            for index, (evt, relative) in enumerate(zip(events, cycle_times)):
+            for index, (evt, relative) in enumerate(zip(cycle_events, cycle_times)):
                 if evt.kind in BUTTON_OF_DOWN:
                     click += 1
                 target = start + loop_start_offset + relative + extra_delay

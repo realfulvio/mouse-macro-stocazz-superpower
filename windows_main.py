@@ -7,14 +7,18 @@ import json
 import os
 from pathlib import Path
 import queue
+import subprocess
+import sys
+import threading
 import traceback
 import time
-from windows_visual import Theme, Canvas, COLORS, Paint, DrawItem
+from windows_visual import Theme, Canvas, COLORS, Paint, DrawItem, SKINS, CURRENT, apply_skin
 
 from macro.windows_backend import (WindowsRecorder, WindowsPlayer, GlobalHotkeys,
     HOTKEY_RECORD, HOTKEY_PLAY, HOTKEY_EMERGENCY, screen_geometry, window_rect)
 from macro.session import Session, State, VERSION, validate_gestures
 from macro.engine import PlaybackOptions
+from macro import updater
 from macro.events import BUTTON_OF_DOWN, BUTTON_OF_UP, WHEEL
 
 U = C.windll.user32
@@ -58,6 +62,14 @@ api(U, 'GetFocus', W.HWND, [])
 api(U, 'WindowFromPoint', W.HWND, [W.POINT])
 api(U, 'EnableWindow', W.BOOL, [W.HWND, W.BOOL])
 api(U, 'ShowWindow', W.BOOL, [W.HWND, C.c_int])
+api(U, 'CreatePopupMenu', W.HMENU, [])
+api(U, 'AppendMenuW', W.BOOL, [W.HMENU, W.UINT, C.c_size_t, W.LPCWSTR])
+api(U, 'TrackPopupMenu', C.c_int, [W.HMENU, W.UINT, C.c_int, C.c_int, C.c_int, W.HWND, C.c_void_p])
+api(U, 'DestroyMenu', W.BOOL, [W.HMENU])
+api(U, 'SetForegroundWindow', W.BOOL, [W.HWND])
+api(G, 'SetTextColor', W.DWORD, [W.HDC, W.DWORD])
+api(G, 'SetBkColor', W.DWORD, [W.HDC, W.DWORD])
+api(G, 'CreateSolidBrush', W.HBRUSH, [W.DWORD])
 api(U, 'DestroyWindow', W.BOOL, [W.HWND])
 api(C.windll.uxtheme,'SetWindowTheme',C.c_long,[W.HWND,W.LPCWSTR,W.LPCWSTR])
 api(U, 'LoadImageW', W.HANDLE, [W.HINSTANCE,W.LPCWSTR,W.UINT,C.c_int,C.c_int,W.UINT])
@@ -104,6 +116,7 @@ class Panel:
         self.speed = 1.0
         self.next_tab = False
         self.slow = False
+        self.human = False
         self.closing = False
         self.dialog_open = False
         self.trace_saved = None
@@ -117,12 +130,17 @@ class Panel:
         self.record_started = None
         self.hover = None
         self.last_view = None
-        self.theme = Theme()
+        self.update = {'state': 'unknown', 'latest': None, 'release': None}
+        self.edit_brush = None
         FOLDER.mkdir(parents=True, exist_ok=True)
         try:
             self.settings = json.loads((FOLDER / 'panel-v016.json').read_text('utf-8'))
         except (OSError, ValueError):
             pass
+        if not isinstance(self.settings, dict):
+            self.settings = {}
+        apply_skin(self.settings.get('skin'))
+        self.theme = Theme()
         self.proc = WNDPROC(self.wndproc)
         self.instance = K.GetModuleHandleW(None)
         icon = U.LoadImageW(None,str(Path(__file__).resolve().parent/'assets'/'icon.ico'),1,0,0,0x10|0x40)
@@ -159,8 +177,9 @@ class Panel:
         U.SendMessageW(self.controls[22],0xC5,3,0)  # EM_LIMITTEXT
         labels = {10:'Registra · F9',11:'Riproduci · F10',21:'−',23:'+',24:'Opzioni',
                   25:'Preset 20',31:'Normale',32:'Rapida 2×',40:'Scheda successiva tra i giri',
-                  41:'Pagine lente',101:'Salva macro',102:'Carica macro',104:'Guida',
-                  110:'Emergenza: Ctrl+Alt+F11',201:'Riduci a icona',202:'Espandi opzioni',203:'Chiudi'}
+                  41:'Pagine lente',42:'Movimento umano',101:'Salva macro',102:'Carica macro',104:'Guida',
+                  110:'Emergenza: Ctrl+Alt+F11',201:'Riduci a icona',202:'Espandi opzioni',203:'Chiudi',
+                  204:'Cambia skin',205:'Aggiornamenti'}
         labels[12] = 'Ferma'
         for cid, label in labels.items():
             self.controls[cid] = U.CreateWindowExW(0,'BUTTON',label,0x5001000B,
@@ -175,6 +194,8 @@ class Panel:
         self.render()
         U.ShowWindow(self.hwnd, 4)  # SW_SHOWNOACTIVATE
         U.SetWindowPos(self.hwnd, W.HWND(-1), 0, 0, 0, 0, 0x13)  # no move/size/activate
+        if self.settings.get('check_updates', True):
+            self.check_updates()
 
     def clamp(self, x, y, w, h):
         monitor = U.MonitorFromPoint(W.POINT(x, y), 2)
@@ -194,14 +215,15 @@ class Panel:
         # Windows owns this region after SetWindowRgn succeeds.
         region = G.CreateRoundRectRgn(0,0,round(width*scale)+1,round(height*scale)+1,round(36*scale),round(36*scale))
         if not U.SetWindowRgn(self.hwnd,region,True): G.DeleteObject(region)
-        boxes = {12:(208,12,72,40)} if self.active_view else {201:(width-98,7,28,28),202:(width-66,7,28,28),203:(width-34,7,28,28)}
+        boxes = {12:(208,12,72,40)} if self.active_view else {201:(width-98,7,28,28),202:(width-66,7,28,28),203:(width-34,7,28,28),
+                                                  204:(width-130,7,28,28),205:(width-162,7,28,28)}
         if self.active_view:
             pass
         elif self.expanded:
             boxes.update({10:(16,244,298,64),11:(326,244,298,64),24:(16,324,608,44),
                 21:(32,410,34,38),22:(66,410,46,38),23:(112,410,34,38),25:(32,457,114,30),
                 31:(192,402,162,38),32:(192,442,162,38),
-                40:(386,399,220,38),41:(386,444,220,38),
+                40:(386,373,220,38),41:(386,413,220,38),42:(386,453,220,38),
                 101:(192,495,162,38),102:(366,495,240,38),
                 104:(20,558,104,34),110:(346,562,266,30)})
             boxes[104]=(20,558,104,34);boxes[110]=(346,562,266,30)
@@ -287,16 +309,16 @@ class Panel:
             if self.active_view:
                 self.paint_active(c)
                 return
-            c.rounded(3,3,w-6,86,16,'#332049',bottom='#251735')
+            c.rounded(3,3,w-6,86,16,COLORS['header_top'],bottom=COLORS['header_bottom'])
             c.horse('pronto',10,30,58,54)
             tx=76
-            c.text('Mouse Macro',tx,32,w-tx-12,26,22,bold=True,display=True)
-            c.text('Stocazz',tx,57,85,24,20,COLORS['warning'],True,display=True)
-            c.text('Superpower',tx+86,57,w-tx-98,24,20,COLORS['record'],True,display=True)
+            c.text('Mouse Macro',tx,32,w-tx-12,26,22,COLORS['header_text'],bold=True,display=True)
+            c.text('Stocazz',tx,57,85,24,20,COLORS['header_a'],True,display=True)
+            c.text('Superpower',tx+86,57,w-tx-98,24,20,COLORS['header_b'],True,display=True)
             state=self.session.state
             horse={State.RECORDING:'registrazione',State.PLAYING:'riproduzione',State.STOPPING:'riproduzione',State.ERROR:'errore'}.get(state,'pronto')
             color={'pronto':COLORS['ready'],'registrazione':COLORS['record'],'riproduzione':COLORS['play'],'errore':COLORS['error']}[horse]
-            c.rounded(16,102,w-32,126,14,COLORS['surface'],COLORS['border'],bottom='#21132F')
+            c.rounded(16,102,w-32,126,14,COLORS['surface'],COLORS['border'],bottom=COLORS['surface_bottom'])
             c.ellipse(32,125,16,16,color)
             c.text(state.value.capitalize(),58,115,226 if self.expanded else 156,34,22,color if state==State.ERROR else COLORS['text'],True)
             c.text(self.session.message,32,152,268 if self.expanded else 172,64,14,
@@ -313,7 +335,7 @@ class Panel:
                 c.text('Ripetizioni',32,376,140,26,14,bold=True)
                 c.text('Velocità',192,376,158,26,14,bold=True)
                 for x in (172,368):c.line(x,384,x,484,COLORS['border'])
-                c.rounded(66,410,46,38,1,'#21132F',COLORS['border'])
+                c.rounded(66,410,46,38,1,COLORS['input'],COLORS['border'])
                 c.line(16,550,w-16,550,COLORS['border'])
             else:
                 c.horse(horse,207,118,112,104)
@@ -342,25 +364,26 @@ class Panel:
         c=Canvas(self.theme,item.hdc,item.rect.right-item.rect.left,item.rect.bottom-item.rect.top,scale,text_hint=4 if self.active_view else 5)
         enabled=bool(U.IsWindowEnabled(item.hwnd));hover=cid==self.hover and enabled
         pressed=bool(item.state&1);fg=COLORS['text'] if enabled else COLORS['faded']
+        fg_accent=COLORS['on_accent'] if enabled else COLORS['faded']
         try:
-            c.clear('#322047' if cid in (201,202,203) else COLORS['surface'] if cid in (21,23,25,31,32,40,41,101,102) else COLORS['background'])
+            c.clear(COLORS['chrome'] if cid in (201,202,203,204,205) else COLORS['surface'] if cid in (21,23,25,31,32,40,41,101,102) else COLORS['background'])
             if cid == 12:
                 c.rounded(1,1,w-2,h-2,12,COLORS['record'] if self.session.state==State.RECORDING else COLORS['play'],COLORS['border'])
-                c.icon('stop',6,12,16,fg)
-                c.text('Stop',24,0,w-26,h,13,fg,True)
+                c.icon('stop',6,12,16,fg_accent)
+                c.text('Stop',24,0,w-26,h,13,fg_accent,True)
             elif cid in (10,11):
                 key='record' if cid==10 else 'play'
                 bg=COLORS[key] if enabled else COLORS['disabled']
-                if hover:bg='#FF55A8' if cid==10 else '#A78BFA'
-                if pressed and enabled:bg='#C91F6C' if cid==10 else '#6D48D7'
-                c.rounded(1,1,w-2,h-2,16,bg,'#FF76BB' if cid==10 and enabled else COLORS['border'],bottom=bg if not enabled else ('#E61980' if cid==10 else '#6740AF'))
+                if hover:bg=COLORS['record_hover'] if cid==10 else COLORS['play_hover']
+                if pressed and enabled:bg=COLORS['record_pressed'] if cid==10 else COLORS['play_pressed']
+                c.rounded(1,1,w-2,h-2,16,bg,COLORS['record_edge'] if cid==10 and enabled else COLORS['border'],bottom=bg if not enabled else (COLORS['record_bottom'] if cid==10 else COLORS['play_bottom']))
                 stopping=self.session.state==State.RECORDING if cid==10 else self.session.state in (State.PLAYING,State.STOPPING)
                 icon='stop' if stopping else key if cid==10 else 'play'
                 label=('Ferma' if stopping else 'Registra' if cid==10 else 'Riproduci')+(' · F9' if cid==10 else ' · F10')
-                c.icon(icon,41 if cid==10 else 30,14,36,fg)
-                c.text(label,80 if cid==10 else 66,0,w-90 if cid==10 else w-76,h,18,fg,True)
+                c.icon(icon,41 if cid==10 else 30,14,36,fg_accent)
+                c.text(label,80 if cid==10 else 66,0,w-90 if cid==10 else w-76,h,18,fg_accent,True)
             elif cid==24:
-                c.rounded(1,1,w-2,h-2,12,'#36234E' if hover else COLORS['surface'],COLORS['border'])
+                c.rounded(1,1,w-2,h-2,12,COLORS['surface_hover'] if hover else COLORS['surface'],COLORS['border'])
                 c.icon('gear',16,10,24,fg)
                 c.text('Opzioni',50,0,w-85,h,16,fg,True)
                 cx=w-24;cy=h/2
@@ -372,10 +395,10 @@ class Panel:
                 c.ellipse(6,11,16,16,COLORS['record'] if selected and enabled else fg,not selected)
                 if selected:c.ellipse(11,16,6,6,COLORS['text'])
                 c.text('Normale' if cid==31 else 'Rapida 2×',32,0,w-38,h,14,fg)
-            elif cid in (40,41):
-                on=self.next_tab if cid==40 else self.slow
-                title,hint=(('Cambia scheda','Ctrl+Tab tra i giri') if cid==40
-                            else ('Pagine lente','Pause più lunghe'))
+            elif cid in (40,41,42):
+                on={40:self.next_tab,41:self.slow,42:self.human}[cid]
+                title,hint={40:('Cambia scheda','Ctrl+Tab tra i giri'),41:('Pagine lente','Pause più lunghe'),
+                            42:('Movimento umano','Percorsi e pause variabili')}[cid]
                 c.text(title,0,1,w-55,20,14,fg,True)
                 c.text(hint,0,21,w-52,16,11,COLORS['muted'] if enabled else fg)
                 c.rounded(w-48,9,44,22,11,COLORS['record'] if on and enabled else COLORS['disabled'])
@@ -385,15 +408,25 @@ class Panel:
             elif cid==110:
                 c.icon('warning',2,(h-24)/2,24,COLORS['warning'])
                 c.text('Emergenza: Ctrl+Alt+F11' if self.expanded else 'Emergenza:\nCtrl+Alt+F11',31,0,w-33,h,13,COLORS['warning'],wrap=True)
+            elif cid==204:
+                color=COLORS['header_text'] if hover else COLORS['header_muted']
+                if hover:c.rounded(0,0,w,h,7,COLORS['chrome_hover'])
+                c.ellipse(6,6,16,16,color,True)
+                for dx,dy in ((10,10),(15,10),(12.5,16)):c.ellipse(dx-1.5,dy-1.5,3,3,color)
+            elif cid==205:
+                if hover:c.rounded(0,0,w,h,7,COLORS['chrome_hover'])
+                dot={'current':COLORS['dot_ok'],'available':COLORS['dot_new']}.get(self.update['state'],COLORS['dot_off'])
+                c.ellipse(8,8,12,12,dot)
+                if self.update['state']=='available':c.ellipse(5,5,18,18,dot,True)
             elif cid in (201,202,203):
-                color=COLORS['text'] if hover else COLORS['muted']
-                if hover:c.rounded(0,0,w,h,7,COLORS['error'] if cid==203 else COLORS['alt'])
+                color=COLORS['header_text'] if hover else COLORS['header_muted']
+                if hover:c.rounded(0,0,w,h,7,COLORS['error'] if cid==203 else COLORS['chrome_hover'])
                 if cid==201:c.line(8,15,20,15,color,1.5)
                 elif cid==202:
                     for a,b,d,e in [(8,8,20,8),(20,8,20,20),(20,20,8,20),(8,20,8,8)]:c.line(a,b,d,e,color,1.5)
                 else:c.line(8,8,20,20,color,1.5);c.line(20,8,8,20,color,1.5)
             else:
-                c.rounded(1,1,w-2,h-2,9,COLORS['alt'] if hover else '#322047',COLORS['border'])
+                c.rounded(1,1,w-2,h-2,9,COLORS['button_hover'] if hover else COLORS['button'],COLORS['border'])
                 label={21:'−',23:'+',25:'Preset 20',101:'Salva macro',102:'Carica macro'}[cid]
                 if cid in (101,102):
                     c.icon('save' if cid==101 else 'load',12,(h-20)/2,20,fg)
@@ -436,7 +469,7 @@ class Panel:
             max_pause_speedup=1.0, min_click_hold_seconds=.12,
             min_action_gap_seconds=1.2 if self.slow else .65/self.speed,
             double_click_seconds=U.GetDoubleClickTime()/1000,
-            double_click_gap_seconds=.08, protect_wheel_actions=True)
+            double_click_gap_seconds=.08, protect_wheel_actions=True, humanize=self.human)
 
     def preflight(self, macro):
         if macro.screen and macro.screen != screen_geometry():
@@ -508,7 +541,7 @@ class Panel:
             valid = True
         except ValueError: valid = False
         U.EnableWindow(self.controls[11], state != State.RECORDING and valid)
-        for cid in (21,22,23,24,25,31,32,40,41,101,102,104,202):
+        for cid in (21,22,23,24,25,31,32,40,41,42,101,102,104,202,204,205):
             U.EnableWindow(self.controls[cid], not active)
         if U.GetFocus() != self.controls[22]:
             self.sync_repeats()
@@ -516,9 +549,10 @@ class Panel:
         U.SetWindowTextW(self.controls[32], ('✓ ' if self.speed == 2 else '')+'Rapida 2×')
         U.SetWindowTextW(self.controls[40], 'Scheda successiva tra i giri: '+('attivo' if self.next_tab else 'disattivato'))
         U.SetWindowTextW(self.controls[41], 'Pagine lente: '+('attivo' if self.slow else 'disattivato'))
+        U.SetWindowTextW(self.controls[42], 'Movimento umano: '+('attivo' if self.human else 'disattivato'))
         U.EnableWindow(self.controls[101], not active and valid)
-        view=(state,self.session.message,self.metrics(),self.repeats,self.speed,self.next_tab,self.slow,
-              int(time.monotonic()-(self.play_started or time.monotonic())))
+        view=(state,self.session.message,self.metrics(),self.repeats,self.speed,self.next_tab,self.slow,self.human,
+              int(time.monotonic()-(self.play_started or time.monotonic())),CURRENT['skin'],self.update['state'])
         if view != self.last_view:
             self.last_view=view
             U.InvalidateRect(self.hwnd,None,False)
@@ -535,7 +569,9 @@ class Panel:
     def drain(self):
         while not self.queue.empty():
             action = self.queue.get()
-            if action == 'record':
+            if isinstance(action, tuple):
+                self.worker_result(*action)
+            elif action == 'record':
                 if self.session.state in (State.READY,State.ERROR):
                     self.set_active_view(True)
                 self.session.toggle_record()
@@ -551,6 +587,127 @@ class Panel:
             elif action == 'emergency' and self.session.state == State.RECORDING:
                 self.session.toggle_record()
         self.render()
+
+    def set_skin(self, name):
+        name = apply_skin(name)
+        self.theme.load_images()
+        if self.edit_brush:
+            G.DeleteObject(self.edit_brush)
+        self.edit_brush = None
+        self.settings['skin'] = name
+        self.write_settings()
+        self.last_view = None
+        U.InvalidateRect(self.hwnd,None,True)
+        for hwnd in self.controls.values():U.InvalidateRect(hwnd,None,True)
+
+    def write_settings(self):
+        try:
+            (FOLDER/'panel-v016.json').write_text(json.dumps(self.settings), 'utf-8')
+        except OSError:
+            pass  # an unwritable settings folder must never block the panel
+
+    def popup(self, cid, items):
+        """Show a menu under control `cid`; items are (id, label, flags). Returns the chosen id or 0."""
+        menu = U.CreatePopupMenu()
+        try:
+            for item_id, label, flags in items:
+                U.AppendMenuW(menu, flags | (0x800 if label is None else 0), item_id, label)
+            r = window_rect(self.controls[cid])
+            U.SetForegroundWindow(self.hwnd)
+            choice = U.TrackPopupMenu(menu, 0x182, r[0], r[3], 0, self.hwnd, None)  # RETURNCMD|RIGHTBUTTON|NONOTIFY
+            U.PostMessageW(self.hwnd, 0, 0, 0)
+            return choice
+        finally:
+            U.DestroyMenu(menu)
+
+    def skin_menu(self):
+        items = [(100+i, info['label'], 8 if name == CURRENT['skin'] else 0)
+                 for i, (name, info) in enumerate(SKINS.items())]
+        choice = self.popup(204, items)
+        if choice:
+            self.set_skin(list(SKINS)[choice-100])
+            self.render()
+
+    def update_menu(self):
+        state, latest = self.update['state'], self.update['latest']
+        status = {'current': f'Aggiornato · versione {VERSION}',
+                  'available': f'Disponibile la versione {latest} (hai la {VERSION})',
+                  'checking': 'Controllo in corso…'}.get(state, 'Stato aggiornamenti sconosciuto')
+        items = [(1, status, 3), (2, None, 0), (3, 'Controlla ora', 0),
+                 (4, f'Scarica e installa la versione {latest}' if state == 'available' else 'Nessun aggiornamento da installare',
+                  0 if state == 'available' else 3),
+                 (5, 'Controlla all’avvio', 8 if self.settings.get('check_updates', True) else 0)]
+        choice = self.popup(205, items)
+        if choice == 3:
+            self.check_updates(manual=True)
+        elif choice == 4:
+            self.install_update()
+        elif choice == 5:
+            self.settings['check_updates'] = not self.settings.get('check_updates', True)
+            self.write_settings()
+            self.session.message = ('Controllo aggiornamenti all’avvio attivo.' if self.settings['check_updates']
+                                    else 'Controllo aggiornamenti all’avvio disattivato: nessun accesso alla rete.')
+        self.render()
+
+    def check_updates(self, manual=False):
+        """Anonymous read of the latest GitHub release, off the UI thread."""
+        if self.update['state'] == 'checking':
+            return
+        previous = self.update['state']
+        self.update['state'] = 'checking'
+        if manual:
+            self.session.message = 'Controllo aggiornamenti…'
+        def work():
+            try:
+                state, release = updater.check(VERSION)
+                self.post(('update_checked', state, release, manual))
+            except updater.UpdateError as error:
+                self.post(('update_failed', previous, str(error), manual))
+            except Exception as error:  # never let a worker thread die silently
+                self.post(('update_failed', previous, f'Controllo non riuscito: {error}', manual))
+        threading.Thread(target=work, name='update-check', daemon=True).start()
+
+    def install_update(self):
+        release = self.update.get('release')
+        if self.update['state'] != 'available' or not release:
+            return
+        self.dialog_open = True
+        try:
+            answer = U.MessageBoxW(self.hwnd, f'Scaricare la versione {release["version"]} da GitHub, verificarla e riavviare il programma?\n\n'
+                'Le macro salvate non vengono toccate.', f'Mouse Macro {VERSION} · hcok', 0x24)
+        finally:
+            self.dialog_open = False
+        if answer != 6:
+            return
+        self.session.message = f'Scarico la versione {release["version"]}…'
+        current = Path(__file__).resolve().parent.parent
+        def work():
+            try:
+                target = updater.install(release, FOLDER/'Portable', keep=[current])
+                self.post(('update_installed', str(target)))
+            except updater.UpdateError as error:
+                self.post(('update_failed', 'available', str(error), True))
+            except Exception as error:
+                self.post(('update_failed', 'available', f'Aggiornamento non riuscito: {error}', True))
+        threading.Thread(target=work, name='update-install', daemon=True).start()
+
+    def worker_result(self, kind, *args):
+        if kind == 'update_checked':
+            state, release, manual = args
+            self.update = {'state': state, 'latest': release['version'], 'release': release}
+            if manual or state == 'available':
+                self.session.message = (f'Disponibile la versione {release["version"]}: clicca il pallino in alto.'
+                                        if state == 'available' else f'Sei aggiornato: versione {VERSION}.')
+        elif kind == 'update_failed':
+            previous, message, manual = args
+            self.update['state'] = previous if previous != 'checking' else 'unknown'
+            if manual:
+                self.session.message = message
+        elif kind == 'update_installed':
+            target = Path(args[0])
+            subprocess.Popen([str(target/'runtime'/'pythonw.exe'), '-B', str(target/'app'/'windows_main.py'), '--wait-for-exit'],
+                             cwd=str(target), creationflags=0x00000008|0x00000200, close_fds=True)
+            U.PostMessageW(self.hwnd, WM_CLOSE, 0, 0)
 
     def read_repeats(self):
         text = C.create_unicode_buffer(16)
@@ -573,6 +730,10 @@ class Panel:
                 self.dialog_open = False
             if path:
                 self.session.save(path) if choice == 101 else self.session.load(path)
+        elif choice == 42:
+            self.human = not self.human
+            self.session.message = ('Movimento umano attivo: percorsi e pause cambiano a ogni giro, i clic restano sugli stessi punti.'
+                                    if self.human else 'Movimento umano disattivato: replay identico alla registrazione.')
         elif choice == 41:
             self.slow = not self.slow
             self.session.message = 'Pagine lente attive: nessun rilevamento automatico del caricamento.' if self.slow else 'Pausa standard fra le azioni.'
@@ -589,6 +750,10 @@ class Panel:
                     'PAGINE LENTE: aspetta di più tra un click e l’altro (almeno 1,2 s) e\n'
                     'non accorcia le tue pause oltre 0,35 s. Serve se il sito carica piano.\n'
                     'Non rileva il caricamento: aggiunge solo tempo.\n\n'
+                    'MOVIMENTO UMANO (spento all’avvio): a ogni giro il cursore segue una curva\n'
+                    'leggermente diversa, con velocità non uniforme, e le pause variano un poco.\n'
+                    'I clic cadono sempre negli stessi punti della registrazione. Non rende\n'
+                    'invisibile l’automazione: controlla i termini del sito che usi.\n\n'
                     'F10 ferma; Ctrl+Alt+F11 è lo stop di emergenza.\n'
                     'Sposta il pannello fuori dai gesti PRIMA di iniziare.\n'
                     'Mantieni posizione delle finestre e scala dello schermo.\n'
@@ -610,7 +775,8 @@ class Panel:
             position = self.normal_position if self.active_view else r[:2]
             if position:
                 try:
-                    (FOLDER/'panel-v016.json').write_text(json.dumps({'position':list(position)}), 'utf-8')
+                    self.settings['position'] = list(position)
+                    self.write_settings()
                 except OSError:
                     pass  # an unwritable settings folder must never block closing
 
@@ -619,6 +785,11 @@ class Panel:
             if msg == 0xF and hasattr(self,'width') and hasattr(self,'session'):
                 self.paint(hwnd);return 0
             if msg == 0x14:return 1  # fully buffered painting
+            if msg == 0x133 and hasattr(self,'session') and lp == self.controls.get(22):  # WM_CTLCOLOREDIT
+                rgb=lambda color:int(color[5:7],16)<<16|int(color[3:5],16)<<8|int(color[1:3],16)
+                G.SetTextColor(wp,rgb(COLORS['text']));G.SetBkColor(wp,rgb(COLORS['input']))
+                if not self.edit_brush:self.edit_brush=G.CreateSolidBrush(rgb(COLORS['input']))
+                return self.edit_brush
             if msg == 0x2B and hasattr(self,'boxes'):
                 self.draw_control(C.cast(lp,C.POINTER(DrawItem)).contents);return 1
             if msg == 0x84 and hasattr(self,'hwnd') and self.hwnd:
@@ -658,6 +829,8 @@ class Panel:
                 elif cid == 201: U.ShowWindow(hwnd,6)
                 elif cid in (24,202) and self.session.state in (State.READY,State.ERROR):
                     self.expanded=not self.expanded;self.layout(self.dpi)
+                elif cid == 204 and self.session.state in (State.READY,State.ERROR):self.skin_menu()
+                elif cid == 205 and self.session.state in (State.READY,State.ERROR):self.update_menu()
                 elif cid == 104:self.action(104)
                 elif cid == 110:self.hotkey(HOTKEY_EMERGENCY)
                 elif cid == 12:
@@ -680,7 +853,7 @@ class Panel:
                     if cid == 40: self.next_tab = not self.next_tab
                     if cid == 25: self.repeats = 20
                     if cid in (21,23,25): self.sync_repeats()
-                    if cid in (41,101,102): self.action(cid)
+                    if cid in (41,42,101,102): self.action(cid)
                     self.render()
                 return 0
             if msg == 0x2E0 and self.hwnd:  # WM_DPICHANGED
@@ -704,6 +877,8 @@ class Panel:
             if msg == WM_DESTROY:
                 if self.repeat_font:
                     G.DeleteObject(self.repeat_font)
+                if self.edit_brush:
+                    G.DeleteObject(self.edit_brush)
                 self.theme.close()
                 U.PostQuitMessage(0)
                 return 0
@@ -726,11 +901,17 @@ class Panel:
 
 
 def main():
-    mutex = K.CreateMutexW(None, False, 'Local\\MouseMacroSuperpower017')
-    if K.GetLastError() == 183:
+    wait = '--wait-for-exit' in sys.argv  # relaunch after an update: let the old instance close first
+    deadline = time.monotonic() + 20
+    while True:
+        mutex = K.CreateMutexW(None, False, 'Local\\MouseMacroSuperpower017')
+        if K.GetLastError() != 183:
+            break
         # Second launch leaves the original session and its global hotkeys alone.
         K.CloseHandle(mutex)
-        return
+        if not wait or time.monotonic() > deadline:
+            return
+        time.sleep(0.3)
     try:
         Panel().run()
     except Exception:
