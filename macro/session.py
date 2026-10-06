@@ -6,7 +6,7 @@ from enum import Enum
 from .events import Macro, BUTTON_OF_DOWN, BUTTON_OF_UP
 from .engine import play, PlaybackEnd, PlaybackOptions
 
-VERSION = '1.0.0'
+VERSION = '1.0.1'
 
 
 class State(Enum):

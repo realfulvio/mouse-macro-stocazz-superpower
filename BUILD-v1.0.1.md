@@ -1,4 +1,4 @@
-# Build Windows v1.0.0
+# Build Windows v1.0.1
 
 Su Windows x64 con Python 3.13.x e .NET Framework 4:
 
@@ -21,9 +21,9 @@ python build_native_windows.py --offline
 
 `--pip-python` indica un altro interprete con pip per installare le due wheel.
 
-Il pacchetto contiene anche `Mouse Macro v1.0.0 (senza exe).cmd`, copiato da `launcher.cmd`: alternativa per chi ha l'exe non firmato bloccato da Smart App Control/SmartScreen.
+Il pacchetto contiene anche `Mouse Macro v1.0.1 (senza exe).cmd`, copiato da `launcher.cmd`: alternativa per chi ha l'exe non firmato bloccato da Smart App Control/SmartScreen.
 
-Output in `dist/windows/`: ZIP versionato e `MouseMacroStocazzSuperpower-Windows-Portable.zip` (identici byte per byte), più `SHA256SUMS-v1.0.0.txt`.
+Output in `dist/windows/`: ZIP versionato e `MouseMacroStocazzSuperpower-Windows-Portable.zip` (identici byte per byte), più `SHA256SUMS-v1.0.1.txt`.
 
 ## Collaudo interattivo
 
