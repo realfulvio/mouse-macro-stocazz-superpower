@@ -1,22 +1,28 @@
 """Reproducible Windows build procedure: official embed + pinned pure Python wheels."""
 from pathlib import Path
 import argparse, hashlib, json, shutil, subprocess, sys, urllib.request, zipfile
-VERSION = '0.18.1-beta'
+VERSION = '0.19.1-beta'
 ROOT = Path(__file__).resolve().parent
 PACKAGE = f'MouseMacroStocazzSuperpower-Windows-v{VERSION}'
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--cross',action='store_true',help='Compile the Windows launcher using installed dotnet SDK 10.0.112 and official .NET 4.8 reference assemblies')
+    parser.add_argument('--offline',action='store_true',help='Use only the cached official runtime and wheels; never download dependencies')
+    parser.add_argument('--pip-python',help='Python with pip for installing the pinned pure Python wheels into the package')
     args=parser.parse_args()
     if sys.platform != 'win32' and not args.cross:
         raise SystemExit('Eseguire su Windows x64 oppure usare --cross con SDK .NET.')
-    if not args.cross and tuple(sys.version_info[:3]) != (3,13,16):
-        raise SystemExit('Runtime di build richiesto: Python 3.13.16')
+    # Only pure Python wheels are installed with the host interpreter; the shipped
+    # runtime is always the pinned official 3.13.16 embeddable package.
+    if not args.cross and tuple(sys.version_info[:2]) != (3,13):
+        raise SystemExit('Interprete di build richiesto: Python 3.13.x')
     cache = ROOT/'vendor'
     cache.mkdir(exist_ok=True)
     embed = cache/'python-3.13.16-embed-amd64.zip'
     if not embed.exists():
+        if args.offline:
+            raise SystemExit('Runtime ufficiale assente dalla cache offline')
         urllib.request.urlretrieve('https://www.python.org/ftp/python/3.13.16/'+embed.name, embed)
     stage = ROOT/'build'/'native'/PACKAGE
     if stage.exists():
@@ -28,7 +34,8 @@ def main():
     with zipfile.ZipFile(embed) as z:
         z.extractall(runtime)
     (runtime/'python313._pth').write_text('python313.zip\n.\nLib\n..\\app\n','utf-8')
-    subprocess.run([sys.executable,'-m','pip','install','--disable-pip-version-check',
+    subprocess.run([args.pip_python or sys.executable,'-m','pip','install','--disable-pip-version-check',
+        *(['--no-index','--find-links',str(cache)] if args.offline else []),
         '--only-binary=:all:','--no-compile','--no-deps','--target',str(runtime/'Lib'),
         '-r',str(ROOT/'requirements-windows.txt')],check=True)
     shutil.copy2(ROOT/'windows_main.py',app/'windows_main.py')
@@ -84,7 +91,9 @@ def main():
             if p.is_file():
                 z.write(p,p.relative_to(stage.parent))
     digest = hashlib.sha256(target.read_bytes()).hexdigest()
-    (out/'SHA256SUMS-v0.18.1.txt').write_text(digest+'  '+target.name+'\n','ascii')
+    portable = out/'MouseMacroStocazzSuperpower-Windows-Portable.zip'
+    shutil.copy2(target,portable)
+    (out/f'SHA256SUMS-v{VERSION.split("-")[0]}.txt').write_text(digest+'  '+target.name+'\n'+digest+'  '+portable.name+'\n','ascii')
     print(str(target),digest,flush=True)
 
 if __name__=='__main__':

@@ -215,6 +215,13 @@ class InjectionFailureTests(unittest.TestCase):
         self.assertEqual(player._ctrl.release.call_count,2)
         self.assertEqual(len(player._held),1)
 
+    def test_destroyed_panel_does_not_break_the_mouse_hook(self):
+        recorder = backend.WindowsRecorder(excluded_window=99, capture_snapshots=False)
+        with patch.object(backend, 'window_rect', side_effect=backend.TargetWindowChanged('gone')):
+            recorder._on_move(10, 10)
+            recorder._on_click(10, 10, backend.mouse.Button.left, True)
+        self.assertEqual([e.kind for e in recorder._events], [backend.MOVE_ABS, LEFT_DOWN])
+
     def test_global_recording_accepts_desktop_other_apps_and_browser_toolbar(self):
         recorder = backend.WindowsRecorder(excluded_window=99, capture_snapshots=False)
         with patch.object(backend, 'window_rect', return_value=[800, 0, 1200, 700]), \

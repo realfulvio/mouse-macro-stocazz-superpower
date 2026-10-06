@@ -37,6 +37,7 @@ for name,args in {
  'GdipCreateFromHDC':[W.HDC,C.POINTER(P)],'GdipDeleteGraphics':[P],
  'GdipSetSmoothingMode':[P,C.c_int],'GdipSetInterpolationMode':[P,C.c_int],
  'GdipSetTextRenderingHint':[P,C.c_int],'GdipScaleWorldTransform':[P,F,F,C.c_int],
+ 'GdipSetPageUnit':[P,C.c_int],
  'GdipCreateSolidFill':[W.DWORD,C.POINTER(P)],'GdipDeleteBrush':[P],
  'GdipCreateLineBrushFromRect':[C.POINTER(RectF),W.DWORD,W.DWORD,C.c_int,C.c_int,C.POINTER(P)],
  'GdipCreatePen1':[W.DWORD,F,C.c_int,C.POINTER(P)],'GdipDeletePen':[P],
@@ -79,6 +80,7 @@ class Theme:
             if D.GdipPrivateAddFontFile(self.collection,str(ROOT/'fonts'/f'Outfit-{weight}.ttf')):
                 raise RuntimeError('Font Outfit non disponibile')
         self.family=ptrcall(D.GdipCreateFontFamilyFromName,'Outfit',self.collection)
+        self.body_family=ptrcall(D.GdipCreateFontFamilyFromName,'Segoe UI',None)
         self.fonts={};self.images={};self.icons={}
         for state in ('pronto','registrazione','riproduzione','errore'):
             self.images[state]=ptrcall(D.GdipLoadImageFromFile,str(ROOT/'horses'/f'unicorn_{state}.png'))
@@ -86,20 +88,27 @@ class Theme:
     def close(self):
         for p in self.fonts.values():D.GdipDeleteFont(p)
         for p in self.images.values():D.GdipDisposeImage(p)
+        D.GdipDeleteFontFamily(self.body_family)
         D.GdipDeleteFontFamily(self.family);D.GdipDeletePrivateFontCollection(C.byref(self.collection))
         D.GdiplusShutdown(self.token)
-    def font(self,size,bold):
-        key=(size,bold)
-        if key not in self.fonts:self.fonts[key]=ptrcall(D.GdipCreateFont,self.family,size,int(bold),2)
+    def font(self,size,bold,display=False):
+        key=(size,bold,display)
+        family=self.family if display else self.body_family
+        if key not in self.fonts:self.fonts[key]=ptrcall(D.GdipCreateFont,family,size,int(bold),2)
         return self.fonts[key]
 
 class Canvas:
-    def __init__(self,theme,hdc,width,height,scale):
+    def __init__(self,theme,hdc,width,height,scale,text_hint=5):
         self.theme=theme;self.hdc=hdc;self.width=width;self.height=height
         self.dc=G.CreateCompatibleDC(hdc);self.bmp=G.CreateCompatibleBitmap(hdc,width,height)
         self.old=G.SelectObject(self.dc,self.bmp);self.g=ptrcall(D.GdipCreateFromHDC,self.dc)
         D.GdipSetSmoothingMode(self.g,4);D.GdipSetInterpolationMode(self.g,7)
-        D.GdipSetTextRenderingHint(self.g,4);D.GdipScaleWorldTransform(self.g,scale,scale,0)
+        # Work in physical bitmap pixels and apply logical DPI scaling once.
+        D.GdipSetPageUnit(self.g,2)  # UnitPixel
+        # ClearType on opaque panels; grayscale antialiasing on the layered bar
+        # avoids colored fringes when Windows composites the translucent window.
+        D.GdipSetTextRenderingHint(self.g,text_hint)
+        D.GdipScaleWorldTransform(self.g,scale,scale,0)
     def close(self):
         D.GdipDeleteGraphics(self.g)
         G.BitBlt(self.hdc,0,0,self.width,self.height,self.dc,0,0,0xcc0020)
@@ -127,11 +136,11 @@ class Canvas:
             p=ptrcall(D.GdipCreatePen1,argb(color),2,2);D.GdipDrawEllipse(self.g,p,x,y,w,h);D.GdipDeletePen(p)
         else:
             b=self.brush(color);D.GdipFillEllipse(self.g,b,x,y,w,h);D.GdipDeleteBrush(b)
-    def text(self,text,x,y,w,h,size=14,color=None,bold=False,align=0,wrap=False):
+    def text(self,text,x,y,w,h,size=14,color=None,bold=False,align=0,wrap=False,display=False):
         b=self.brush(color or COLORS['text']);fmt=ptrcall(D.GdipCreateStringFormat,0 if wrap else 0x1000,0)
         D.GdipSetStringFormatAlign(fmt,align);D.GdipSetStringFormatLineAlign(fmt,1)
         D.GdipSetStringFormatTrimming(fmt,3)
-        D.GdipDrawString(self.g,str(text),-1,self.theme.font(size,bold),C.byref(RectF(x,y,w,h)),fmt,b)
+        D.GdipDrawString(self.g,str(text),-1,self.theme.font(size,bold,display),C.byref(RectF(x,y,w,h)),fmt,b)
         D.GdipDeleteStringFormat(fmt);D.GdipDeleteBrush(b)
     def horse(self,state,x,y,w,h):
         # Supplied PNGs include catalog captions. Display the illustration region

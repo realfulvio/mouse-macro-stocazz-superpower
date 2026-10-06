@@ -84,7 +84,10 @@ class Macro:
             raise ValueError("Le dimensioni dello schermo nella macro non sono valide.")
         if not isinstance(data.get("events"), list):
             raise ValueError("La macro deve contenere una lista di eventi.")
-        events = [MacroEvent(**e) for e in data["events"]]
+        try:
+            events = [MacroEvent(**e) for e in data["events"]]
+        except TypeError as error:
+            raise ValueError("La macro contiene eventi incompleti o con campi sconosciuti.") from error
         kinds = set(BUTTON_OF_DOWN) | set(BUTTON_OF_UP) | {WHEEL}
         kinds.add(MOVE_ABS if data["platform"] == "windows" else MOVE_REL)
         previous = 0.0
