@@ -137,6 +137,7 @@ class Canvas:
         else:
             b=self.brush(color);D.GdipFillEllipse(self.g,b,x,y,w,h);D.GdipDeleteBrush(b)
     def text(self,text,x,y,w,h,size=14,color=None,bold=False,align=0,wrap=False,display=False):
+        size=size+2 if size<=15 else size+1 if size<20 else size  # larger text, easier to read on the dark UI
         b=self.brush(color or COLORS['text']);fmt=ptrcall(D.GdipCreateStringFormat,0 if wrap else 0x1000,0)
         D.GdipSetStringFormatAlign(fmt,align);D.GdipSetStringFormatLineAlign(fmt,1)
         D.GdipSetStringFormatTrimming(fmt,3)
