@@ -21,6 +21,9 @@ Ambiente: Windows 11 Pro build 26300, **Smart App Control attivo** (`VerifiedAnd
 - **Avvio del `.cmd` del pacchetto 1.1.0** con Smart App Control attivo: il programma parte («Mouse Macro 1.1.0 · pronto»).
 - **Avvio dell'exe con Smart App Control attivo**: l'esito **non è deterministico**. Nel collaudo della v1.0.1 Windows lo ha bloccato («Un criterio di controllo dell'applicazione ha bloccato il file»); in una prova successiva, sullo stesso PC, sia l'exe 1.0.1 sia l'exe 1.1.0 sono partiti. L'exe resta non firmato e dipende dalla reputazione che Microsoft gli assegna.
 
+- **Comando PowerShell dalla release pubblicata** (`irm …/install.ps1 | iex`, Windows PowerShell 5.1, Smart App Control attivo, sul PC con la sola 1.0.1 installata): scarica la 1.1.0, verifica lo SHA-256, la estrae e la avvia («Mouse Macro 1.1.0 · pronto»). Screenshot in `docs/screenshots/guida-powershell.png`.
+- **Aggiornamento in-app contro la release reale** (rete reale, versione di partenza simulata 1.0.5): `check` risponde «disponibile 1.1.0», da 1.1.0 risponde «aggiornato»; `install` scarica ZIP e `SHA256SUMS`, verifica l'hash, estrae e trova runtime, app, immagini delle skin e `.cmd` (1,5 s). Il riavvio con `--wait-for-exit` resta in attesa mentre l'istanza precedente è aperta (una sola finestra) e parte appena questa si chiude.
+
 ## Non verificato
 
 - «Movimento umano» è coperto da test del motore, ma **non è stato provato con un replay fisico su desktop o su un sito reale**. Non garantisce di non essere rilevato come automazione.
