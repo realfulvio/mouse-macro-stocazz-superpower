@@ -35,6 +35,7 @@ with zipfile.ZipFile(archive) as z:
         preserved = ('pythonw.exe','python.exe','python313.dll','python3.dll','python313.zip')
         for name in preserved:
             assert z.read(prefix+'runtime/'+name) == embed.read(name), name
+    assert z.read(prefix+f'Mouse Macro v{VERSION} (senza exe).cmd') == (ROOT/'launcher.cmd').read_bytes()
     exe = z.read(prefix+f'Mouse Macro v{VERSION}.exe')
     pe = struct.unpack_from('<I',exe,0x3c)[0]
     assert exe[:2] == b'MZ' and exe[pe:pe+4] == b'PE\0\0'
