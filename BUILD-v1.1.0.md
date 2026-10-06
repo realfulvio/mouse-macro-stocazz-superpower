@@ -1,4 +1,4 @@
-# Build Windows v1.0.1
+# Build Windows v1.1.0
 
 Su Windows x64 con Python 3.13.x e .NET Framework 4:
 
@@ -21,9 +21,9 @@ python build_native_windows.py --offline
 
 `--pip-python` indica un altro interprete con pip per installare le due wheel.
 
-Il pacchetto contiene anche `Mouse Macro v1.0.1 (senza exe).cmd`, copiato da `launcher.cmd`: alternativa per chi ha l'exe non firmato bloccato da Smart App Control/SmartScreen.
+Il pacchetto contiene anche `Mouse Macro v1.1.0 (senza exe).cmd`, copiato da `launcher.cmd`: alternativa per chi ha l'exe non firmato bloccato da Smart App Control/SmartScreen.
 
-Output in `dist/windows/`: ZIP versionato e `MouseMacroStocazzSuperpower-Windows-Portable.zip` (identici byte per byte), più `SHA256SUMS-v1.0.1.txt`.
+Output in `dist/windows/`: ZIP versionato e `MouseMacroStocazzSuperpower-Windows-Portable.zip` (identici byte per byte), più `SHA256SUMS-v1.1.0.txt`.
 
 ## Collaudo interattivo
 
@@ -38,3 +38,5 @@ python qa/privacy_package.py --deny-list build/privacy-terms.local.json
 ```
 
 La lista dei nomi riservati è un JSON locale (una stringa per identificativo), escluso dal repository. Richiede Pillow.
+
+Il pacchetto include anche `macro/updater.py` (controllo e installazione degli aggiornamenti dalla release GitHub) e le immagini di tutte le skin in `assets/horses/` (`<skin>_<stato>.png`, quattro stati: pronto, registrazione, riproduzione, errore). Per aggiungere una skin: quattro PNG con sfondo trasparente, una voce in `SKINS` e una palette in `windows_visual.py`.

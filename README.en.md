@@ -8,15 +8,17 @@ A small always-on-top panel for Windows: no installer, no Python to install.
 </p>
 
 <p align="center">
-<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.0.1"><b>⬇ Download for Windows</b></a>
+<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.1.0"><b>⬇ Download for Windows</b></a>
 · <a href="GUIDA-ITALIANA.md">Italian guide</a>
-· <a href="docs/ESITO-COLLAUDO-v1.0.1.md">Test report</a>
+· <a href="docs/ESITO-COLLAUDO-v1.1.0.md">Test report</a>
 </p>
 
 <p align="center">
-<img src="docs/screenshots/v100-compact.png" alt="Main panel" width="260">
+<img src="docs/screenshots/v110-unicorno-compatto.png" alt="Skin Unicorno" width="230">
 &nbsp;
-<img src="docs/screenshots/v100-playing.png" alt="Activity bar while replaying" width="288">
+<img src="docs/screenshots/v110-palio-compatto.png" alt="Palio skin" width="230">
+&nbsp;
+<img src="docs/screenshots/v110-palio-registrazione.png" alt="Barra" width="288">
 </p>
 
 ## Quick start from PowerShell
@@ -39,15 +41,15 @@ The script downloads the official release from GitHub, verifies its SHA-256, ext
 
 ## Other ways to install
 
-1. Download `MouseMacroStocazzSuperpower-Windows-v1.0.1.zip` from the [release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.0.1).
+1. Download `MouseMacroStocazzSuperpower-Windows-v1.1.0.zip` from the [release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.1.0).
 2. Extract the **whole** ZIP into a folder.
-3. Run `Mouse Macro v1.0.1.exe`. If Windows blocks it, run `Mouse Macro v1.0.1 (senza exe).cmd` instead.
+3. Run `Mouse Macro v1.1.0.exe`. If Windows blocks it, run `Mouse Macro v1.1.0 (senza exe).cmd` instead.
 
 Requires x64 Windows; the exe also needs .NET Framework 4 (included in Windows 10/11), the `.cmd` does not. Python is bundled. The interface is in Italian. The SHA-256 of the ZIP is published with each release.
 
 ### Windows blocks the exe?
 
-The `.exe` launcher is not code-signed, so SmartScreen or Windows 11 *Smart App Control* may block it (*"An application control policy has blocked this file"*). The two exe-free ways, the PowerShell command above and the **`Mouse Macro v1.0.1 (senza exe).cmd`** file in the ZIP, were **tested with Smart App Control enforced** (Windows 11 build 26300, [report](docs/ESITO-COLLAUDO-v1.0.1.md)). The `.cmd` starts the PSF-signed `pythonw.exe` directly with the same files. If SmartScreen warns, choose *More info → Run anyway*; if it still blocks, right-click the ZIP → *Properties* → **Unblock** before extracting.
+The `.exe` launcher is not code-signed, so SmartScreen or Windows 11 *Smart App Control* may block it (*"An application control policy has blocked this file"*). The two exe-free ways, the PowerShell command above and the **`Mouse Macro v1.1.0 (senza exe).cmd`** file in the ZIP, were **tested with Smart App Control enforced** (Windows 11 build 26300, [report](docs/ESITO-COLLAUDO-v1.1.0.md)). The `.cmd` starts the PSF-signed `pythonw.exe` directly with the same files. If SmartScreen warns, choose *More info → Run anyway*; if it still blocks, right-click the ZIP → *Properties* → **Unblock** before extracting.
 
 If these are blocked on your PC too, please open an [issue](https://github.com/realfulvio/mouse-macro-stocazz-superpower/issues).
 
@@ -58,8 +60,23 @@ If these are blocked on your PC too, please open an [issue](https://github.com/r
 - While recording or replaying, the panel shrinks to a small translucent bar with the counters and a **Stop** button, so it stays out of the way.
 - Save and load macros as `.mmr` files.
 - Optional **Ctrl+Tab between cycles** to move through browser tabs (off by default; never after the last cycle).
-- Records the mouse only: no keyboard keys, no screenshots, no network access.
+- **Human-like movement** (optional, off at startup): on every cycle the cursor follows a slightly different curve at a non-uniform speed, and pauses vary a little. Clicks always land on the same recorded points; drags and the wheel are unchanged. It does not make automation invisible: many sites forbid it in their terms.
+- Records the mouse only: no keyboard keys, no screenshots. The only network access is the update check, anonymous and optional.
 
+
+## Skins and updates
+
+<p align="center">
+<img src="docs/screenshots/v110-unicorno-compatto.png" alt="Unicorno skin" width="250">
+&nbsp;
+<img src="docs/screenshots/v110-palio-compatto.png" alt="Palio skin" width="250">
+&nbsp;
+<img src="docs/screenshots/v110-palio-esteso.png" alt="Palio skin with options open" width="420">
+</p>
+
+- **Skins**: the round button with dots at the top, next to the window buttons, opens the skin menu: *Unicorno* (dark purple, default) and *Palio* (light, a chestnut horse with contrada ribbons). Your choice is remembered. While recording and replaying the panel shrinks to the compact bar, with the horse of the chosen skin.
+- **Updates**: the dot next to it is **green** when you have the latest version, **yellow** when a newer one is out, **grey** when it cannot be checked. Click it to check now, download and install the latest version (the SHA-256 is verified, then the app restarts), or turn off the check at startup.
+- **Network**: the only network request of the program is the anonymous read of the latest release on GitHub. Nothing is downloaded or installed without your click, and the check can be turned off from the dot's menu.
 
 ## Use
 
@@ -81,11 +98,11 @@ If these are blocked on your PC too, please open an [issue](https://github.com/r
 - The panel must not sit on top of a recorded click; the app moves the bar to a free spot or refuses to start.
 - The app cannot tell whether a website accepted a click, and it never retries.
 - Not covered: UAC / secure desktop and elevated applications.
-- Not certified with SentinelOne. With Smart App Control enforced the exe is blocked, while the `.cmd` and the PowerShell command were tested and work. No protection is changed or bypassed.
+- Not certified with SentinelOne. With Smart App Control enforced the unsigned exe was blocked in one test and started in another, since it depends on the reputation Microsoft assigns to it; the `.cmd` and the PowerShell command always started. No protection is changed or bypassed.
 
 ## Status
 
-Stable. v1.0.1 only adds the exe-free launch options; the recorder/replay code is unchanged from v1.0.0. Checks on this release ([report](docs/ESITO-COLLAUDO-v1.0.1.md)): 141 automated tests (135 passed, 6 Linux-only skipped), package integrity, and real launches of the `.cmd` and of the PowerShell command with Smart App Control enforced (the unsigned exe is blocked, as expected). The physical record/replay results come from the [v1.0.0 report](docs/ESITO-COLLAUDO-v1.0.0.md) and were not repeated. Not covered: UAC/elevated apps, other DPI scalings on real monitors.
+Stable. v1.1.0 adds skins (Unicorno and Palio), the update dot and the exe-free launch options; the record/replay engine is unchanged. Checks on this release ([report](docs/ESITO-COLLAUDO-v1.1.0.md)): automated tests (including the updater module, with a simulated network), package integrity, real launch of the UI with both skins, update check against GitHub, and launch from PowerShell and the `.cmd` with Smart App Control enforced (the unsigned exe was blocked in one test and started in another). The physical record/replay results come from the [v1.0.0 report](docs/ESITO-COLLAUDO-v1.0.0.md). Not covered: UAC/elevated apps, other DPI scalings on real monitors.
 
 ## Build from source
 
@@ -95,6 +112,6 @@ python -m unittest discover -v
 python build_native_windows.py
 ```
 
-Details in [BUILD-v1.0.1.md](BUILD-v1.0.1.md). The older Linux version (Flet, IT/EN) is in the [v0.14 release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.14-beta).
+Details in [BUILD-v1.1.0.md](BUILD-v1.1.0.md). The older Linux version (Flet, IT/EN) is in the [v0.14 release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.14-beta).
 
 [All releases](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases) · [Design notes](docs/design/README.md) · [PolyForm Noncommercial License](LICENSE): free for personal and non-commercial use, no commercial resale · [Third-party notices](THIRD-PARTY-NOTICES.md) · Project and design: **hcok**

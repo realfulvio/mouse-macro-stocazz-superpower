@@ -1,8 +1,8 @@
-# Mouse Macro 1.0.1 — guida rapida
+# Mouse Macro 1.1.0 — guida rapida
 
 Progetto e design: **hcok**.
 
-Estrai **tutto** lo ZIP in una cartella e apri `Mouse Macro v1.0.1.exe`.
+Estrai **tutto** lo ZIP in una cartella e apri `Mouse Macro v1.1.0.exe`.
 Non occorre installare Python. Tieni insieme `runtime`, `app` ed eseguibile.
 
 1. Prepara i programmi e le finestre da usare. Sposta il pannello fuori dai punti che userai.
@@ -33,4 +33,14 @@ Le macro precedenti restano leggibili, anche se contengono metadati del browser.
 
 I registri locali sono in `%LOCALAPPDATA%\MouseMacroStocazzSuperpower` (`ultimo-replay.json`, `errore.log`, `errore-avvio.log`). Il programma non salva titoli del browser, URL o credenziali.
 
-Se Windows blocca l'exe, usa `Mouse Macro v1.0.1 (senza exe).cmd` incluso nello ZIP: avvia direttamente `runtime\pythonw.exe` con gli stessi file. Il launcher nuovo non è firmato; il runtime `pythonw.exe` conserva nome e firma PSF originali. Smart App Control, SentinelOne e policy aziendali **non sono certificati** da questa consegna; nessuna protezione Windows viene modificata. Il programma resta visibile sopra finestre normali, non sul desktop sicuro/UAC. Le prove locali non sostituiscono la verifica dei task su Howrse: nessun account reale è stato usato.
+Se Windows blocca l'exe, usa `Mouse Macro v1.1.0 (senza exe).cmd` incluso nello ZIP: avvia direttamente `runtime\pythonw.exe` con gli stessi file. Il launcher nuovo non è firmato; il runtime `pythonw.exe` conserva nome e firma PSF originali. Smart App Control, SentinelOne e policy aziendali **non sono certificati** da questa consegna; nessuna protezione Windows viene modificata. Il programma resta visibile sopra finestre normali, non sul desktop sicuro/UAC. Le prove locali non sostituiscono la verifica dei task su Howrse: nessun account reale è stato usato.
+
+## Skin e aggiornamenti
+
+- Il tondo con i puntini in alto apre il menu delle **skin** (Unicorno, Palio). La scelta viene ricordata.
+- Il **pallino** accanto è verde se sei aggiornato, giallo se c'è una versione nuova, grigio se non si riesce a controllare. Cliccalo per controllare ora, installare l'ultima versione (con verifica SHA-256 e riavvio) o disattivare il controllo all'avvio.
+- Il controllo è l'unica richiesta di rete del programma: legge in modo anonimo l'ultima release su GitHub. Non viene installato nulla senza un tuo clic. La verifica SHA-256 protegge da download corrotti; non sostituisce una firma digitale dell'editore.
+
+## Movimento umano
+
+Interruttore nelle Opzioni, **spento all'avvio**. Quando è acceso, a ogni giro il cursore segue una curva leggermente diversa tra un clic e l'altro, con velocità non uniforme (parte piano, accelera, rallenta), e le pause variano fino a circa un quarto di secondo. Le pressioni, i rilasci e la rotella restano nelle stesse coordinate della registrazione, e i trascinamenti non vengono modificati. Non è una garanzia contro i controlli dei siti: leggi i loro termini d'uso.
