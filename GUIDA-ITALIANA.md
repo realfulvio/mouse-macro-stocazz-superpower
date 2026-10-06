@@ -1,8 +1,8 @@
-# Mouse Macro 1.0.0 — guida rapida
+# Mouse Macro 1.0.1 — guida rapida
 
 Progetto e design: **hcok**.
 
-Estrai **tutto** lo ZIP in una cartella e apri `Mouse Macro v1.0.0.exe`.
+Estrai **tutto** lo ZIP in una cartella e apri `Mouse Macro v1.0.1.exe`.
 Non occorre installare Python. Tieni insieme `runtime`, `app` ed eseguibile.
 
 1. Prepara i programmi e le finestre da usare. Sposta il pannello fuori dai punti che userai.
@@ -33,4 +33,4 @@ Le macro precedenti restano leggibili, anche se contengono metadati del browser.
 
 I registri locali sono in `%LOCALAPPDATA%\MouseMacroStocazzSuperpower` (`ultimo-replay.json`, `errore.log`, `errore-avvio.log`). Il programma non salva titoli del browser, URL o credenziali.
 
-Se Windows blocca l'exe, usa `Mouse Macro v1.0.0 (senza exe).cmd` incluso nello ZIP: avvia direttamente `runtime\pythonw.exe` con gli stessi file. Il launcher nuovo non è firmato; il runtime `pythonw.exe` conserva nome e firma PSF originali. Smart App Control, SentinelOne e policy aziendali **non sono certificati** da questa consegna; nessuna protezione Windows viene modificata. Il programma resta visibile sopra finestre normali, non sul desktop sicuro/UAC. Le prove locali non sostituiscono la verifica dei task su Howrse: nessun account reale è stato usato.
+Se Windows blocca l'exe, usa `Mouse Macro v1.0.1 (senza exe).cmd` incluso nello ZIP: avvia direttamente `runtime\pythonw.exe` con gli stessi file. Il launcher nuovo non è firmato; il runtime `pythonw.exe` conserva nome e firma PSF originali. Smart App Control, SentinelOne e policy aziendali **non sono certificati** da questa consegna; nessuna protezione Windows viene modificata. Il programma resta visibile sopra finestre normali, non sul desktop sicuro/UAC. Le prove locali non sostituiscono la verifica dei task su Howrse: nessun account reale è stato usato.
