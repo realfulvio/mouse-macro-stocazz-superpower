@@ -58,7 +58,7 @@ The runtime signature does not guarantee that Smart App Control, antivirus
 or corporate security policies will accept the app. If an alert appears,
 stop using the app and preserve the detection details for investigation.
 
-powered by hcok - MIT licence (app/LICENSE)
+powered by hcok - PolyForm Noncommercial licence (app/LICENSE)
 """
 
 

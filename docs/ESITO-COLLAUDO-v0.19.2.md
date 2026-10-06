@@ -1,6 +1,6 @@
-# Esito dei controlli v0.19.1-beta
+# Esito dei controlli v0.19.2-beta
 
-La v0.19.1 parte dalla v0.19.0 (barra operativa, ripetizioni digitabili) e corregge alcuni difetti di robustezza. Il motore di riproduzione e i tempi non cambiano.
+La v0.19.2 parte dalla v0.19.0 (barra operativa, ripetizioni digitabili) e corregge alcuni difetti di robustezza. Il motore di riproduzione e i tempi non cambiano.
 
 ## Correzioni rispetto alla v0.19.0
 
@@ -18,10 +18,10 @@ La v0.19.1 parte dalla v0.19.0 (barra operativa, ripetizioni digitabili) e corre
 
 ## Non rieseguito su questo ZIP
 
-Registrazione e replay con input fisico non sono stati ripetuti sulla v0.19.1. Le prove native della v0.19.0 (17 eventi registrati; 20 giri a 1× in 80,3 s e a 2× in 47,3 s con conteggi identici; F10 ed Emergenza durante una pressione, con rilascio del mouse) restano valide per il codice invariato, ma non certificano le correzioni sopra. Restano da provare: pulsante Stop durante la registrazione, DPI diversi dal 100%, avvio senza rete, regressioni con cambio scheda nel browser.
+Registrazione e replay con input fisico non sono stati ripetuti sulla v0.19.2. Le prove native della v0.19.0 (17 eventi registrati; 20 giri a 1× in 80,3 s e a 2× in 47,3 s con conteggi identici; F10 ed Emergenza durante una pressione, con rilascio del mouse) restano valide per il codice invariato, ma non certificano le correzioni sopra. Restano da provare: pulsante Stop durante la registrazione, DPI diversi dal 100%, avvio senza rete, regressioni con cambio scheda nel browser.
 
 ## Limiti
 
 Coordinate assolute; nessuna conferma che un sito abbia accettato il click; nessun retry. Launcher non firmato; nessuna certificazione SentinelOne o Smart App Control; UAC/desktop sicuro e applicazioni con privilegi elevati non coperti.
 
-SHA-256 del ZIP: indicato in `SHA256SUMS-v0.19.1.txt` allegato alla release.
+SHA-256 del ZIP: indicato in `SHA256SUMS-v0.19.2.txt` allegato alla release.

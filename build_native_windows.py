@@ -1,7 +1,7 @@
 """Reproducible Windows build procedure: official embed + pinned pure Python wheels."""
 from pathlib import Path
 import argparse, hashlib, json, shutil, subprocess, sys, urllib.request, zipfile
-VERSION = '0.19.1-beta'
+VERSION = '0.19.2-beta'
 ROOT = Path(__file__).resolve().parent
 PACKAGE = f'MouseMacroStocazzSuperpower-Windows-v{VERSION}'
 
@@ -51,7 +51,7 @@ def main():
     macro.mkdir()
     for name in ('__init__.py','events.py','engine.py','session.py','windows_backend.py','win_dialogs.py'):
         shutil.copy2(ROOT/'macro'/name,macro/name)
-    for name in ('LICENSE','GUIDA-ITALIANA.md'):
+    for name in ('LICENSE','THIRD-PARTY-NOTICES.md','GUIDA-ITALIANA.md'):
         if (ROOT/name).exists():
             shutil.copy2(ROOT/name,stage/name)
     csc = Path(r'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe')

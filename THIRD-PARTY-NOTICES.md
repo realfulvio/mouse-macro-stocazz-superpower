@@ -1,6 +1,6 @@
 # Third-party notices
 
-The project itself is released under the [PolyForm Noncommercial License 1.0.0](LICENSE) since v0.19.2. Releases up to and including v0.19.1-beta were published under the MIT License and remain available under those terms.
+The project itself is released under the [PolyForm Noncommercial License 1.0.0](LICENSE) since v0.19.2-beta. Releases up to and including v0.19.1-beta were published under the MIT License and remain available under those terms.
 
 ## Bundled fonts
 
