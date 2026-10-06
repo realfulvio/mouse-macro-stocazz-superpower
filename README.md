@@ -34,7 +34,7 @@ A small always-on-top panel for Windows: no installer, no Python to install.
 2. Extract the **whole** ZIP into a folder.
 3. Run `Mouse Macro v1.0.0.exe`.
 
-**Windows blocks the exe?** The `.exe` launcher is not code-signed, so SmartScreen or Windows 11 *Smart App Control* may block it. There is an exe-free alternative: the PowerShell command below (works with the current v1.0.0 release), or `launcher.cmd`, which is included in the ZIP of releases after v1.0.0 and also available in the repository (copy it next to `runtime` and `app`, then run it). It starts the official Python `pythonw.exe` (signed by the Python Software Foundation) directly with the same files. If SmartScreen warns, choose *More info → Run anyway*; if it still blocks, right-click the ZIP → *Properties* → **Unblock** before extracting. No protection needs to be turned off.
+**Windows blocks the exe?** The `.exe` launcher is not code-signed, so SmartScreen or Windows 11 *Smart App Control* may block it. There is an exe-free alternative: the PowerShell command below (works with the current v1.0.0 release), or [Mouse-Macro-senza-exe.cmd](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.0.0/Mouse-Macro-senza-exe.cmd) (attached to the v1.0.0 release; save it inside the extracted folder, next to `runtime` and `app`, and run it). Releases after v1.0.0 will include it in the ZIP. It starts the official Python `pythonw.exe` (signed by the Python Software Foundation) directly with the same files. If SmartScreen warns, choose *More info → Run anyway*; if it still blocks, right-click the ZIP → *Properties* → **Unblock** before extracting. No protection needs to be turned off.
 
 **Or from PowerShell**, with nothing to download by hand:
 
