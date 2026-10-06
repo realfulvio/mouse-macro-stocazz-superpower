@@ -38,6 +38,14 @@ class MacroFileTests(unittest.TestCase):
                  {'platform':'windows','events':[{'t':0,'kind':'unknown'}]},
                  {'platform':'windows','events':[{'t':0,'kind':MOVE_REL}]},
                  {'platform':'windows','events':[{'t':0,'kind':LEFT_DOWN,'x':'bad'}]}]
+        malformed=[{'platform':'windows','events':[{'kind':LEFT_DOWN}]},
+                   {'platform':'windows','events':[{'t':0,'kind':LEFT_DOWN,'extra':1}]},
+                   {'platform':'windows','events':[5]}]
+        for data in malformed:
+            with self.subTest(data=data):
+                self.path.write_text(json.dumps(data),encoding='utf-8')
+                with self.assertRaises(ValueError):  # readable message, not a raw TypeError
+                    Macro.load(str(self.path))
         for data in invalid:
             with self.subTest(data=data):
                 self.path.write_text(json.dumps(data),encoding='utf-8')

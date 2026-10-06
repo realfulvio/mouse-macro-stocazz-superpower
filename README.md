@@ -1,50 +1,75 @@
 <p align="center"><b>English</b> · <a href="README.it.md">Italiano</a></p>
 
-# Mouse Macro Stocazz Superpower
+<h1 align="center">Mouse Macro Stocazz Superpower</h1>
 
-Record mouse movement, clicks, dragging and scrolling. Replay the sequence from a compact, expandable Windows window that stays on top. Outfit, horses and the plum, pink, purple and yellow palette follow the approved visual direction.
+<p align="center">
+Record your mouse, replay it as many times as you need.<br>
+A small always-on-top panel for Windows: no installer, no Python to install.
+</p>
 
-**[Download v0.18.1 beta for Windows](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.18.1-beta)** · Project and design: **hcok**.
+<p align="center">
+<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/latest"><b>⬇ Download for Windows</b></a>
+· <a href="GUIDA-ITALIANA.md">Italian guide</a>
+· <a href="docs/ESITO-COLLAUDO-v0.19.1.md">Test report</a>
+</p>
 
-**v0.18.1-beta** removes the Chrome/Firefox restriction and records/replays across applications and the desktop. It retains the v0.18 changes: starts with tab switching disabled and accelerates ordinary interaction pauses in Rapid 2×. The layout is unchanged from the v0.17 screenshots below. [Changes, timing measurements and acceptance status](docs/ESITO-COLLAUDO-v0.18.1.md) · [v0.18.1 build](BUILD-v0.18.1.md).
+<p align="center">
+<img src="docs/screenshots/v019-compact-real.png" alt="Main panel" width="260">
+&nbsp;
+<img src="docs/screenshots/v019-playing-real.png" alt="Activity bar while replaying" width="288">
+</p>
 
-![Windows v0.17 panel (Italian UI)](docs/screenshots/v017-compact-100.png)
+## What it does
 
-## Start
+- Records mouse movement, clicks, double clicks, dragging and the scroll wheel, across any program, the desktop and browser toolbars.
+- Replays the sequence 1–999 times at normal speed or **2× faster**.
+- While recording or replaying, the panel shrinks to a small translucent bar with the counters and a **Stop** button, so it stays out of the way.
+- Save and load macros as `.mmr` files.
+- Optional **Ctrl+Tab between cycles** to move through browser tabs (off by default; never after the last cycle).
+- Records the mouse only: no keyboard keys, no screenshots, no network access.
 
-1. Download `MouseMacroStocazzSuperpower-Windows-v0.18.1-beta.zip` from the release.
-2. Extract the **entire** ZIP folder.
-3. Open `Mouse Macro v0.18.1-beta.exe`.
+## Install
 
-Requires x64 Windows with .NET Framework 4; tested on Windows 11. Python is bundled: no Python installation or first-run download is needed. The launcher is unsigned. The Windows interface is **Italian only**. These screenshots show real controls and counters in the running application.
+1. Download `MouseMacroStocazzSuperpower-Windows-v0.19.1-beta.zip` from the [latest release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/latest).
+2. Extract the **whole** ZIP into a folder.
+3. Run `Mouse Macro v0.19.1-beta.exe`.
 
-## Record and replay
+Requires x64 Windows and .NET Framework 4 (included in Windows 10/11). Python is bundled. The interface is in Italian. The launcher is not code-signed, so Windows SmartScreen may warn on first run; the SHA-256 of the ZIP is published with each release.
 
-1. Prepare the applications to use and move the panel away from the recorded targets.
-2. Press **F9**, perform the mouse sequence, then press **F9** again.
-3. Choose repeat count and speed. Press **F10** to play or stop.
-4. Use **Ctrl+Alt+F11** for the emergency stop.
+## Use
 
-**Scheda successiva** starts disabled. When enabled, it sends Ctrl+Tab only between cycles, never after the last one. Open the tabs beforehand in the same browser window; record window changes using mouse clicks. Keep window positions, screen resolution and scaling consistent with the recording.
+| Step | Action |
+|---|---|
+| 1 | Arrange the windows you will use and move the panel out of the way |
+| 2 | **F9**, perform the mouse sequence, **F9** again |
+| 3 | Open **Opzioni** and type the number of repeats (1–999) or use **−/+** / **Preset 20**; pick **Normale** or **Rapida 2×** |
+| 4 | Restore the starting state and press **F10** to play |
+| – | **F10** or **Stop** stops playback · **Ctrl+Alt+F11** is the global emergency stop |
 
-![Real Windows application: expanded options at 100%](docs/screenshots/v017-expanded-100.png)
+<p align="center"><img src="docs/screenshots/v019-expanded-real.png" alt="Options expanded" width="560"></p>
 
-Open **Opzioni** for Save/Load, the 20-repeat preset, speed and **Pagine lente** (slow pages). Help and Emergency remain in the footer. Play and Save are disabled until a valid macro exists. Rapid 2× accelerates movement and ordinary pauses up to 2 s, while waits over 2 s stay at 1×. The minimum action gap drops from 650 to 325 ms; button holds and double clicks stay protected. Total duration is not necessarily halved. Slow-page mode adds more cautious pauses; it does not detect page readiness.
+**Rapida 2×** speeds up movement and ordinary pauses; waits longer than 2 s stay at 1×, and click holds and double clicks stay protected, so the total time is not exactly halved. **Pagine lente** adds longer, more cautious pauses for slow web pages.
 
-![Real Windows application while recording](docs/screenshots/v017-recording-100.png)
+## Good to know
 
-## Tested behavior and limits
+- Replay uses **absolute screen coordinates**. Keep window positions, resolution, monitor layout and Windows scaling the same as when you recorded.
+- The panel must not sit on top of a recorded click; the app moves the bar to a free spot or refuses to start.
+- The app cannot tell whether a website accepted a click, and it never retries.
+- Not covered: UAC / secure desktop and elevated applications.
+- Not certified with SentinelOne or Smart App Control. No protection is changed or bypassed.
 
-The exact v0.18.1 ZIP passed **18 interactive checks** on Windows 11 LTSC: recording/replay across two native windows and the desktop, plus 14 browser regressions (clicks/double clicks, drag, wheel, 20 cycles, tab switching OFF/ON, F10 and emergency stop). No clicks were lost. The sequence across windows takes **6.841 s at 1× and 3.855 s at 2×**. Windows suite: **112 passed, 6 skipped**; Linux: **67 passed, 51 skipped**. [Results and limits](docs/ESITO-COLLAUDO-v0.18.1.md).
+## Status
 
-The app sends inputs at recorded coordinates. It cannot confirm a website accepted them and never retries automatically. The new panel does not record keyboard keys, close tabs or repeat infinitely. Real Howrse accounts, SentinelOne and Smart App Control were not tested. See the [full acceptance report](docs/ESITO-COLLAUDO-v0.18.1.md).
+Beta. The latest checks are in the [v0.19.1 report](docs/ESITO-COLLAUDO-v0.19.1.md): automated suite of 141 tests (135 passed, 6 Linux-only skipped), package integrity and a real launch of the shipped exe. Physical record/replay was verified on v0.19.0; it has not yet been repeated on v0.19.1, and the report lists exactly what is still open.
 
-## Linux and development
+## Build from source
 
-Linux retains the historical Flet IT/EN interface; this release updates Windows. Linux binaries remain available in [v0.14 beta](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.14-beta).
+```powershell
+python -m pip install -r requirements.txt
+python -m unittest discover -v
+python build_native_windows.py
+```
 
-- [Italian guide](GUIDA-ITALIANA.md)
-- [v0.18 build and acceptance instructions](BUILD-v0.18.1.md)
-- [All releases](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases)
-- [Approved UI implementation](docs/design/README.md)
-- [License](LICENSE)
+Details in [BUILD-v0.19.1.md](BUILD-v0.19.1.md). The older Linux version (Flet, IT/EN) is in the [v0.14 release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.14-beta).
+
+[All releases](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases) · [Design notes](docs/design/README.md) · [MIT License](LICENSE) · Project and design: **hcok**

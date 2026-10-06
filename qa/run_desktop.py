@@ -22,10 +22,6 @@ sys.path.insert(0,str(ROOT))
 from macro import windows_backend as B
 from pynput import keyboard,mouse
 from PIL import ImageGrab
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options as ChromeOptions
-from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
 U=C.windll.user32
 U.FindWindowW.argtypes=[W.LPCWSTR,W.LPCWSTR];U.FindWindowW.restype=W.HWND
@@ -305,6 +301,10 @@ def extras(driver,name):
 
 
 def main():
+    from selenium import webdriver
+    from selenium.webdriver.chrome.options import Options as ChromeOptions
+    from selenium.webdriver.chrome.service import Service as ChromeService
+    from selenium.webdriver.firefox.options import Options as FirefoxOptions
     global APP,PROC
     if '--set-resolution' in sys.argv:
         import runpy

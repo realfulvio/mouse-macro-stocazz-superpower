@@ -1,4 +1,4 @@
-"""Packaged native mouse acceptance across two native windows and desktop."""
+"""Packaged native mouse acceptance across two dedicated native windows."""
 import json, os, subprocess, sys, time, zipfile, hashlib
 from pathlib import Path
 
@@ -6,6 +6,7 @@ def target(path):
     import tkinter as tk
     root=tk.Tk();root.title('Native mouse target A');root.geometry('260x480+20+80')
     other=tk.Toplevel(root);other.title('Native mouse target B');other.geometry('260x480+300+80')
+    root.attributes('-topmost',True);other.attributes('-topmost',True)
     counts={n:{k:0 for k in ('down','up','double','wheel','drag')} for n in ('A','B')}
     def save():Path(path).write_text(json.dumps(counts))
     held=set()
@@ -39,9 +40,11 @@ from pynput import keyboard,mouse
 def main():
     out=r.OUT;counters=out/'native-counts.json'
     archive=r.ROOT/'dist/windows'/f'MouseMacroStocazzSuperpower-Windows-v{VERSION}.zip'
-    r.RESULT['environment']={'version':VERSION,'sha256':hashlib.sha256(archive.read_bytes()).hexdigest(),'screen':r.B.screen_geometry(),'targets':'Native Tk A/B and desktop'}
+    r.RESULT['environment']={'version':VERSION,'sha256':hashlib.sha256(archive.read_bytes()).hexdigest(),'screen':r.B.screen_geometry(),'targets':'Native Tk A/B; no input to other applications'}
     with zipfile.ZipFile(archive) as z:z.extractall(out/'extracted')
     package=out/'extracted'/f'MouseMacroStocazzSuperpower-Windows-v{VERSION}'
+    if r.U.FindWindowW('MouseMacroSuperpower017',None):
+        raise RuntimeError('Close the running application before starting the isolated acceptance bank.')
     native=subprocess.Popen([sys.executable,__file__,'--target',str(counters)], creationflags=subprocess.CREATE_NO_WINDOW)
     env=os.environ.copy();env['PATH']=r'C:\Windows\System32;C:\Windows'
     r.PROC=subprocess.Popen([str(package/f'Mouse Macro v{VERSION}.exe')],cwd=package,env=env)
@@ -50,20 +53,11 @@ def main():
         rect=r.B.window_rect(r.APP);screen=r.B.screen_geometry()
         r.U.SetWindowPos(r.APP,r.W.HWND(-1),screen[2]-(rect[2]-rect[0])-2,20,0,0,0x11)
         r.wait(lambda:counters.exists(),10,'native targets')
-        # Hide the QA runner's console; it must not cover the desktop/targets.
-        import ctypes
-        @ctypes.WINFUNCTYPE(r.W.BOOL, r.W.HWND, r.W.LPARAM)
-        def hide_console(hwnd, unused):
-            cls=ctypes.create_unicode_buffer(256);r.U.GetClassNameW(hwnd,cls,256)
-            if cls.value=='ConsoleWindowClass':r.U.ShowWindow(hwnd,0)
-            return True
-        r.U.EnumWindows(hide_console,0)
-        cls=ctypes.create_unicode_buffer(256)
-        r.U.GetClassNameW(r.B.root_at(580,650),cls,256)
-        assert cls.value in ('Progman','WorkerW'), ('Desktop covered by',cls.value)
+        for point in ((100,200),(400,200),(400,250),(100,250),(100,280),(100,360),(400,400),(450,400)):
+            assert r.text(r.B.root_at(*point)).startswith('Native mouse target'), 'A test target is covered'
         r.configure(1,1,False);r.screenshot('native-targets-ready')
         r.tap(keyboard.Key.f9);r.wait(lambda:r.state()=='REGISTRAZIONE',3,'record')
-        for point in ((100,200),(400,200),(580,650),(100,250)):
+        for point in ((100,200),(400,200),(400,250),(100,250)):
             r.click(*point);time.sleep(.7)
         r.M.position=(100,280)
         for i in range(2):
@@ -76,10 +70,10 @@ def main():
         r.tap(keyboard.Key.f9);r.app_idle(5)
         observed=json.loads(counters.read_text())
         assert observed['A']['down']==observed['A']['up']==4,observed
-        assert observed['B']['down']==observed['B']['up']==2,observed
+        assert observed['B']['down']==observed['B']['up']==3,observed
         assert observed['A']['double']==observed['A']['wheel']==1,observed
         assert observed['B']['drag']>0,observed
-        r.log('global_recording_windows_and_desktop',passed=True,counts=observed)
+        r.log('global_recording_two_native_windows',passed=True,counts=observed)
         times={}
         for speed in (1,2):
             r.configure(1,speed,False)

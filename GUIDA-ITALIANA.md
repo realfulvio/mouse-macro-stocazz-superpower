@@ -1,19 +1,23 @@
-# Mouse Macro 0.18.1 — guida rapida
+# Mouse Macro 0.19.1 — guida rapida
 
 Progetto e design: **hcok**.
 
-Estrai **tutto** lo ZIP in una cartella e apri `Mouse Macro v0.18.1-beta.exe`.
+Estrai **tutto** lo ZIP in una cartella e apri `Mouse Macro v0.19.1-beta.exe`.
 Non occorre installare Python. Tieni insieme `runtime`, `app` ed eseguibile.
 
 1. Prepara i programmi e le finestre da usare. Sposta il pannello fuori dai punti che userai.
 2. Premi **F9** (o Registra). Esegui i gesti del mouse, anche passando fra programmi, desktop e schede, con le attese necessarie. Premi **F9** per terminare.
-3. Apri **Opzioni** e scegli **Ripetizioni** con −/+ oppure **Preset 20**. Il numero comprende il primo giro. **Scheda successiva tra i giri** parte disattivata. Attivala se vuoi cambiare scheda: il programma invia **Ctrl+Tab una sola volta fra i giri**, senza chiudere schede e senza cambiare dopo l’ultimo. Se il toggle è spento, ripete la sequenza senza inviare Ctrl+Tab.
+3. Apri **Opzioni** e scrivi il numero di **Ripetizioni**, da 1 a 999, oppure usa −/+ e **Preset 20**. Il numero comprende il primo giro. **Scheda successiva tra i giri** parte disattivata. Attivala se vuoi cambiare scheda: il programma invia **Ctrl+Tab una sola volta fra i giri**, senza chiudere schede e senza cambiare dopo l’ultimo. Se il toggle è spento, ripete la sequenza senza inviare Ctrl+Tab.
 4. Scegli Normale o Rapida 2×. Ripristina lo stato iniziale delle finestre e premi **F10** (o Riproduci). Rapida accelera movimenti e pause operative fino a 2 secondi; le attese oltre 2 secondi restano a 1×. Pressione minima: 120 ms; pausa minima fra azioni: 650 ms in Normale, 325 ms in Rapida. I doppi click restano protetti. **Pagine lente** conserva il profilo prudente precedente (pausa minima 1,2 s e attese oltre 350 ms a 1×).
 5. Premi **F10** o il pulsante **FERMA** per interrompere. **Ctrl+Alt+F11** è lo stop globale di emergenza, anche con altri programmi attivi.
 
-Gli eventi e la durata si aggiornano nella card di stato. Durante la registrazione e la riproduzione i controlli delle opzioni sono disabilitati. Per trascinare la finestra usa la fascia superiore; i tre comandi in alto riducono a icona, espandono/riducono le opzioni e chiudono. Per usare i controlli da tastiera attiva esplicitamente il pannello con Alt+Tab, quindi usa Tab/Shift+Tab e Spazio.
+Durante registrazione e riproduzione il pannello diventa una barra di 288 × 64 pixel alla scala 100%, appena trasparente, con stato, contatori e **Stop**. Parte al centro dell'area di lavoro del monitor e conserva gli spostamenti della barra finché l'app resta aperta. Puoi trascinarla da qualsiasi punto esterno a Stop durante la preparazione o la registrazione. F9 termina la registrazione, F10 ferma la riproduzione e Ctrl+Alt+F11 resta l'emergenza globale. Dopo l'arresto o un errore torna il pannello completo nella posizione precedente, conservando le opzioni.
 
-Il pannello rimane sopra le finestre normali e i pulsanti principali non sottraggono il focus al programma attivo. Non spostarlo durante una riproduzione. Se copre un gesto il programma impedisce l’avvio. **Opzioni** espande la finestra e mostra Salva macro, Carica macro, Preset 20 e Pagine lente. **Guida** ed **Emergenza** sono nel footer. Senza macro valida, Riproduci e Salva sono disabilitati.
+I testi dei controlli usano Segoe UI; il logo conserva Outfit. Dimensioni e geometria seguono il DPI della finestra; la barra usa scritte da 11–16 pixel logici e il pannello opaco usa ClearType.
+
+Gli eventi e la durata si aggiornano nella card di stato. Durante la registrazione e la riproduzione i controlli delle opzioni sono disabilitati. Nel pannello completo, per trascinare la finestra usa la fascia superiore; i tre comandi in alto riducono a icona, espandono/riducono le opzioni e chiudono. Per usare i controlli da tastiera attiva esplicitamente il pannello con Alt+Tab, quindi usa Tab/Shift+Tab e Spazio.
+
+Il pannello rimane sopra le finestre normali e i pulsanti principali non sottraggono il focus al programma attivo. Non spostarlo durante una riproduzione. Prima del replay, se la barra copre un gesto registrato cerca una posizione libera vicina; se non la trova impedisce l'avvio. La trasparenza non lascia passare i click. **Opzioni** espande la finestra e mostra Salva macro, Carica macro, Preset 20 e Pagine lente. **Guida** ed **Emergenza** sono nel footer. Senza macro valida, Riproduci e Salva sono disabilitati.
 
 Con il cambio scheda attivo imposta al massimo il numero di schede da lavorare: Ctrl+Tab torna alla prima quando raggiunge la fine. Ctrl+Tab viene inviato al programma attivo: abilita questa opzione solo se desideri questo comando.
 
