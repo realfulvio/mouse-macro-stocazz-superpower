@@ -54,6 +54,7 @@ def main():
     for name in ('LICENSE','THIRD-PARTY-NOTICES.md','GUIDA-ITALIANA.md'):
         if (ROOT/name).exists():
             shutil.copy2(ROOT/name,stage/name)
+    shutil.copy2(ROOT/'launcher.cmd',stage/f'Mouse Macro v{VERSION} (senza exe).cmd')
     csc = Path(r'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe')
     exe = stage/f'Mouse Macro v{VERSION}.exe'
     if args.cross:
@@ -77,7 +78,7 @@ def main():
     manifest = {'version':VERSION,'engine_base':'v0.16.0-beta',
         'runtime':'Python 3.13.16 official embeddable x64',
         'embed_sha256':hashlib.sha256(embed.read_bytes()).hexdigest(),
-        'launcher':'unsigned .NET Framework launcher; original signed pythonw.exe; explicit startup',
+        'launcher':'unsigned .NET Framework launcher plus .cmd alternative; original signed pythonw.exe; explicit startup',
         'compiler':'Roslyn SDK 10.0.112, net48 reference assemblies 1.0.3' if args.cross else '.NET Framework csc.exe v4.0.30319 on Windows',
         'validation':'See the release acceptance report for the exact tested ZIP hash',
         'sha256':{str(p.relative_to(stage)).replace('\\','/'):hashlib.sha256(p.read_bytes()).hexdigest()

@@ -34,6 +34,18 @@ A small always-on-top panel for Windows: no installer, no Python to install.
 2. Extract the **whole** ZIP into a folder.
 3. Run `Mouse Macro v1.0.0.exe`.
 
+**Windows blocks the exe?** The `.exe` launcher is not code-signed, so SmartScreen or Windows 11 *Smart App Control* may block it. There is an exe-free alternative: the PowerShell command below (works with the current v1.0.0 release), or `launcher.cmd`, which is included in the ZIP of releases after v1.0.0 and also available in the repository (copy it next to `runtime` and `app`, then run it). It starts the official Python `pythonw.exe` (signed by the Python Software Foundation) directly with the same files. If SmartScreen warns, choose *More info → Run anyway*; if it still blocks, right-click the ZIP → *Properties* → **Unblock** before extracting. No protection needs to be turned off.
+
+**Or from PowerShell**, with nothing to download by hand:
+
+```powershell
+irm https://raw.githubusercontent.com/realfulvio/mouse-macro-stocazz-superpower/main/install.ps1 | iex
+```
+
+The script downloads the official release from GitHub, verifies its SHA-256, extracts it to `%LOCALAPPDATA%\MouseMacroStocazzSuperpower\Portable` and starts the app with the PSF-signed `pythonw.exe`; later runs just relaunch it. A file downloaded by PowerShell carries no Mark of the Web. Read [install.ps1](install.ps1) first if you want to see what it runs.
+
+These alternatives are not certified with Smart App Control. If the `.cmd` is blocked too, please open an [issue](https://github.com/realfulvio/mouse-macro-stocazz-superpower/issues).
+
 Requires x64 Windows and .NET Framework 4 (included in Windows 10/11). Python is bundled. The interface is in Italian. The launcher is not code-signed, so Windows SmartScreen may warn on first run; the SHA-256 of the ZIP is published with each release.
 
 ## Use
