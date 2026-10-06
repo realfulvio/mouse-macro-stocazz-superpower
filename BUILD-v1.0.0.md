@@ -1,4 +1,4 @@
-# Build Windows v0.19.2-beta
+# Build Windows v1.0.0
 
 Su Windows x64 con Python 3.13.x e .NET Framework 4:
 
@@ -21,7 +21,7 @@ python build_native_windows.py --offline
 
 `--pip-python` indica un altro interprete con pip per installare le due wheel.
 
-Output in `dist/windows/`: ZIP versionato e `MouseMacroStocazzSuperpower-Windows-Portable.zip` (identici byte per byte), più `SHA256SUMS-v0.19.2.txt`.
+Output in `dist/windows/`: ZIP versionato e `MouseMacroStocazzSuperpower-Windows-Portable.zip` (identici byte per byte), più `SHA256SUMS-v1.0.0.txt`.
 
 ## Collaudo interattivo
 

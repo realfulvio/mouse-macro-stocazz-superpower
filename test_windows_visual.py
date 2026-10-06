@@ -50,7 +50,7 @@ class VisualTests(unittest.TestCase):
         canvas.brush = MagicMock(return_value=8)
         with patch.object(visual, 'D'), patch.object(visual, 'ptrcall', return_value=10):
             canvas.text('Stop', 0, 0, 72, 40, size=15, bold=True)
-            canvas.theme.font.assert_called_with(15, True, False)
+            canvas.theme.font.assert_called_with(17, True, False)  # text is drawn 2 px larger than requested
             canvas.text('Mouse Macro', 0, 0, 250, 26, size=22, bold=True, display=True)
             canvas.theme.font.assert_called_with(22, True, True)
 

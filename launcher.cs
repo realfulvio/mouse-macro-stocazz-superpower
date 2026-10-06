@@ -6,15 +6,15 @@ using System.Windows.Forms;
 using System.Reflection;
 [assembly: AssemblyTitle("Mouse Macro Stocazz Superpower")]
 [assembly: AssemblyCompany("hcok")]
-[assembly: AssemblyVersion("0.19.2.0")]
-[assembly: AssemblyFileVersion("0.19.2.0")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]
 class Launcher {
     [STAThread] static int Main() {
         string root = AppDomain.CurrentDomain.BaseDirectory;
         string runtime = Path.Combine(root, "runtime", "pythonw.exe");
         string app = Path.Combine(root, "app", "windows_main.py");
         if (!File.Exists(runtime) || !File.Exists(app)) {
-            MessageBox.Show("Estrai tutto lo ZIP e mantieni insieme tutti i file.", "Mouse Macro 0.19.2", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show("Estrai tutto lo ZIP e mantieni insieme tutti i file.", "Mouse Macro 1.0", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return 1;
         }
         try {
@@ -26,7 +26,7 @@ class Launcher {
             process.WaitForExit();
             return process.ExitCode;
         } catch (Exception error) {
-            MessageBox.Show("Avvio non riuscito: " + error.Message, "Mouse Macro 0.19.2", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show("Avvio non riuscito: " + error.Message, "Mouse Macro 1.0", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return 1;
         }
     }
