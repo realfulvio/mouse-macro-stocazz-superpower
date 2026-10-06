@@ -1,82 +1,93 @@
-<p align="center"><b>English</b> · <a href="README.it.md">Italiano</a></p>
+<p align="center"><b>Italiano</b> · <a href="README.en.md">English</a></p>
 
 <h1 align="center">Mouse Macro Stocazz Superpower</h1>
 
 <p align="center">
-Record your mouse, replay it as many times as you need.<br>
-A small always-on-top panel for Windows: no installer, no Python to install.
+Registra il mouse e ripeti la sequenza quante volte vuoi.<br>
+Un piccolo pannello sempre in primo piano per Windows: niente installer, niente Python da installare.
 </p>
 
 <p align="center">
-<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.0.1"><b>⬇ Download for Windows</b></a>
-· <a href="GUIDA-ITALIANA.md">Italian guide</a>
-· <a href="docs/ESITO-COLLAUDO-v1.0.1.md">Test report</a>
+<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.0.1"><b>⬇ Scarica per Windows</b></a>
+· <a href="GUIDA-ITALIANA.md">Guida italiana</a>
+· <a href="docs/ESITO-COLLAUDO-v1.0.1.md">Esito dei controlli</a>
 </p>
 
 <p align="center">
-<img src="docs/screenshots/v100-compact.png" alt="Main panel" width="260">
+<img src="docs/screenshots/v100-compact.png" alt="Pannello principale" width="260">
 &nbsp;
-<img src="docs/screenshots/v100-playing.png" alt="Activity bar while replaying" width="288">
+<img src="docs/screenshots/v100-playing.png" alt="Barra durante la riproduzione" width="288">
 </p>
 
-## What it does
+## Avvio rapido da PowerShell
 
-- Records mouse movement, clicks, double clicks, dragging and the scroll wheel, across any program, the desktop and browser toolbars.
-- Replays the sequence 1–999 times at normal speed or **2× faster**.
-- While recording or replaying, the panel shrinks to a small translucent bar with the counters and a **Stop** button, so it stays out of the way.
-- Save and load macros as `.mmr` files.
-- Optional **Ctrl+Tab between cycles** to move through browser tabs (off by default; never after the last cycle).
-- Records the mouse only: no keyboard keys, no screenshots, no network access.
+È il modo più semplice, e funziona anche con **Smart App Control** attivo. Niente ZIP da scaricare e niente exe.
 
-## Install
+**1.** Apri PowerShell (tasto Windows, scrivi `PowerShell`, Invio).
 
-1. Download `MouseMacroStocazzSuperpower-Windows-v1.0.1.zip` from the [release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.0.1).
-2. Extract the **whole** ZIP into a folder.
-3. Run `Mouse Macro v1.0.1.exe`. If Windows blocks it (see below), run `Mouse Macro v1.0.1 (senza exe).cmd` instead.
-
-Requires x64 Windows; the exe also needs .NET Framework 4 (included in Windows 10/11), the `.cmd` does not. Python is bundled. The interface is in Italian. The SHA-256 of the ZIP is published with each release.
-
-### Windows blocks the exe?
-
-The `.exe` launcher is not code-signed, so SmartScreen or Windows 11 *Smart App Control* may block it (*"An application control policy has blocked this file"*). Two exe-free alternatives, **tested with Smart App Control enforced** (Windows 11 build 26300, see the [report](docs/ESITO-COLLAUDO-v1.0.1.md)):
-
-- **`Mouse Macro v1.0.1 (senza exe).cmd`**, in the same ZIP: starts the official Python `pythonw.exe` (signed by the Python Software Foundation) directly with the same files. If SmartScreen warns, choose *More info → Run anyway*; if it still blocks, right-click the ZIP → *Properties* → **Unblock** before extracting.
-- **From PowerShell**, with nothing to download by hand:
+**2.** Incolla questo comando e premi Invio:
 
 ```powershell
 irm https://raw.githubusercontent.com/realfulvio/mouse-macro-stocazz-superpower/main/install.ps1 | iex
 ```
 
-The script downloads the official release from GitHub, verifies its SHA-256, extracts it to `%LOCALAPPDATA%\MouseMacroStocazzSuperpower\Portable` and starts the app with the PSF-signed `pythonw.exe`; later runs just relaunch it. A file downloaded by PowerShell carries no Mark of the Web. Read [install.ps1](install.ps1) first if you want to see what it runs.
+<p align="center"><img src="docs/screenshots/guida-powershell.png" alt="Il comando in PowerShell: scarica Mouse Macro e lo avvia" width="720"></p>
 
-No protection needs to be turned off. If these are blocked on your PC too, please open an [issue](https://github.com/realfulvio/mouse-macro-stocazz-superpower/issues).
-## Use
+**3.** Il pannello si apre. Le volte successive basta lo stesso comando: non riscarica nulla e riavvia solo l'app.
 
-| Step | Action |
+Lo script scarica la release ufficiale da GitHub, ne verifica lo SHA-256, la estrae in `%LOCALAPPDATA%\MouseMacroStocazzSuperpower\Portable` e avvia il programma con il `pythonw.exe` ufficiale di Python, firmato dalla Python Software Foundation. Un file scaricato da PowerShell non ha il Mark of the Web. Puoi leggere [install.ps1](install.ps1) prima di eseguirlo. Nessuna protezione di Windows viene disattivata.
+
+## Altri modi di installare
+
+1. Scarica `MouseMacroStocazzSuperpower-Windows-v1.0.1.zip` dalla [release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.0.1).
+2. Estrai **tutto** lo ZIP in una cartella.
+3. Apri `Mouse Macro v1.0.1.exe`. Se Windows lo blocca, apri invece `Mouse Macro v1.0.1 (senza exe).cmd`.
+
+Serve Windows x64; l'exe richiede anche .NET Framework 4 (già presente in Windows 10/11), il `.cmd` no. Python è incluso. L'interfaccia è in italiano. Lo SHA-256 dello ZIP è pubblicato con ogni release.
+
+### Windows blocca l'exe?
+
+Il launcher `.exe` non è firmato: SmartScreen o il *Controllo intelligente delle app* (Smart App Control) di Windows 11 possono bloccarlo (*"Un criterio di controllo dell'applicazione ha bloccato il file"*). Le due vie senza exe, cioè il comando PowerShell qui sopra e il file **`Mouse Macro v1.0.1 (senza exe).cmd`** nello ZIP, sono **state provate con Smart App Control attivo** (Windows 11 build 26300, [rapporto](docs/ESITO-COLLAUDO-v1.0.1.md)). Il `.cmd` avvia direttamente il `pythonw.exe` firmato PSF con gli stessi file. Se SmartScreen avvisa, usa *Ulteriori informazioni → Esegui comunque*; se blocca ancora, tasto destro sullo ZIP → *Proprietà* → **Sblocca** prima di estrarlo.
+
+Se anche queste vie vengono bloccate sul tuo PC, scrivilo nelle [Issues](https://github.com/realfulvio/mouse-macro-stocazz-superpower/issues).
+
+## Cosa fa
+
+- Registra movimenti, click, doppi click, trascinamenti e rotella, in qualsiasi programma, sul desktop e sulle barre del browser.
+- Riproduce la sequenza da 1 a 999 volte, a velocità normale o **2× più veloce**.
+- Durante registrazione e replay il pannello diventa una piccola barra semitrasparente con contatori e pulsante **Stop**, per non dare fastidio.
+- Salva e carica le macro in file `.mmr`.
+- **Ctrl+Tab tra un giro e l'altro** (facoltativo) per scorrere le schede del browser: spento all'avvio, mai dopo l'ultimo giro.
+- Registra solo il mouse: niente tastiera, niente schermate, nessun accesso alla rete.
+
+
+## Uso
+
+| Passo | Azione |
 |---|---|
-| 1 | Arrange the windows you will use and move the panel out of the way |
-| 2 | **F9**, perform the mouse sequence, **F9** again |
-| 3 | Open **Opzioni** and type the number of repeats (1–999) or use **−/+** / **Preset 20**; pick **Normale** or **Rapida 2×** |
-| 4 | Restore the starting state and press **F10** to play |
-| – | **F10** or **Stop** stops playback · **Ctrl+Alt+F11** is the global emergency stop |
+| 1 | Sistema le finestre che userai e sposta il pannello lontano dai punti da cliccare |
+| 2 | **F9**, esegui la sequenza con il mouse, **F9** di nuovo |
+| 3 | Apri **Opzioni**, scrivi le ripetizioni (1–999) o usa **−/+** / **Preset 20**; scegli **Normale** o **Rapida 2×** |
+| 4 | Ripristina lo stato iniziale e premi **F10** per riprodurre |
+| – | **F10** o **Stop** fermano il replay · **Ctrl+Alt+F11** è l'arresto di emergenza globale |
 
-<p align="center"><img src="docs/screenshots/v100-expanded.png" alt="Options expanded" width="560"></p>
+<p align="center"><img src="docs/screenshots/v100-expanded.png" alt="Opzioni espanse" width="560"></p>
 
-**Rapida 2×** speeds up movement and ordinary pauses; waits longer than 2 s stay at 1×, and click holds and double clicks stay protected, so the total time is not exactly halved. **Pagine lente** adds longer, more cautious pauses for slow web pages.
+**Rapida 2×** accelera movimenti e pause normali; le attese oltre 2 s restano a 1× e pressioni e doppi click restano protetti, quindi la durata totale non si dimezza esattamente. **Pagine lente** aggiunge pause più lunghe e prudenti per le pagine web lente.
 
-## Good to know
+## Da sapere
 
-- Replay uses **absolute screen coordinates**. Keep window positions, resolution, monitor layout and Windows scaling the same as when you recorded.
-- The panel must not sit on top of a recorded click; the app moves the bar to a free spot or refuses to start.
-- The app cannot tell whether a website accepted a click, and it never retries.
-- Not covered: UAC / secure desktop and elevated applications.
-- Not certified with SentinelOne. With Smart App Control enforced the exe is blocked, while the `.cmd` and the PowerShell command were tested and work. No protection is changed or bypassed.
+- Il replay usa **coordinate assolute dello schermo**: mantieni posizione delle finestre, risoluzione, disposizione dei monitor e scala di Windows uguali a quelle della registrazione.
+- Il pannello non deve coprire un click registrato: l'app sposta la barra in un punto libero oppure non parte.
+- Il programma non sa se un sito ha accettato il click e non riprova mai.
+- Non coperti: UAC / desktop sicuro e applicazioni con privilegi elevati.
+- Non certificato con SentinelOne. Con Smart App Control attivo l'exe è bloccato, mentre il `.cmd` e il comando PowerShell sono stati provati e funzionano. Nessuna protezione viene modificata o aggirata.
 
-## Status
+## Stato
 
-Stable. v1.0.1 only adds the exe-free launch options; the recorder/replay code is unchanged from v1.0.0. Checks on this release ([report](docs/ESITO-COLLAUDO-v1.0.1.md)): 141 automated tests (135 passed, 6 Linux-only skipped), package integrity, and real launches of the `.cmd` and of the PowerShell command with Smart App Control enforced (the unsigned exe is blocked, as expected). The physical record/replay results come from the [v1.0.0 report](docs/ESITO-COLLAUDO-v1.0.0.md) and were not repeated. Not covered: UAC/elevated apps, other DPI scalings on real monitors.
+Stabile. La v1.0.1 aggiunge solo le vie di avvio senza exe; il codice di registrazione e replay è identico alla v1.0.0. Controlli su questa release ([rapporto](docs/ESITO-COLLAUDO-v1.0.1.md)): 141 test automatici (135 superati, 6 solo-Linux saltati), integrità del pacchetto e avvio reale del `.cmd` e del comando PowerShell con Smart App Control attivo (l'exe non firmato viene bloccato, come previsto). La prova fisica di registrazione/replay resta quella del [rapporto v1.0.0](docs/ESITO-COLLAUDO-v1.0.0.md) e non è stata ripetuta. Non coperti: UAC/applicazioni elevate, altre scale DPI su monitor reali.
 
-## Build from source
+## Compilare dai sorgenti
 
 ```powershell
 python -m pip install -r requirements.txt
@@ -84,6 +95,6 @@ python -m unittest discover -v
 python build_native_windows.py
 ```
 
-Details in [BUILD-v1.0.1.md](BUILD-v1.0.1.md). The older Linux version (Flet, IT/EN) is in the [v0.14 release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.14-beta).
+Dettagli in [BUILD-v1.0.1.md](BUILD-v1.0.1.md). La vecchia versione Linux (Flet, IT/EN) è nella [release v0.14](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.14-beta).
 
-[All releases](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases) · [Design notes](docs/design/README.md) · [PolyForm Noncommercial License](LICENSE): free for personal and non-commercial use, no commercial resale · [Third-party notices](THIRD-PARTY-NOTICES.md) · Project and design: **hcok**
+[Tutte le release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases) · [Note di design](docs/design/README.md) · [Licenza PolyForm Noncommercial](LICENSE): uso libero personale e non commerciale, vietata la rivendita · [Licenze di terze parti](THIRD-PARTY-NOTICES.md) · Progetto e design: **hcok**

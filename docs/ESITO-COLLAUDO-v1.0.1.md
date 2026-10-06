@@ -17,7 +17,7 @@ Ambiente: Windows 11 Pro build 26300, **Smart App Control attivo** (`VerifiedAnd
 - **Pacchetto**: build riproducibile con `build_native_windows.py`, `qa/check_package.py` superato (CRC validi, hash del manifest, sorgenti identici, file originali del runtime preservati, `.cmd` identico a `launcher.cmd`).
 - **Avvio dell'exe con Smart App Control attivo**: **bloccato** da Windows («Un criterio di controllo dell'applicazione ha bloccato il file»). È il comportamento atteso per un exe non firmato e senza reputazione: l'exe resta non firmato.
 - **Avvio del `.cmd` con Smart App Control attivo**: il programma parte, finestra «Mouse Macro 1.0.1 · hcok · pronto», processo `pythonw.exe` del runtime incluso.
-- **Avvio da PowerShell** (`install.ps1`) con Smart App Control attivo: vedi sezione sotto.
+- **Avvio da PowerShell** (`irm …/install.ps1 | iex`, dalla release pubblicata, in Windows PowerShell 5.1 con Smart App Control attivo): download, verifica SHA-256, estrazione e avvio riusciti; finestra «Mouse Macro 1.0.1 · hcok · pronto». Screenshot in `docs/screenshots/guida-powershell.png`. Un primo tentativo era fallito (`Get-FileHash` non trovato) solo perché la finestra di prova ereditava il `PSModulePath` di PowerShell 7; con l'ambiente ripristinato, come in una normale sessione utente, funziona.
 
 ## Non verificato
 
