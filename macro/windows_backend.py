@@ -285,7 +285,10 @@ class WindowsRecorder:
     def _exclude(self, x, y) -> bool:
         if self.excluded_window is None:
             return False
-        r = window_rect(self.excluded_window)
+        try:
+            r = window_rect(self.excluded_window)
+        except TargetWindowChanged:
+            return False  # panel already destroyed: never raise inside the mouse hook
         return r[0] <= x < r[2] and r[1] <= y < r[3]
 
     def start(self) -> None:
