@@ -346,8 +346,8 @@ class Panel:
             c.clear('#322047' if cid in (201,202,203) else COLORS['surface'] if cid in (21,23,25,31,32,40,41,101,102) else COLORS['background'])
             if cid == 12:
                 c.rounded(1,1,w-2,h-2,12,COLORS['record'] if self.session.state==State.RECORDING else COLORS['play'],COLORS['border'])
-                c.icon('stop',8,12,16,fg)
-                c.text('Stop',28,0,w-30,h,15,fg,True)
+                c.icon('stop',6,12,16,fg)
+                c.text('Stop',24,0,w-26,h,13,fg,True)
             elif cid in (10,11):
                 key='record' if cid==10 else 'play'
                 bg=COLORS[key] if enabled else COLORS['disabled']
@@ -374,7 +374,10 @@ class Panel:
                 c.text('Normale' if cid==31 else 'Rapida 2×',32,0,w-38,h,14,fg)
             elif cid in (40,41):
                 on=self.next_tab if cid==40 else self.slow
-                c.text('Scheda successiva\ntra i giri' if cid==40 else 'Pagine lente',0,0,w-55,h,14,fg,wrap=True)
+                title,hint=(('Cambia scheda','Ctrl+Tab tra i giri') if cid==40
+                            else ('Pagine lente','Pause più lunghe'))
+                c.text(title,0,1,w-55,20,14,fg,True)
+                c.text(hint,0,21,w-52,16,11,COLORS['muted'] if enabled else fg)
                 c.rounded(w-48,9,44,22,11,COLORS['record'] if on and enabled else COLORS['disabled'])
                 c.ellipse(w-24 if on else w-44,12,16,16,fg)
             elif cid==104:
@@ -579,13 +582,17 @@ class Panel:
                 U.MessageBoxW(self.hwnd, '1. Registra i gesti del mouse in qualsiasi programma con F9.\n'
                     '2. Ferma la registrazione con F9.\n'
                     '3. Ripristina lo stato iniziale, scegli i giri e premi F10.\n'
-                    'Scheda successiva invia Ctrl+Tab soltanto TRA i giri.\n'
                     'Non registra i tasti della tastiera. Non chiude schede.\n\n'
+                    'CAMBIA SCHEDA: tra un giro e l’altro invia Ctrl+Tab al programma attivo\n'
+                    '(es. per passare alla scheda successiva del browser). Mai dopo l’ultimo giro.\n'
+                    'Spento: la sequenza si ripete sempre nella stessa scheda.\n\n'
+                    'PAGINE LENTE: aspetta di più tra un click e l’altro (almeno 1,2 s) e\n'
+                    'non accorcia le tue pause oltre 0,35 s. Serve se il sito carica piano.\n'
+                    'Non rileva il caricamento: aggiunge solo tempo.\n\n'
                     'F10 ferma; Ctrl+Alt+F11 è lo stop di emergenza.\n'
                     'Sposta il pannello fuori dai gesti PRIMA di iniziare.\n'
                     'Mantieni posizione delle finestre e scala dello schermo.\n'
                     'Rapida 2× accelera movimenti e pause operative; conserva attese oltre 2 s.\n'
-                    'Per pagine lente registra attese sufficienti e abilita Pagine lente.\n'
                     'Le pause non dimostrano che il sito abbia accettato un clic.\n'
                     'Non è stato verificato su account Howrse o con SentinelOne/SAC.',
                     f'Mouse Macro {VERSION} · hcok', 0x40)

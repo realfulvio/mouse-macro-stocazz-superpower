@@ -8,15 +8,15 @@ A small always-on-top panel for Windows: no installer, no Python to install.
 </p>
 
 <p align="center">
-<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.19.2-beta"><b>⬇ Download for Windows</b></a>
+<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.0.0"><b>⬇ Download for Windows</b></a>
 · <a href="GUIDA-ITALIANA.md">Italian guide</a>
-· <a href="docs/ESITO-COLLAUDO-v0.19.2.md">Test report</a>
+· <a href="docs/ESITO-COLLAUDO-v1.0.0.md">Test report</a>
 </p>
 
 <p align="center">
-<img src="docs/screenshots/v019-compact-real.png" alt="Main panel" width="260">
+<img src="docs/screenshots/v100-compact.png" alt="Main panel" width="260">
 &nbsp;
-<img src="docs/screenshots/v019-playing-real.png" alt="Activity bar while replaying" width="288">
+<img src="docs/screenshots/v100-playing.png" alt="Activity bar while replaying" width="288">
 </p>
 
 ## What it does
@@ -30,9 +30,9 @@ A small always-on-top panel for Windows: no installer, no Python to install.
 
 ## Install
 
-1. Download `MouseMacroStocazzSuperpower-Windows-v0.19.2-beta.zip` from the [latest release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.19.2-beta).
+1. Download `MouseMacroStocazzSuperpower-Windows-v1.0.0.zip` from the [release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.0.0).
 2. Extract the **whole** ZIP into a folder.
-3. Run `Mouse Macro v0.19.2-beta.exe`.
+3. Run `Mouse Macro v1.0.0.exe`.
 
 Requires x64 Windows and .NET Framework 4 (included in Windows 10/11). Python is bundled. The interface is in Italian. The launcher is not code-signed, so Windows SmartScreen may warn on first run; the SHA-256 of the ZIP is published with each release.
 
@@ -46,7 +46,7 @@ Requires x64 Windows and .NET Framework 4 (included in Windows 10/11). Python is
 | 4 | Restore the starting state and press **F10** to play |
 | – | **F10** or **Stop** stops playback · **Ctrl+Alt+F11** is the global emergency stop |
 
-<p align="center"><img src="docs/screenshots/v019-expanded-real.png" alt="Options expanded" width="560"></p>
+<p align="center"><img src="docs/screenshots/v100-expanded.png" alt="Options expanded" width="560"></p>
 
 **Rapida 2×** speeds up movement and ordinary pauses; waits longer than 2 s stay at 1×, and click holds and double clicks stay protected, so the total time is not exactly halved. **Pagine lente** adds longer, more cautious pauses for slow web pages.
 
@@ -60,7 +60,7 @@ Requires x64 Windows and .NET Framework 4 (included in Windows 10/11). Python is
 
 ## Status
 
-Beta. The latest checks are in the [v0.19.2 report](docs/ESITO-COLLAUDO-v0.19.2.md): automated suite of 141 tests (135 passed, 6 Linux-only skipped), package integrity and a real launch of the shipped exe. Physical record/replay was verified on v0.19.0; it has not yet been repeated on v0.19.2, and the report lists exactly what is still open.
+Stable. Checks on this release ([report](docs/ESITO-COLLAUDO-v1.0.0.md)): 141 automated tests (135 passed, 6 Linux-only skipped), package integrity, real launch of the shipped exe, and a physical record/replay run at 1× and 2× with exact click counts and a 5 ms stop. Not covered: UAC/elevated apps, other DPI scalings on real monitors.
 
 ## Build from source
 
@@ -70,6 +70,6 @@ python -m unittest discover -v
 python build_native_windows.py
 ```
 
-Details in [BUILD-v0.19.2.md](BUILD-v0.19.2.md). The older Linux version (Flet, IT/EN) is in the [v0.14 release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.14-beta).
+Details in [BUILD-v1.0.0.md](BUILD-v1.0.0.md). The older Linux version (Flet, IT/EN) is in the [v0.14 release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.14-beta).
 
 [All releases](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases) · [Design notes](docs/design/README.md) · [PolyForm Noncommercial License](LICENSE): free for personal and non-commercial use, no commercial resale · [Third-party notices](THIRD-PARTY-NOTICES.md) · Project and design: **hcok**
