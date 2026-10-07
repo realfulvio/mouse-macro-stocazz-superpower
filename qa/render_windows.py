@@ -50,6 +50,8 @@ try:
             p.expanded = mode == 'expanded'
             p.width, p.height = ui.ACTIVE_SIZE if p.active_view else (640, 608) if p.expanded else (340, 600)
             p.repeats = 999; p.speed = 2; p.next_tab = False; p.slow = False
+            p.human = False
+            p.mouse_description = 'Mouse: Logitech G502 HERO'
             p.record_started = time.monotonic() - 62
             p.play_started = time.monotonic() - 62
             p.session = SimpleNamespace(state={'recording':ui.State.RECORDING,

@@ -1,7 +1,7 @@
 """Reproducible Windows build procedure: official embed + pinned pure Python wheels."""
 from pathlib import Path
 import argparse, hashlib, json, shutil, subprocess, sys, urllib.request, zipfile
-VERSION = '1.1.0'
+VERSION = '1.1.1'
 ROOT = Path(__file__).resolve().parent
 PACKAGE = f'MouseMacroStocazzSuperpower-Windows-v{VERSION}'
 
@@ -49,7 +49,7 @@ def main():
     shutil.copy2(ROOT/'assets'/'icon.ico',app/'assets'/'icon.ico')
     macro = app/'macro'
     macro.mkdir()
-    for name in ('__init__.py','events.py','engine.py','session.py','windows_backend.py','win_dialogs.py','updater.py'):
+    for name in ('__init__.py','events.py','engine.py','session.py','windows_backend.py','win_dialogs.py','updater.py','mouse_devices.py'):
         shutil.copy2(ROOT/'macro'/name,macro/name)
     for name in ('LICENSE','THIRD-PARTY-NOTICES.md','GUIDA-ITALIANA.md'):
         if (ROOT/name).exists():

@@ -22,7 +22,7 @@ with zipfile.ZipFile(archive) as z:
     listed = set(manifest['sha256'])|{'build_info.json'}
     assert {name[len(prefix):] for name in z.namelist()} == listed
     for name in ('windows_main.py','windows_visual.py','macro/__init__.py','macro/events.py','macro/engine.py',
-                 'macro/session.py','macro/windows_backend.py','macro/win_dialogs.py','macro/updater.py'):
+                 'macro/session.py','macro/windows_backend.py','macro/win_dialogs.py','macro/updater.py','macro/mouse_devices.py'):
         assert z.read(prefix+'app/'+name) == (ROOT/name).read_bytes(), name
     for folder in ('horses','icons','fonts'):
         for asset in (ROOT/'assets'/folder).iterdir():
