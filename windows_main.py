@@ -19,6 +19,7 @@ from macro.windows_backend import (WindowsRecorder, WindowsPlayer, GlobalHotkeys
 from macro.session import Session, State, VERSION, validate_gestures
 from macro.engine import PlaybackOptions
 from macro import updater
+from macro.mouse_devices import mouse_names, mouse_label
 from macro.events import BUTTON_OF_DOWN, BUTTON_OF_UP, WHEEL
 
 U = C.windll.user32
@@ -114,6 +115,7 @@ class Panel:
         self.controls = {}
         self.queue = queue.SimpleQueue()
         self.repeats = 1
+        self.mouse_description = 'Mouse: rilevamento…'
         self.speed = 1.0
         self.next_tab = False
         self.slow = False
@@ -170,12 +172,12 @@ class Panel:
                                WindowsPlayer, lambda: self.post('render'), screen_geometry)
         # Status text children remain available to accessibility/QA without
         # overlaying the vector card. All actions are actual Win32 buttons.
-        for cid, label in [(1,'PRONTO'),(2,self.session.message),(3,'0'),(4,'00:00.000')]:
+        for cid, label in [(1,'PRONTO'),(2,self.session.message),(3,'0'),(4,'00:00.000'),(6,self.mouse_description)]:
             self.controls[cid] = U.CreateWindowExW(0,'STATIC',label,0x40000000,
                 0,0,1,1,self.hwnd,W.HMENU(cid),self.instance,None)
         self.controls[22] = U.CreateWindowExW(0x200,'EDIT','1',0x50012081,
             0,0,1,1,self.hwnd,W.HMENU(22),self.instance,None)  # tabstop, number, centered
-        U.SendMessageW(self.controls[22],0xC5,3,0)  # EM_LIMITTEXT
+        U.SendMessageW(self.controls[22],0xC5,16,0)  # allow validation instead of silently truncating 1000 to 100
         labels = {10:'Registra · F9',11:'Riproduci · F10',21:'−',23:'+',24:'Opzioni',
                   25:'Preset 20',31:'Normale',32:'Rapida 2×',40:'Scheda successiva tra i giri',
                   41:'Pagine lente',42:'Movimento umano',101:'Salva macro',102:'Carica macro',104:'Guida',
@@ -197,6 +199,10 @@ class Panel:
         U.SetWindowPos(self.hwnd, W.HWND(-1), 0, 0, 0, 0, 0x13)  # no move/size/activate
         if self.settings.get('check_updates', True):
             self.check_updates()
+        threading.Thread(target=self.detect_mouse, daemon=True).start()
+
+    def detect_mouse(self):
+        self.post(('mouse_devices', mouse_names()))
 
     def clamp(self, x, y, w, h):
         monitor = U.MonitorFromPoint(W.POINT(x, y), 2)
@@ -345,6 +351,7 @@ class Panel:
                     c.text(label,x+16,247,cw-28,22,14,COLORS['muted'])
                     c.text(value,x+16,267,cw-24,30,22 if label=='Eventi' else 19,bold=True)
             c.text('hcok',w-57,h-19,44,14,11,COLORS['muted'],align=2)
+            c.text(self.mouse_description,20,228 if self.expanded else 306,w-40,16,11,COLORS['muted'])
         finally:c.close();U.EndPaint(hwnd,C.byref(ps))
 
     def metrics(self):
@@ -544,8 +551,6 @@ class Panel:
         U.EnableWindow(self.controls[11], state != State.RECORDING and valid)
         for cid in (21,22,23,24,25,31,32,40,41,42,101,102,104,202,204,205):
             U.EnableWindow(self.controls[cid], not active)
-        if U.GetFocus() != self.controls[22]:
-            self.sync_repeats()
         U.SetWindowTextW(self.controls[31], ('✓ ' if self.speed == 1 else '')+'Normale')
         U.SetWindowTextW(self.controls[32], ('✓ ' if self.speed == 2 else '')+'Rapida 2×')
         U.SetWindowTextW(self.controls[40], 'Scheda successiva tra i giri: '+('attivo' if self.next_tab else 'disattivato'))
@@ -571,7 +576,12 @@ class Panel:
         while not self.queue.empty():
             action = self.queue.get()
             if isinstance(action, tuple):
-                self.worker_result(*action)
+                if action[0] == 'mouse_devices':
+                    self.mouse_description = mouse_label(action[1])
+                    U.SetWindowTextW(self.controls[6], ', '.join(action[1]) or self.mouse_description)
+                    self.last_view = None
+                else:
+                    self.worker_result(*action)
             elif action == 'record':
                 if self.session.state in (State.READY,State.ERROR):
                     self.set_active_view(True)
@@ -766,6 +776,7 @@ class Panel:
                 self.dialog_open = False
         elif choice in (105,106):
             self.repeats = 1 if choice == 105 else 20
+            self.sync_repeats()
         self.render()
 
     def save_position(self):
@@ -827,9 +838,9 @@ class Panel:
                     if self.session.state in (State.READY,State.ERROR):
                         try:
                             self.repeats = self.read_repeats()
-                        except ValueError:
-                            if (wp >> 16) == 0x200:  # EN_KILLFOCUS: restore last valid value
-                                self.sync_repeats()
+                        except ValueError as error:
+                            if (wp >> 16) == 0x200:  # preserve invalid text so Play cannot use a different count
+                                self.session.error(error)
                     return 0
                 if cid == 203: U.PostMessageW(hwnd,WM_CLOSE,0,0)
                 elif cid == 201: U.ShowWindow(hwnd,6)

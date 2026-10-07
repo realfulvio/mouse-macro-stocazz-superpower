@@ -8,22 +8,20 @@ A small always-on-top panel for Windows: no installer, no Python to install.
 </p>
 
 <p align="center">
-<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.1.0"><b>⬇ Download for Windows</b></a>
+<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.1.1"><b>⬇ Download for Windows</b></a>
 · <a href="GUIDA-ITALIANA.md">Italian guide</a>
-· <a href="docs/ESITO-COLLAUDO-v1.1.0.md">Test report</a>
+· <a href="docs/ESITO-COLLAUDO-v1.1.1.md">Test report</a>
 </p>
 
 <p align="center">
-<img src="docs/screenshots/v110-unicorno-compatto.png" alt="Skin Unicorno" width="230">
+<img src="docs/screenshots/v111-windows11-compact.png" alt="Windows 11" width="230">
 &nbsp;
-<img src="docs/screenshots/v110-palio-compatto.png" alt="Palio skin" width="230">
-&nbsp;
-<img src="docs/screenshots/v110-palio-registrazione.png" alt="Barra" width="288">
+<img src="docs/screenshots/v111-windows11-expanded.png" alt="Windows 11" width="440">
 </p>
 
 ## Quick start from PowerShell
 
-The easiest way, and it works with **Smart App Control** enforced. No ZIP to download, no exe.
+Starts the app using the signed official Python runtime. No ZIP to download, no exe.
 
 **1.** Open PowerShell (Windows key, type `PowerShell`, Enter).
 
@@ -41,17 +39,19 @@ The script downloads the official release from GitHub, verifies its SHA-256, ext
 
 ## Other ways to install
 
-1. Download `MouseMacroStocazzSuperpower-Windows-v1.1.0.zip` from the [release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.1.0).
+1. Download `MouseMacroStocazzSuperpower-Windows-v1.1.1.zip` from the [release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.1.1).
 2. Extract the **whole** ZIP into a folder.
-3. Run `Mouse Macro v1.1.0.exe`. If Windows blocks it, run `Mouse Macro v1.1.0 (senza exe).cmd` instead.
+3. Run `Mouse Macro v1.1.1.exe`. If Windows blocks it, run `Mouse Macro v1.1.1 (senza exe).cmd` instead.
 
 Requires x64 Windows; the exe also needs .NET Framework 4 (included in Windows 10/11), the `.cmd` does not. Python is bundled. The interface is in Italian. The SHA-256 of the ZIP is published with each release.
 
 ### Windows blocks the exe?
 
-The `.exe` launcher is not code-signed, so SmartScreen or Windows 11 *Smart App Control* may block it (*"An application control policy has blocked this file"*). The two exe-free ways, the PowerShell command above and the **`Mouse Macro v1.1.0 (senza exe).cmd`** file in the ZIP, were **tested with Smart App Control enforced** (Windows 11 build 26300, [report](docs/ESITO-COLLAUDO-v1.1.0.md)). The `.cmd` starts the PSF-signed `pythonw.exe` directly with the same files. If SmartScreen warns, choose *More info → Run anyway*; if it still blocks, right-click the ZIP → *Properties* → **Unblock** before extracting.
+The `.exe` launcher is not code-signed, so SmartScreen or Windows 11 *Smart App Control* may block it (*"An application control policy has blocked this file"*). The two exe-free ways, the PowerShell command above and the **`Mouse Macro v1.1.1 (senza exe).cmd`** file in the ZIP, were tested with Smart App Control in v1.1.0 (Windows 11 build 26300, [previous report](docs/ESITO-COLLAUDO-v1.1.0.md)); SAC acceptance was not repeated for v1.1.1. The `.cmd` starts the PSF-signed `pythonw.exe` directly with the same files. If SmartScreen warns, choose *More info → Run anyway*; if it still blocks, right-click the ZIP → *Properties* → **Unblock** before extracting.
 
 If these are blocked on your PC too, please open an [issue](https://github.com/realfulvio/mouse-macro-stocazz-superpower/issues).
+
+Version 1.1.1 fixes keyboard entry of the repeat count and shows the mouse model. [Portable download](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.1.1/MouseMacroStocazzSuperpower-Windows-Portable.zip).
 
 ## What it does
 
@@ -98,11 +98,11 @@ If these are blocked on your PC too, please open an [issue](https://github.com/r
 - The panel must not sit on top of a recorded click; the app moves the bar to a free spot or refuses to start.
 - The app cannot tell whether a website accepted a click, and it never retries.
 - Not covered: UAC / secure desktop and elevated applications.
-- Not certified with SentinelOne. With Smart App Control enforced the unsigned exe was blocked in one test and started in another, since it depends on the reputation Microsoft assigns to it; the `.cmd` and the PowerShell command always started. No protection is changed or bypassed.
+- Not certified with SentinelOne. Previous Smart App Control checks are documented in the v1.1.0 report and were not repeated for this update. No protection is changed.
 
 ## Status
 
-Stable. v1.1.0 adds skins (Unicorno and Palio), the update dot and the exe-free launch options; the record/replay engine is unchanged. Checks on this release ([report](docs/ESITO-COLLAUDO-v1.1.0.md)): automated tests (including the updater module, with a simulated network), package integrity, real launch of the UI with both skins, update check against GitHub, and launch from PowerShell and the `.cmd` with Smart App Control enforced (the unsigned exe was blocked in one test and started in another). The physical record/replay results come from the [v1.0.0 report](docs/ESITO-COLLAUDO-v1.0.0.md). Not covered: UAC/elevated apps, other DPI scalings on real monitors.
+Stable. v1.1.1 fixes repeat-count keyboard entry and adds the mouse model. The exact ZIP passed 11 native checks on both Windows 11 and Windows Server 2022: actual counts 1/3/7/20, 2× speed, record/replay, Stop/F10/emergency and invalid values. Automated suite: 163 passed, 6 Linux tests skipped. The engine is unchanged. [Report and limits](docs/ESITO-COLLAUDO-v1.1.1.md).
 
 ## Build from source
 
@@ -112,6 +112,6 @@ python -m unittest discover -v
 python build_native_windows.py
 ```
 
-Details in [BUILD-v1.1.0.md](BUILD-v1.1.0.md). The older Linux version (Flet, IT/EN) is in the [v0.14 release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.14-beta).
+Details in [BUILD-v1.1.1.md](BUILD-v1.1.1.md). The older Linux version (Flet, IT/EN) is in the [v0.14 release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.14-beta).
 
 [All releases](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases) · [Design notes](docs/design/README.md) · [PolyForm Noncommercial License](LICENSE): free for personal and non-commercial use, no commercial resale · [Third-party notices](THIRD-PARTY-NOTICES.md) · Project and design: **hcok**
