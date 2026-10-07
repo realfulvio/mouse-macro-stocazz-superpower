@@ -43,6 +43,14 @@ class PanelTests(unittest.TestCase):
         self.assertEqual(p.wndproc(123,ui.WM_COMMAND,(0x400<<16)|22,222),0)
         p.read_repeats.assert_not_called()
 
+    def test_invalid_count_losing_focus_is_not_replaced_with_last_valid_count(self):
+        p=self.panel();p.session=SimpleNamespace(state=ui.State.READY,error=MagicMock())
+        p.read_repeats=MagicMock(side_effect=ValueError('Imposta da 1 a 999 ripetizioni.'))
+        p.sync_repeats=MagicMock()
+        p.wndproc(123,ui.WM_COMMAND,(0x200<<16)|22,222)
+        p.sync_repeats.assert_not_called()
+        p.session.error.assert_called_once()
+
     def test_count_accepts_any_integer_one_through_999(self):
         for n in range(1,1000):
             self.assertEqual(ui.parse_repeats(str(n)),n)
