@@ -48,6 +48,26 @@ class PanelTests(unittest.TestCase):
             self.assertEqual(ui.parse_repeats(str(n)),n)
         self.assertEqual(ui.parse_repeats(' 20 '),20)
 
+    def test_click_repeat_input_explicitly_activates_and_focuses_edit(self):
+        for state in (ui.State.READY, ui.State.ERROR):
+            p=self.panel();p.session=SimpleNamespace(state=state)
+            with patch.object(ui,'U') as u:
+                u.WindowFromPoint.return_value=222
+                self.assertEqual(p.wndproc(123,0x21,123,0),3)
+                self.assertEqual(u.method_calls[-2:],[
+                    unittest.mock.call.SetForegroundWindow(123),
+                    unittest.mock.call.SetFocus(222)])
+
+    def test_other_controls_and_active_session_do_not_activate_panel(self):
+        for state,target in ((ui.State.READY,999),(ui.State.RECORDING,222),
+                             (ui.State.PLAYING,222),(ui.State.STOPPING,222)):
+            p=self.panel();p.session=SimpleNamespace(state=state)
+            with patch.object(ui,'U') as u:
+                u.WindowFromPoint.return_value=target
+                self.assertEqual(p.wndproc(123,0x21,123,0),3)
+                u.SetForegroundWindow.assert_not_called()
+                u.SetFocus.assert_not_called()
+
     def test_invalid_count_is_rejected(self):
         for text in ('','0','1000','-1','2.5','abc','２０','1e2'):
             with self.subTest(text=text),self.assertRaises(ValueError):
