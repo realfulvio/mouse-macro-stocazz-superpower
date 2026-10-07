@@ -59,6 +59,7 @@ api(U, 'PostMessageW', W.BOOL, [W.HWND, W.UINT, W.WPARAM, W.LPARAM])
 api(U, 'SetWindowTextW', W.BOOL, [W.HWND, W.LPCWSTR])
 api(U, 'GetWindowTextW', C.c_int, [W.HWND, W.LPWSTR, C.c_int])
 api(U, 'GetFocus', W.HWND, [])
+api(U, 'SetFocus', W.HWND, [W.HWND])
 api(U, 'WindowFromPoint', W.HWND, [W.POINT])
 api(U, 'EnableWindow', W.BOOL, [W.HWND, W.BOOL])
 api(U, 'ShowWindow', W.BOOL, [W.HWND, C.c_int])
@@ -799,7 +800,12 @@ class Panel:
                 if hasattr(self,'session') and self.session.state in (State.READY,State.ERROR):
                     point=W.POINT();U.GetCursorPos(C.byref(point))
                     if U.WindowFromPoint(point) == self.controls.get(22):
-                        return 1  # explicit click in the numeric input activates editing
+                        # WS_EX_NOACTIVATE keeps playback controls from taking
+                        # focus. Editing is an explicit exception: activate the
+                        # panel and focus the child before delivering the click.
+                        U.SetForegroundWindow(hwnd)
+                        U.SetFocus(self.controls[22])
+                        return 3  # activation handled here; preserve the click
                 return 3  # MA_NOACTIVATE
             if msg == 0x113 and hasattr(self,'boxes'):
                 point=W.POINT();U.GetCursorPos(C.byref(point))
