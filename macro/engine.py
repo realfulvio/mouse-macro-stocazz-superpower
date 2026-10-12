@@ -12,7 +12,7 @@ from dataclasses import dataclass, replace
 from enum import Enum
 from typing import Callable, Iterable
 
-from .events import BUTTON_OF_DOWN, BUTTON_OF_UP, MOVE_ABS, WHEEL, MacroEvent
+from .events import BUTTON_OF_DOWN, BUTTON_OF_UP, MOVE_ABS, MOVE_REL, WHEEL, MacroEvent
 
 
 class LoopMode(Enum):
@@ -59,6 +59,7 @@ def _double_click_indices(events: list[MacroEvent], options: PlaybackOptions) ->
     pairs: set[int] = set()
     previous_down = None
     released = False
+    relative_x = relative_y = 0.0
     for i, event in enumerate(events):
         if event.kind in BUTTON_OF_DOWN:
             if (previous_down is not None and released and options.double_click_seconds > 0
@@ -71,12 +72,19 @@ def _double_click_indices(events: list[MacroEvent], options: PlaybackOptions) ->
             else:
                 previous_down = event
             released = False
+            relative_x = relative_y = 0.0
         elif event.kind in BUTTON_OF_UP:
             released = previous_down is not None and BUTTON_OF_UP[event.kind] == BUTTON_OF_DOWN[previous_down.kind]
         elif event.kind == WHEEL or (event.kind == "move_abs" and previous_down is not None
                 and (abs(event.x - previous_down.x) > 4 or abs(event.y - previous_down.y) > 4)):
             previous_down = None
             released = False
+        elif event.kind == MOVE_REL and previous_down is not None:
+            relative_x += event.dx
+            relative_y += event.dy
+            if abs(relative_x) > 4 or abs(relative_y) > 4:
+                previous_down = None
+                released = False
     return pairs
 
 
