@@ -63,6 +63,7 @@ class LinuxRecorder:
         self._pending_dx = 0
         self._pending_dy = 0
         self._device: InputDevice | None = None
+        self.error = ''
 
     def start(self) -> None:
         # Open synchronously so permission/missing-device errors reach the UI.
@@ -72,6 +73,7 @@ class LinuxRecorder:
         self._pending_dx = 0
         self._pending_dy = 0
         self._stop.clear()
+        self.error = ''
         self._thread = threading.Thread(target=self._run, daemon=True)
         try:
             self._thread.start()
@@ -89,8 +91,9 @@ class LinuxRecorder:
                     continue
                 for event in dev.read():
                     self._handle(event)
-        except OSError:
-            pass
+        except OSError as error:
+            if not self._stop.is_set():
+                self.error = f'Mouse scollegato o non disponibile: {error}'
         finally:
             dev.close()
             self._device = None
@@ -146,7 +149,7 @@ class LinuxRecorder:
 _CAPABILITIES = {
     ecodes.EV_KEY: [
         ecodes.BTN_LEFT, ecodes.BTN_RIGHT, ecodes.BTN_MIDDLE,
-        ecodes.KEY_LEFTCTRL, ecodes.KEY_W,
+        ecodes.KEY_LEFTCTRL, ecodes.KEY_W, ecodes.KEY_TAB,
     ],
     ecodes.EV_REL: [ecodes.REL_X, ecodes.REL_Y, ecodes.REL_WHEEL],
 }
@@ -155,6 +158,7 @@ _CAPABILITIES = {
 class LinuxPlayer:
     def __init__(self):
         self._ui: UInput | None = None
+        self._held: set[str] = set()
 
     def _ensure(self) -> UInput:
         if self._ui is None:
@@ -173,8 +177,28 @@ class LinuxPlayer:
         ui.write(ecodes.EV_KEY, ecodes.KEY_LEFTCTRL, 0)
         ui.syn()
 
+    def next_tab(self, stop_event: threading.Event) -> None:
+        """Ctrl+Tab between cycles; always release keys, including on failure."""
+        if stop_event.is_set():
+            return
+        ui = self._ensure()
+        try:
+            ui.write(ecodes.EV_KEY, ecodes.KEY_LEFTCTRL, 1)
+            ui.write(ecodes.EV_KEY, ecodes.KEY_TAB, 1)
+            ui.syn()
+            stop_event.wait(0.04)
+        finally:
+            try:
+                ui.write(ecodes.EV_KEY, ecodes.KEY_TAB, 0)
+            finally:
+                ui.write(ecodes.EV_KEY, ecodes.KEY_LEFTCTRL, 0)
+                ui.syn()
+        stop_event.wait(0.8)
+
     def apply_event(self, evt: MacroEvent) -> None:
         ui = self._ensure()
+        if evt.kind in (LEFT_DOWN, RIGHT_DOWN, MIDDLE_DOWN):
+            self._held.add({LEFT_DOWN:'left', RIGHT_DOWN:'right', MIDDLE_DOWN:'middle'}[evt.kind])
         if evt.kind == MOVE_REL:
             if evt.dx:
                 ui.write(ecodes.EV_REL, ecodes.REL_X, int(evt.dx))
@@ -196,6 +220,8 @@ class LinuxPlayer:
         elif evt.kind == WHEEL:
             ui.write(ecodes.EV_REL, ecodes.REL_WHEEL, int(evt.wheel))
             ui.syn()
+        if evt.kind in (LEFT_UP, RIGHT_UP, MIDDLE_UP):
+            self._held.discard({LEFT_UP:'left', RIGHT_UP:'right', MIDDLE_UP:'middle'}[evt.kind])
 
     def _button(self, code: int, value: int) -> None:
         ui = self._ensure()
@@ -204,15 +230,25 @@ class LinuxPlayer:
 
     def release_held(self, held: set[str]) -> None:
         mapping = {"left": ecodes.BTN_LEFT, "right": ecodes.BTN_RIGHT, "middle": ecodes.BTN_MIDDLE}
+        error = None
         for name in held:
             code = mapping.get(name)
             if code is not None:
-                self._button(code, 0)
+                try:
+                    self._button(code, 0)
+                    self._held.discard(name)
+                except Exception as caught:
+                    error = error or caught
+        if error:
+            raise error
 
     def close(self) -> None:
         if self._ui is not None:
-            self._ui.close()
-            self._ui = None
+            try:
+                self.release_held(set(self._held))
+            finally:
+                self._ui.close()
+                self._ui = None
 
 
 class GlobalHotkeys:

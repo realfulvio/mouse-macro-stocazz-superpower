@@ -3,8 +3,9 @@ from __future__ import annotations
 
 import threading
 from enum import Enum
-from .events import Macro, BUTTON_OF_DOWN, BUTTON_OF_UP
-from .engine import play, PlaybackEnd, PlaybackOptions
+from .events import Macro, BUTTON_OF_DOWN, BUTTON_OF_UP, LEFT_DOWN, MOVE_REL
+from .engine import play, PlaybackEnd, PlaybackOptions, LoopMode
+import math
 
 VERSION = '1.1.1'
 
@@ -38,14 +39,17 @@ def validate_gestures(events):
 
 
 class Session:
-    def __init__(self, recorder_factory, player_factory, notify=lambda: None, screen=lambda: []):
+    def __init__(self, recorder_factory, player_factory, notify=lambda: None, screen=lambda: [], platform='windows'):
+        if platform not in ('windows', 'linux'):
+            raise ValueError('Piattaforma non supportata.')
+        self.platform = platform
         self.recorder_factory = recorder_factory
         self.player_factory = player_factory
         self.notify = notify
         self.screen = screen
         self.state = State.READY
         self.message = 'Registra i gesti del mouse.'
-        self.macro = Macro('windows')
+        self.macro = Macro(platform)
         self.stop_event = threading.Event()
         self.recorder = None
         self.worker = None
@@ -63,7 +67,7 @@ class Session:
             self.message = str(error)
         self.notify()
 
-    def toggle_record(self):
+    def toggle_record(self, discard_last_click=False):
         with self.lock:
             if self.state in (State.PLAYING, State.STOPPING, State.CLOSED) or (self.worker and self.worker.is_alive()):
                 return
@@ -84,15 +88,26 @@ class Session:
                     events = recorder.stop()
                     if getattr(recorder, 'error', ''):
                         raise ValueError(recorder.error)
+                    if discard_last_click and self.platform == 'linux':
+                        # The mouse Stop action is itself captured by evdev.
+                        # Remove it and the free path used to reach the panel;
+                        # F9/emergency stop keep every recorded gesture.
+                        last = next((i for i in range(len(events)-1, -1, -1)
+                                     if events[i].kind == LEFT_DOWN), None)
+                        if last is not None:
+                            while last and events[last-1].kind == MOVE_REL:
+                                last -= 1
+                            events = events[:last]
                     validate_gestures(events)
                     # Remove only the initial idle cursor path, never a drag or
                     # an arbitrary suffix; app gestures were excluded at source.
                     first = next(i for i, e in enumerate(events) if e.kind in BUTTON_OF_DOWN or e.kind == 'wheel')
-                    events = events[first:]
+                    if self.platform == 'windows':
+                        events = events[first:]
                     base = events[0].t
                     for event in events:
                         event.t -= base
-                    self.macro = Macro('windows', events, self.screen(), getattr(recorder, 'layout', {}))
+                    self.macro = Macro(self.platform, events, self.screen(), getattr(recorder, 'layout', {}))
                     self.state = State.READY
                     self.message = 'Macro pronta. Ripristina lo stato iniziale, poi F10.'
                 except Exception as error:
@@ -118,8 +133,10 @@ class Session:
                 # Mouse macros may span applications, browser chrome and the desktop.
                 # Do not bind playback to a browser or a single foreground window.
                 target = 'Mouse'
-                if options.repeat_count is None or not 1 <= options.repeat_count <= 999:
+                if options.mode == LoopMode.REPEAT_COUNT and (type(options.repeat_count) is not int or not 1 <= options.repeat_count <= 999):
                     raise ValueError('Imposta da 1 a 999 ripetizioni.')
+                if options.mode == LoopMode.DURATION and (not math.isfinite(options.duration_seconds) or options.duration_seconds <= 0):
+                    raise ValueError('Imposta una durata maggiore di zero.')
             except Exception as error:
                 if player:
                     player.close()
@@ -131,7 +148,8 @@ class Session:
             self.target = target
             self.completed = 0
             self.last_trace = []
-            self.message = f'{target}: giro 1/{options.repeat_count}'
+            self.message = (f'{target}: giro 1/{options.repeat_count}' if options.mode == LoopMode.REPEAT_COUNT
+                            else 'Riproduzione in corso.')
             events = list(self.macro.events)
             self.worker = threading.Thread(target=self._run, args=(events, options, next_tab), name='macro-player')
             self.worker.start()
@@ -144,7 +162,8 @@ class Session:
             with self.lock:
                 self.completed = status.completed_loops
                 if self.state == State.PLAYING:
-                    self.message = f'{self.target}: {self.completed}/{options.repeat_count} completati'
+                    self.message = (f'{self.target}: {self.completed}/{options.repeat_count} completati'
+                                    if options.mode == LoopMode.REPEAT_COUNT else f'Completati {self.completed} giri.')
             self.notify()
         try:
             end = play(events, options, player.apply_event, player.release_held, progress, stop,
@@ -182,8 +201,9 @@ class Session:
                 return False
             try:
                 candidate = Macro.load(str(path))
-                if candidate.platform != 'windows':
-                    raise ValueError('Questa macro è Linux. Registra una macro Windows.')
+                if candidate.platform != self.platform:
+                    raise ValueError('Questa macro è Linux. Registra una macro Windows.' if self.platform == 'windows'
+                                     else 'Questa macro è Windows. Registra una macro Linux.')
                 validate_gestures(candidate.events)
             except Exception as error:
                 self.error(error)
