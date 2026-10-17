@@ -96,6 +96,64 @@ class LinuxBackendTests(unittest.TestCase):
             gh.stop()
             self.assertIn(backend.HOTKEY_RECORD, dispatched)
 
+    def emergency_with(self, modifier):
+        e = backend.ecodes
+        dispatched = []
+        fake_dev = MagicMock()
+        fake_dev.name = "Real Keyboard"
+        fake_dev.capabilities.return_value = {e.EV_KEY: [e.KEY_F9, e.KEY_F10, e.KEY_F11]}
+        fake_dev.fd = 42
+        sequence = [[self.event(e.EV_KEY, e.KEY_LEFTCTRL, 1, 1), self.event(e.EV_KEY, modifier, 1, 1),
+                     self.event(e.EV_KEY, e.KEY_F11, 1, 1)]]
+        fake_dev.read.side_effect = lambda: sequence.pop() if sequence else []
+        with patch.object(backend, 'list_devices', return_value=['/dev/input/test_kbd']), \
+             patch.object(backend, 'InputDevice', return_value=fake_dev), \
+             patch.object(backend.select, 'select', return_value=([42], [], [])):
+            hotkeys = backend.GlobalHotkeys(dispatched.append)
+            hotkeys.start()
+            import time
+            time.sleep(0.05)
+            hotkeys.stop()
+        return dispatched
+
+    def test_emergency_accepts_ctrl_alt_and_ctrl_shift_f11_but_not_plain_f11(self):
+        e = backend.ecodes
+        self.assertEqual(self.emergency_with(e.KEY_LEFTALT), [backend.HOTKEY_EMERGENCY])
+        self.assertEqual(self.emergency_with(e.KEY_RIGHTSHIFT), [backend.HOTKEY_EMERGENCY])
+        self.assertEqual(self.emergency_with(e.KEY_LEFTMETA), [])
+
+    def test_mouse_models_read_from_proc_without_device_access(self):
+        import tempfile
+        text = (
+            'I: Bus=0003 Vendor=046d\nN: Name="Logitech G304"\nH: Handlers=sysrq kbd event11 mouse2\n\n'
+            'I: Bus=0011\nN: Name="AT Translated Set 2 keyboard"\nH: Handlers=sysrq kbd event3\n\n'
+            f'I: Bus=0006\nN: Name="{backend.VIRTUAL_DEVICE_NAME}"\nH: Handlers=event20 mouse4\n\n'
+            'I: Bus=0018\nN: Name="ELAN  Touchpad"\nH: Handlers=event7 mouse1\n\n'
+            'N: Name="Logitech G304"\nH: Handlers=event12 mouse3\n')
+        with tempfile.NamedTemporaryFile('w', delete=False) as file:
+            file.write(text)
+        self.addCleanup(lambda: __import__('os').unlink(file.name))
+        self.assertEqual(backend.mouse_models(file.name), ['Logitech G304', 'ELAN Touchpad'])
+        self.assertEqual(backend.mouse_models('/nonexistent/devices'), [])
+
+    def test_self_test_reports_missing_uinput_access_as_environment_not_failure(self):
+        import json, tempfile
+        from pathlib import Path
+        from macro.diagnostics import linux_self_test, self_test
+        denied = PermissionError(13, 'Permission denied', '/dev/uinput')
+        with tempfile.TemporaryDirectory() as folder, \
+             patch.object(backend, 'UInput', side_effect=denied), \
+             patch.object(backend, 'list_devices', return_value=[]):
+            for name, function in (('legacy', self_test), ('linux', linux_self_test)):
+                report = Path(folder) / f'{name}.json'
+                self.assertEqual(function(str(report), 'it'), 0)
+                data = json.loads(report.read_text())
+                self.assertTrue(data['ok'])
+                self.assertTrue(data['checks']['linux_panel_creation'])
+                self.assertIn('PermissionError', data['environment']['uinput'])
+                self.assertEqual(data['environment']['detected_mouse_count'], 0)
+                self.assertEqual(data['linux_version'], '1.0.0')
+
 
 if __name__ == '__main__':
     unittest.main()
