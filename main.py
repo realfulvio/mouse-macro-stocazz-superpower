@@ -1158,5 +1158,9 @@ if __name__ == "__main__":
     if len(sys.argv) == 3 and sys.argv[1] == '--self-test':
         from macro.diagnostics import self_test
         raise SystemExit(self_test(sys.argv[2]))
+    if sys.platform == 'linux':
+        from linux_main import run as run_linux
+        run_linux()
+        raise SystemExit(0)
     from app_launcher import run
     run(main)
