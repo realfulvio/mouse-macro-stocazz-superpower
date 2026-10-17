@@ -87,7 +87,6 @@ EN_TEMPLATES = [
     (r'Scarico la versione (.+)…', r'Downloading version \1…'),
     (r'Mouse rilevati: (.+)', r'Mice detected: \1'),
     (r'Mouse: modello non disponibile', r'Mouse: model unavailable'),
-    (r'Mouse: (.+) · senza permessi', r'Mouse: \1 · no access'),
 ]
 
 
@@ -257,7 +256,7 @@ class LinuxPanel:
                               expand=True), self.header_dot]),
             self.status_card,ft.Row([self.record]),ft.Row([self.play]),
             self.card(ft.Row([self.text('Ripetizioni',18,True,expand=True),self.minus,self.repeat,self.plus])),
-            ft.Row([self.save,self.load]), self.option_button,self.mouse,self.refresh,self.device_hint,
+            ft.Row([self.save,self.load]), self.mouse,self.refresh,self.device_hint,
         ],spacing=12,expand=True,scroll=ft.ScrollMode.AUTO)
         self.normal_view = ft.Row([self.main_column,self.options],spacing=16,expand=True)
         # Compact bar shown alone while recording or playing, as on Windows.
@@ -277,7 +276,9 @@ class LinuxPanel:
             self.progress,
         ],spacing=8), maximizable=False, visible=False)
         self.footer = ft.Row([
-            self.button('Guida',self.help,icon=ft.Icons.HELP_OUTLINE),
+            ft.IconButton(ft.Icons.HELP_OUTLINE,on_click=self.help,tooltip=self.tr('Guida'),icon_size=28,
+                          icon_color=self.colors['text'],bgcolor=self.colors['surface'],width=52,height=52),
+            self.option_button,
             self.button('Emergenza',self.emergency,icon=ft.Icons.WARNING_AMBER_ROUNDED,expand=True,
                         tooltip='Ctrl+Alt+F11'),
         ])
@@ -288,13 +289,13 @@ class LinuxPanel:
     def mouse_text(self):
         selected = next((n for p, n in self.devices if p == self.mouse.value), None) if hasattr(self, 'mouse') else None
         if selected:
-            return mouse_label([selected])
+            return self.tr(mouse_label([selected]))
         if self.devices:
-            return mouse_label([n for p, n in self.devices])
+            return self.tr(mouse_label([n for p, n in self.devices]))
         if self.models:
             # /proc names are readable without device access: show the model anyway.
-            return mouse_label(self.models) + ' · senza permessi'
-        return mouse_label([])
+            return self.tr(mouse_label(self.models)) + (' · no access' if self.language == 'en' else ' · senza permessi')
+        return self.tr(mouse_label([]))
 
     def valid_macro(self):
         try:
@@ -361,7 +362,7 @@ class LinuxPanel:
         self.event_count.value,self.duration.value = str(count),duration_text(seconds)
         self.activity_count.value = self.activity_detail(state, count, seconds)
         self.activity_hint.value = ('F9 stop' if state==State.RECORDING else 'F10 stop · Ctrl+Alt+F11')
-        self.mouse_model.value = self.tr(self.mouse_text())
+        self.mouse_model.value = self.mouse_text()
         self.normal_view.visible,self.activity_view.visible = not active,active
         self.footer.visible = self.shortcut_hint.visible = not active
         self.options.visible = self.expanded and not active
