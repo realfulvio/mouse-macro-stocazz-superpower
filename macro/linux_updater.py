@@ -9,13 +9,16 @@ the SHA256SUMS file of the same release before anything is extracted.
 """
 from __future__ import annotations
 
+import functools
 import hashlib
 import json
 import os
 from pathlib import Path
 import shutil
+import ssl
 import tarfile
 import tempfile
+import urllib.request
 
 from .updater import REPO, UpdateError, _download, _open, is_newer, parse_version
 
@@ -24,6 +27,28 @@ TAG_PREFIX = 'linux-v'
 PACKAGE = 'MouseMacroStocazzSuperpower-Linux-v{}'
 SUMS = 'SHA256SUMS-linux-v{}.txt'
 BINARIES = ('MouseMacroStocazzSuperpower-Linux-IT', 'MouseMacroStocazzSuperpower-Linux-EN')
+
+
+# The packaged binary is built on Ubuntu, whose OpenSSL looks for CA certificates
+# in /usr/lib/ssl; other distributions keep them elsewhere. Use the system bundle
+# where it is, falling back to the certifi bundle shipped with the binary.
+CA_BUNDLES = ('/etc/ssl/certs/ca-certificates.crt', '/etc/pki/tls/certs/ca-bundle.crt',
+              '/etc/ssl/ca-bundle.pem', '/etc/ssl/cert.pem')
+
+
+def ssl_context(candidates=CA_BUNDLES):
+    for path in candidates:
+        if os.path.isfile(path):
+            return ssl.create_default_context(cafile=path)
+    try:
+        import certifi
+        return ssl.create_default_context(cafile=certifi.where())
+    except (ImportError, OSError):
+        return ssl.create_default_context()
+
+
+def default_opener():
+    return functools.partial(urllib.request.urlopen, context=ssl_context())
 
 
 def data_root():
@@ -53,7 +78,7 @@ def pick_latest(releases):
 def fetch_latest(opener=None):
     """Return {'version', 'tag', 'assets': {name: url}} for the newest Linux release."""
     try:
-        with _open(API_URL, opener) as response:
+        with _open(API_URL, opener or default_opener()) as response:
             releases = json.loads(response.read(5_000_000).decode('utf-8'))
     except (OSError, ValueError) as error:
         raise UpdateError('Non riesco a controllare gli aggiornamenti.') from error
@@ -90,6 +115,7 @@ def install(release, root=None, opener=None, keep=()):
         archive_url, sums_url = release['assets'][archive_name], release['assets'][sums_name]
     except KeyError as error:
         raise UpdateError('La release non contiene il pacchetto Linux e SHA256SUMS attesi.') from error
+    opener = opener or default_opener()
     root = Path(root) if root else data_root()
     root.mkdir(parents=True, exist_ok=True)
     work = Path(tempfile.mkdtemp(prefix='mmss-update-', dir=root))
