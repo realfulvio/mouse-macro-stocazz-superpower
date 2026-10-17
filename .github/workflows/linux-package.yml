@@ -1,0 +1,55 @@
+# Linux-only package build. The Windows release workflow is separate and untouched.
+# The result is a candidate: the release is published by hand with
+# `gh release create linux-vX.Y.Z --latest=false` so that /releases/latest keeps
+# pointing at the Windows release read by macro/updater.py.
+name: Build Linux package
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'linux_*.py'
+      - 'macro/**'
+      - 'package_linux.py'
+      - 'build_release.py'
+      - 'install.sh'
+      - 'scripts/setup-linux-input.sh'
+      - 'requirements.txt'
+      - '.github/workflows/linux-package.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    # The oldest supported runner keeps the glibc requirement of the binaries low.
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install runtime, build and test dependencies
+        run: python -m pip install -r requirements.txt 'pyinstaller==6.22.3'
+      - name: Unit tests
+        run: python -m unittest discover -v
+      - name: Build IT/EN binaries
+        run: python build_release.py
+      - name: Build tar.gz, install.sh and SHA256SUMS
+        run: python package_linux.py
+      - name: Headless self-test of both binaries
+        run: |
+          dist/linux/MouseMacroStocazzSuperpower-Linux-IT --self-test it.json
+          dist/linux/MouseMacroStocazzSuperpower-Linux-EN --self-test en.json
+          cat it.json en.json
+      - name: Verify checksums
+        working-directory: dist/linux
+        run: sha256sum -c SHA256SUMS-linux-v*.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-package
+          path: |
+            dist/linux/MouseMacroStocazzSuperpower-Linux-v*.tar.gz
+            dist/linux/SHA256SUMS-linux-v*.txt
+            dist/linux/install.sh
+          if-no-files-found: error
