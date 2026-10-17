@@ -4,7 +4,7 @@
 
 <p align="center">
 Registra il mouse e ripeti la sequenza quante volte vuoi.<br>
-Un piccolo pannello sempre in primo piano per Windows: niente installer, niente Python da installare.
+Un piccolo pannello sempre in primo piano per Windows e Linux: niente installer, niente Python da installare.
 </p>
 
 <p align="center">
