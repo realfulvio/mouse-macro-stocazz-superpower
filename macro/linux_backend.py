@@ -52,6 +52,28 @@ def list_mice() -> list[tuple[str, str]]:
     return mice
 
 
+def mouse_models(devices_file: str = "/proc/bus/input/devices") -> list[str]:
+    """Nomi dei mouse collegati letti da /proc, leggibile anche senza permessi
+    sui dispositivi: il pannello mostra il modello pure quando manca l'accesso."""
+    try:
+        with open(devices_file, encoding="utf-8", errors="replace") as stream:
+            text = stream.read()
+    except OSError:
+        return []
+    names: list[str] = []
+    for block in text.split("\n\n"):
+        name, handlers = "", []
+        for line in block.splitlines():
+            if line.startswith("N: Name="):
+                name = line[len("N: Name="):].strip().strip('"')
+            elif line.startswith("H: Handlers="):
+                handlers = line[len("H: Handlers="):].split()
+        if (name and name != VIRTUAL_DEVICE_NAME and name not in names
+                and any(h.startswith("mouse") for h in handlers)):
+            names.append(" ".join(name.split()))
+    return names
+
+
 class LinuxRecorder:
     def __init__(self, device_path: str):
         self.device_path = device_path
@@ -253,7 +275,9 @@ class LinuxPlayer:
 
 class GlobalHotkeys:
     """F9 / F10 / Ctrl+Alt+F11 funzionanti a livello globale di sistema tramite evdev,
-    senza richiedere il focus sulla finestra dell'applicazione."""
+    senza richiedere il focus sulla finestra dell'applicazione. Molti compositor usano
+    Ctrl+Alt+F11 anche per cambiare console virtuale: Ctrl+Maiusc+F11 e' l'alternativa
+    equivalente che non lascia il desktop."""
 
     def __init__(self, on_hotkey: Callable[[int], None]):
         self._on_hotkey = on_hotkey
@@ -290,6 +314,7 @@ class GlobalHotkeys:
     def _run(self) -> None:
         ctrl_down = False
         alt_down = False
+        shift_down = False
         fds = {dev.fd: dev for dev in self._devices}
         try:
             while not self._stop.is_set():
@@ -308,6 +333,8 @@ class GlobalHotkeys:
                                 ctrl_down = (ev.value != 0)
                             elif ev.code in (ecodes.KEY_LEFTALT, ecodes.KEY_RIGHTALT):
                                 alt_down = (ev.value != 0)
+                            elif ev.code in (ecodes.KEY_LEFTSHIFT, ecodes.KEY_RIGHTSHIFT):
+                                shift_down = (ev.value != 0)
                             elif ev.value == 1:
                                 if ev.code == ecodes.KEY_F9:
                                     try:
@@ -319,7 +346,7 @@ class GlobalHotkeys:
                                         self._on_hotkey(HOTKEY_PLAY)
                                     except Exception:
                                         pass
-                                elif ev.code == ecodes.KEY_F11 and ctrl_down and alt_down:
+                                elif ev.code == ecodes.KEY_F11 and ctrl_down and (alt_down or shift_down):
                                     try:
                                         self._on_hotkey(HOTKEY_EMERGENCY)
                                     except Exception:
