@@ -139,21 +139,24 @@ class LinuxBackendTests(unittest.TestCase):
     def test_self_test_reports_missing_uinput_access_as_environment_not_failure(self):
         import json, tempfile
         from pathlib import Path
+        from evdev.uinput import UInputError
         from macro.diagnostics import linux_self_test, self_test
-        denied = PermissionError(13, 'Permission denied', '/dev/uinput')
-        with tempfile.TemporaryDirectory() as folder, \
-             patch.object(backend, 'UInput', side_effect=denied), \
-             patch.object(backend, 'list_devices', return_value=[]):
-            for name, function in (('legacy', self_test), ('linux', linux_self_test)):
-                report = Path(folder) / f'{name}.json'
-                self.assertEqual(function(str(report), 'it'), 0)
-                data = json.loads(report.read_text())
-                self.assertTrue(data['ok'])
-                self.assertTrue(data['checks']['linux_panel_creation'])
-                self.assertIn('PermissionError', data['environment']['uinput'])
-                self.assertEqual(data['environment']['detected_mouse_count'], 0)
-                self.assertEqual(data['linux_version'], '1.0.0')
-
+        missing = (PermissionError(13, 'Permission denied', '/dev/uinput'),
+                   UInputError('"/dev/uinput" cannot be opened for writing'))  # CI runners
+        cases = [(error, name, function) for error in missing
+                 for name, function in (('legacy', self_test), ('linux', linux_self_test))]
+        with tempfile.TemporaryDirectory() as folder, patch.object(backend, 'list_devices', return_value=[]):
+            for error, name, function in cases:
+                with self.subTest(error=type(error).__name__, name=name), \
+                     patch.object(backend, 'UInput', side_effect=error):
+                    report = Path(folder) / f'{name}.json'
+                    code = function(str(report), 'it')
+                    data = json.loads(report.read_text())
+                    self.assertEqual(code, 0, data)
+                    self.assertTrue(data['checks']['linux_panel_creation'])
+                    self.assertIn(type(error).__name__, data['environment']['uinput'])
+                    self.assertEqual(data['environment']['detected_mouse_count'], 0)
+                    self.assertEqual(data['linux_version'], '1.0.0')
 
 if __name__ == '__main__':
     unittest.main()

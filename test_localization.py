@@ -103,8 +103,9 @@ class LocalizationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             for language in ('it', 'en'):
                 target = Path(folder) / f'{language}.json'
-                self.assertEqual(self_test(str(target), language), 0)
+                code = self_test(str(target), language)
                 report = json.loads(target.read_text())
+                self.assertEqual(code, 0, report)
                 self.assertTrue(report['ok'])
                 self.assertEqual(report['language'], language)
                 self.assertTrue(all(report['checks'].values()))
