@@ -9,6 +9,7 @@ Un piccolo pannello sempre in primo piano per Windows: niente installer, niente 
 
 <p align="center">
 <a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.1.1"><b>⬇ Scarica per Windows</b></a>
+· <a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.0.0"><b>⬇ Scarica per Linux</b></a>
 · <a href="GUIDA-ITALIANA.md">Guida italiana</a>
 · <a href="docs/ESITO-COLLAUDO-v1.1.1.md">Esito dei controlli</a>
 </p>
@@ -104,6 +105,32 @@ La v1.1.1 corregge la digitazione delle ripetizioni e mostra il modello del mous
 
 Stabile. La v1.1.1 corregge l'inserimento delle ripetizioni e aggiunge il modello del mouse. Sull'esatto ZIP sono passati 11 controlli nativi sia su Windows 11 sia su Windows Server 2022: conteggi effettivi 1/3/7/20, Rapida 2×, registrazione/replay, Stop/F10/emergenza e valori invalidi. Suite automatica: 163 passati, 6 Linux saltati. Il motore è invariato. [Rapporto e limiti](docs/ESITO-COLLAUDO-v1.1.1.md).
 
+## Linux
+
+<p align="center">
+<img src="docs/screenshots/linux-v100-pannello.png" alt="Pannello Linux" width="250">
+&nbsp;
+<img src="docs/screenshots/linux-v100-barra.png" alt="Barra attiva durante la riproduzione" width="330">
+</p>
+
+La versione Linux ha una release separata, **[linux-v1.0.0](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.0.0)**, con le stesse funzioni della Windows v1.1.1: barra attiva compatta e semitrasparente con contatori e Stop, ripetizioni 1–999, Normale/Rapida 2×, Ctrl+Tab tra i giri, Pagine lente, **Movimento umano**, skin Unicorno/Palio, modello del mouse, pallino aggiornamenti con installazione verificata, preferenze e diagnostica. Interfaccia in italiano o inglese; serve Linux x86_64 con X11 o Wayland.
+
+**Installazione e avvio** (non usa sudo, non crea avvii automatici):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/realfulvio/mouse-macro-stocazz-superpower/main/install.sh | bash
+```
+
+Lo script cerca l'ultima release `linux-v*`, scarica il pacchetto, ne verifica lo SHA-256, lo estrae in `~/.local/share/MouseMacroStocazzSuperpower`, aggiunge l'icona nel menu delle applicazioni e avvia il programma. Le volte successive avvia la versione installata senza riscaricare. Opzioni: `--en` (inglese), `--permessi` (configura subito i permessi), `--no-start`. In alternativa scarica `MouseMacroStocazzSuperpower-Linux-v1.0.0.tar.gz` e `SHA256SUMS-linux-v1.0.0.txt`, controlla con `sha256sum -c --ignore-missing SHA256SUMS-linux-v1.0.0.txt`, estrai e apri `MouseMacroStocazzSuperpower-Linux-IT`.
+
+**Permessi (una volta sola).** Su Linux il programma legge il mouse e i tasti F9/F10 direttamente dai dispositivi (`/dev/input/event*`) e riproduce con un mouse virtuale (`/dev/uinput`). Esegui `bash ~/.local/share/MouseMacroStocazzSuperpower/current/setup-linux-input.sh`: chiede la password di sudo e installa una regola udev con `TAG+="uaccess"` per mouse, tastiere e uinput. L'accesso vale solo per l'utente seduto alla sessione locale attiva e viene tolto quando cambia utente o sessione; finché la regola è attiva, anche altri programmi della tua sessione possono leggere quei dispositivi. Poi esci e rientra e premi **Aggiorna elenco**. Non avviare l'app come root. Senza permessi il pannello mostra comunque il modello del mouse con la nota *senza permessi*.
+
+**Limite dei movimenti relativi.** Su Wayland nessun programma può leggere o impostare la posizione del cursore: la macro Linux registra gli spostamenti relativi e il replay parte dalla posizione attuale del puntatore. Prima di ogni replay riporta il cursore nel punto di partenza, e non cambiare sensibilità, accelerazione del mouse o scala dello schermo. Con l'accelerazione attiva lo stesso spostamento può arrivare in un punto leggermente diverso se il ritmo cambia: per risultati ripetibili usa il profilo di accelerazione **piatto** (Impostazioni di sistema → Mouse). Il **Movimento umano** cambia la forma dei tragitti e le pause, ma mantiene identica la somma degli spostamenti fra un clic e l'altro e non tocca la velocità lungo il tragitto, così i clic cadono negli stessi punti.
+
+**Scorciatoie.** F9 registra/ferma, F10 riproduce/ferma, Ctrl+Alt+F11 è l'emergenza. Su molti desktop Ctrl+Alt+F11 passa anche a una console di testo: la macro si ferma comunque e si torna con Ctrl+Alt+F1, F2 o F7. **Ctrl+Maiusc+F11** ferma tutto senza cambiare console. Su Wayland la posizione della finestra e il "sempre in primo piano" dipendono dal compositor.
+
+**Aggiornamenti e diagnostica.** Il pallino in alto controlla all'avvio solo le release `linux-v*` (disattivabile nel dialogo Aggiornamenti), scarica il tar.gz, verifica lo SHA-256 e riavvia la nuova versione. Preferenze, `ultimo-replay.json` ed `errore.log` sono in `~/.config/MouseMacroStocazzSuperpower`.
+
 ## Compilare dai sorgenti
 
 ```powershell
@@ -112,6 +139,6 @@ python -m unittest discover -v
 python build_native_windows.py
 ```
 
-Dettagli in [BUILD-v1.1.1.md](BUILD-v1.1.1.md). La vecchia versione Linux (Flet, IT/EN) è nella [release v0.14](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.14-beta).
+Dettagli in [BUILD-v1.1.1.md](BUILD-v1.1.1.md). Su Linux: `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt 'pyinstaller==6.22.3'`, poi `.venv/bin/python build_release.py && .venv/bin/python package_linux.py` (pacchetto, `install.sh` e SHA256SUMS in `dist/linux`). La vecchia versione Linux v0.14 resta nella [release v0.14](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.14-beta); quella attuale è [linux-v1.0.0](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.0.0).
 
 [Tutte le release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases) · [Note di design](docs/design/README.md) · [Licenza PolyForm Noncommercial](LICENSE): uso libero personale e non commerciale, vietata la rivendita · [Licenze di terze parti](THIRD-PARTY-NOTICES.md) · Progetto e design: **hcok**

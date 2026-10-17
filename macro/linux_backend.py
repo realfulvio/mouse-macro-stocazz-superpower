@@ -52,6 +52,28 @@ def list_mice() -> list[tuple[str, str]]:
     return mice
 
 
+def mouse_models(devices_file: str = "/proc/bus/input/devices") -> list[str]:
+    """Nomi dei mouse collegati letti da /proc, leggibile anche senza permessi
+    sui dispositivi: il pannello mostra il modello pure quando manca l'accesso."""
+    try:
+        with open(devices_file, encoding="utf-8", errors="replace") as stream:
+            text = stream.read()
+    except OSError:
+        return []
+    names: list[str] = []
+    for block in text.split("\n\n"):
+        name, handlers = "", []
+        for line in block.splitlines():
+            if line.startswith("N: Name="):
+                name = line[len("N: Name="):].strip().strip('"')
+            elif line.startswith("H: Handlers="):
+                handlers = line[len("H: Handlers="):].split()
+        if (name and name != VIRTUAL_DEVICE_NAME and name not in names
+                and any(h.startswith("mouse") for h in handlers)):
+            names.append(" ".join(name.split()))
+    return names
+
+
 class LinuxRecorder:
     def __init__(self, device_path: str):
         self.device_path = device_path
@@ -63,6 +85,7 @@ class LinuxRecorder:
         self._pending_dx = 0
         self._pending_dy = 0
         self._device: InputDevice | None = None
+        self.error = ''
 
     def start(self) -> None:
         # Open synchronously so permission/missing-device errors reach the UI.
@@ -72,6 +95,7 @@ class LinuxRecorder:
         self._pending_dx = 0
         self._pending_dy = 0
         self._stop.clear()
+        self.error = ''
         self._thread = threading.Thread(target=self._run, daemon=True)
         try:
             self._thread.start()
@@ -89,8 +113,9 @@ class LinuxRecorder:
                     continue
                 for event in dev.read():
                     self._handle(event)
-        except OSError:
-            pass
+        except OSError as error:
+            if not self._stop.is_set():
+                self.error = f'Mouse scollegato o non disponibile: {error}'
         finally:
             dev.close()
             self._device = None
@@ -146,7 +171,7 @@ class LinuxRecorder:
 _CAPABILITIES = {
     ecodes.EV_KEY: [
         ecodes.BTN_LEFT, ecodes.BTN_RIGHT, ecodes.BTN_MIDDLE,
-        ecodes.KEY_LEFTCTRL, ecodes.KEY_W,
+        ecodes.KEY_LEFTCTRL, ecodes.KEY_W, ecodes.KEY_TAB,
     ],
     ecodes.EV_REL: [ecodes.REL_X, ecodes.REL_Y, ecodes.REL_WHEEL],
 }
@@ -155,6 +180,7 @@ _CAPABILITIES = {
 class LinuxPlayer:
     def __init__(self):
         self._ui: UInput | None = None
+        self._held: set[str] = set()
 
     def _ensure(self) -> UInput:
         if self._ui is None:
@@ -173,8 +199,28 @@ class LinuxPlayer:
         ui.write(ecodes.EV_KEY, ecodes.KEY_LEFTCTRL, 0)
         ui.syn()
 
+    def next_tab(self, stop_event: threading.Event) -> None:
+        """Ctrl+Tab between cycles; always release keys, including on failure."""
+        if stop_event.is_set():
+            return
+        ui = self._ensure()
+        try:
+            ui.write(ecodes.EV_KEY, ecodes.KEY_LEFTCTRL, 1)
+            ui.write(ecodes.EV_KEY, ecodes.KEY_TAB, 1)
+            ui.syn()
+            stop_event.wait(0.04)
+        finally:
+            try:
+                ui.write(ecodes.EV_KEY, ecodes.KEY_TAB, 0)
+            finally:
+                ui.write(ecodes.EV_KEY, ecodes.KEY_LEFTCTRL, 0)
+                ui.syn()
+        stop_event.wait(0.8)
+
     def apply_event(self, evt: MacroEvent) -> None:
         ui = self._ensure()
+        if evt.kind in (LEFT_DOWN, RIGHT_DOWN, MIDDLE_DOWN):
+            self._held.add({LEFT_DOWN:'left', RIGHT_DOWN:'right', MIDDLE_DOWN:'middle'}[evt.kind])
         if evt.kind == MOVE_REL:
             if evt.dx:
                 ui.write(ecodes.EV_REL, ecodes.REL_X, int(evt.dx))
@@ -196,6 +242,8 @@ class LinuxPlayer:
         elif evt.kind == WHEEL:
             ui.write(ecodes.EV_REL, ecodes.REL_WHEEL, int(evt.wheel))
             ui.syn()
+        if evt.kind in (LEFT_UP, RIGHT_UP, MIDDLE_UP):
+            self._held.discard({LEFT_UP:'left', RIGHT_UP:'right', MIDDLE_UP:'middle'}[evt.kind])
 
     def _button(self, code: int, value: int) -> None:
         ui = self._ensure()
@@ -204,20 +252,32 @@ class LinuxPlayer:
 
     def release_held(self, held: set[str]) -> None:
         mapping = {"left": ecodes.BTN_LEFT, "right": ecodes.BTN_RIGHT, "middle": ecodes.BTN_MIDDLE}
+        error = None
         for name in held:
             code = mapping.get(name)
             if code is not None:
-                self._button(code, 0)
+                try:
+                    self._button(code, 0)
+                    self._held.discard(name)
+                except Exception as caught:
+                    error = error or caught
+        if error:
+            raise error
 
     def close(self) -> None:
         if self._ui is not None:
-            self._ui.close()
-            self._ui = None
+            try:
+                self.release_held(set(self._held))
+            finally:
+                self._ui.close()
+                self._ui = None
 
 
 class GlobalHotkeys:
     """F9 / F10 / Ctrl+Alt+F11 funzionanti a livello globale di sistema tramite evdev,
-    senza richiedere il focus sulla finestra dell'applicazione."""
+    senza richiedere il focus sulla finestra dell'applicazione. Molti compositor usano
+    Ctrl+Alt+F11 anche per cambiare console virtuale: Ctrl+Maiusc+F11 e' l'alternativa
+    equivalente che non lascia il desktop."""
 
     def __init__(self, on_hotkey: Callable[[int], None]):
         self._on_hotkey = on_hotkey
@@ -254,6 +314,7 @@ class GlobalHotkeys:
     def _run(self) -> None:
         ctrl_down = False
         alt_down = False
+        shift_down = False
         fds = {dev.fd: dev for dev in self._devices}
         try:
             while not self._stop.is_set():
@@ -272,6 +333,8 @@ class GlobalHotkeys:
                                 ctrl_down = (ev.value != 0)
                             elif ev.code in (ecodes.KEY_LEFTALT, ecodes.KEY_RIGHTALT):
                                 alt_down = (ev.value != 0)
+                            elif ev.code in (ecodes.KEY_LEFTSHIFT, ecodes.KEY_RIGHTSHIFT):
+                                shift_down = (ev.value != 0)
                             elif ev.value == 1:
                                 if ev.code == ecodes.KEY_F9:
                                     try:
@@ -283,7 +346,7 @@ class GlobalHotkeys:
                                         self._on_hotkey(HOTKEY_PLAY)
                                     except Exception:
                                         pass
-                                elif ev.code == ecodes.KEY_F11 and ctrl_down and alt_down:
+                                elif ev.code == ecodes.KEY_F11 and ctrl_down and (alt_down or shift_down):
                                     try:
                                         self._on_hotkey(HOTKEY_EMERGENCY)
                                     except Exception:
