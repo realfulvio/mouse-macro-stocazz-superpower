@@ -6,7 +6,7 @@ import unittest
 
 from macro import engine
 from macro.engine import PlaybackOptions, _humanize_cycle, play
-from macro.events import LEFT_DOWN, LEFT_UP, MOVE_ABS, WHEEL, MacroEvent
+from macro.events import LEFT_DOWN, LEFT_UP, MOVE_ABS, MOVE_REL, RIGHT_DOWN, RIGHT_UP, WHEEL, MacroEvent
 
 
 def path_macro(held=False):
@@ -117,6 +117,88 @@ class PlayTests(unittest.TestCase):
         self.assertEqual(len(applied), len(events) * 2)
         self.assertNotEqual([(e.x, e.y) for e in applied[:len(events)]],
                             [(e.x, e.y) for e in applied[len(events):]])
+
+
+def relative_macro(held=False):
+    """Linux: tragitto libero di 20 movimenti relativi, clic, trascinamento, clic."""
+    events = [MacroEvent(0.0, LEFT_DOWN), MacroEvent(0.15, LEFT_UP)]
+    t = 0.3
+    for k in range(20):
+        events.append(MacroEvent(t, MOVE_REL, dx=30 + k % 3, dy=16 - k % 5))
+        t += 0.02
+    events += [MacroEvent(t, RIGHT_DOWN), MacroEvent(t + .15, RIGHT_UP)]
+    t += 0.3
+    events.append(MacroEvent(t, LEFT_DOWN))
+    for k in range(10):  # trascinamento: deve restare identico
+        events.append(MacroEvent(t + .02 * (k + 1), MOVE_REL, dx=-7, dy=3))
+    events += [MacroEvent(t + .3, LEFT_UP), MacroEvent(t + .4, MOVE_REL, dx=4, dy=1),
+               MacroEvent(t + .45, MOVE_REL, dx=-50, dy=-60), MacroEvent(t + .5, MOVE_REL, dx=-40, dy=-70),
+               MacroEvent(t + .55, MOVE_REL, dx=-30, dy=-80), MacroEvent(t + .7, LEFT_DOWN),
+               MacroEvent(t + .8, LEFT_UP)]
+    return events
+
+
+def segment_sums(events):
+    """Somma dx/dy fra un evento non di movimento e il successivo."""
+    sums, x, y = [], 0.0, 0.0
+    for evt in events:
+        if evt.kind == MOVE_REL:
+            x, y = x + evt.dx, y + evt.dy
+        else:
+            sums.append((evt.kind, x, y))
+            x = y = 0.0
+    return sums + [('end', x, y)]
+
+
+class HumanizeRelativeTests(unittest.TestCase):
+    def test_sum_between_clicks_and_structure_are_unchanged(self):
+        events = relative_macro()
+        for seed in range(100):
+            out, times = _humanize_cycle(events, times_of(events), random.Random(seed))
+            self.assertEqual([e.kind for e in out], [e.kind for e in events])
+            self.assertEqual(segment_sums(out), segment_sums(events))
+            self.assertEqual(times, times_of(events))
+
+    def test_free_path_changes_but_drag_and_short_paths_do_not(self):
+        events = relative_macro()
+        out, _ = _humanize_cycle(events, times_of(events), random.Random(11))
+        free = range(2, 22)
+        self.assertTrue(any((out[i].dx, out[i].dy) != (events[i].dx, events[i].dy) for i in free))
+        drag = [i for i, e in enumerate(events) if e.kind == MOVE_REL and i > 24][:10]
+        self.assertEqual([(out[i].dx, out[i].dy) for i in drag], [(events[i].dx, events[i].dy) for i in drag])
+
+    def test_deltas_stay_integers_and_deviation_is_bounded(self):
+        events = relative_macro()
+        for seed in range(50):
+            out, _ = _humanize_cycle(events, times_of(events), random.Random(seed))
+            x = y = ox = oy = 0.0
+            for before, after in zip(events, out):
+                if before.kind != MOVE_REL:
+                    x = y = ox = oy = 0.0
+                    continue
+                self.assertEqual(after.dx, int(after.dx))
+                self.assertEqual(after.dy, int(after.dy))
+                x, y, ox, oy = x + before.dx, y + before.dy, ox + after.dx, oy + after.dy
+                self.assertLessEqual(math.hypot(ox - x, oy - y), engine.HUMAN_MAX_DEVIATION * 1.5 + 2)
+
+    def test_short_relative_paths_are_not_modified(self):
+        events = [MacroEvent(0, MOVE_REL, dx=2, dy=1), MacroEvent(.01, MOVE_REL, dx=3, dy=2),
+                  MacroEvent(.02, MOVE_REL, dx=1, dy=1), MacroEvent(.03, LEFT_DOWN), MacroEvent(.1, LEFT_UP)]
+        out, _ = _humanize_cycle(events, times_of(events), random.Random(1))
+        self.assertEqual([(e.dx, e.dy) for e in out], [(e.dx, e.dy) for e in events])
+
+    def test_humanized_relative_play_keeps_cursor_position_at_every_click(self):
+        events = relative_macro()
+        applied = []
+        options = PlaybackOptions(repeat_count=3, speed=20.0, humanize=True, min_click_hold_seconds=0.0,
+                                  min_action_gap_seconds=0.0, max_pause_speedup=20.0)
+        play(events, options, applied.append, lambda held: None, None, threading.Event())
+        self.assertEqual(len(applied), len(events) * 3)
+        cycles = [applied[i * len(events):(i + 1) * len(events)] for i in range(3)]
+        for cycle in cycles:
+            self.assertEqual(segment_sums(cycle), segment_sums(events))
+        self.assertNotEqual([(e.dx, e.dy) for e in cycles[0]], [(e.dx, e.dy) for e in cycles[1]])
+        self.assertTrue(all(e is not o for e, o in zip(events, applied)))
 
 
 if __name__ == '__main__':
