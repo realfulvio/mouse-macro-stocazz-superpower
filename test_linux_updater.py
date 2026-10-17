@@ -163,5 +163,29 @@ class InstallTests(unittest.TestCase):
             self.assertEqual(linux_updater.data_root(), Path(self.temp.name) / 'MouseMacroStocazzSuperpower')
 
 
+class CertificateTests(unittest.TestCase):
+    def test_system_bundle_is_preferred_then_certifi(self):
+        import ssl
+        with patch.object(ssl, 'create_default_context') as create:
+            linux_updater.ssl_context(['/nonexistent/a.pem', __file__])
+        create.assert_called_once_with(cafile=__file__)
+        import certifi
+        with patch.object(ssl, 'create_default_context') as create:
+            linux_updater.ssl_context(['/nonexistent/a.pem'])
+        create.assert_called_once_with(cafile=certifi.where())
+
+    def test_network_calls_use_the_verified_context_by_default(self):
+        calls = []
+        def fake_urlopen(request, timeout=None, context=None):
+            calls.append(context)
+            raise OSError('offline')
+        with patch.object(linux_updater.urllib.request, 'urlopen', fake_urlopen):
+            with self.assertRaises(UpdateError):
+                linux_updater.fetch_latest()
+        self.assertEqual(len(calls), 1)
+        self.assertIsNotNone(calls[0])
+        self.assertEqual(calls[0].verify_mode, __import__('ssl').CERT_REQUIRED)
+
+
 if __name__ == '__main__':
     unittest.main()
