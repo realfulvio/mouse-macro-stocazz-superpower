@@ -76,7 +76,7 @@ def main():
         if system == 'Windows':
             args += ['--icon', str(root / 'assets' / 'icon.ico'), '--version-file', str(root / 'version_info.txt')]
         else:
-            args += ['--strip', '--hidden-import', 'evdev']
+            args += ['--strip', '--hidden-import', 'evdev', '--collect-data', 'certifi']
         args.append(str(root / entrypoint))
         subprocess.run(args, check=True)
 
