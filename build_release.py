@@ -64,7 +64,8 @@ def main():
         client_args = ['--add-data', f'{client}{os.pathsep}flet_desktop/app',
                        '--hidden-import', 'flet_desktop', '--hidden-import', 'flet_desktop.version']
 
-    for language, entrypoint in [('IT', 'main.py'), ('EN', 'main_en.py')]:
+    entries = [('IT', 'linux_start.py'), ('EN', 'linux_start_en.py')] if system == 'Linux' else [('IT', 'main.py'), ('EN', 'main_en.py')]
+    for language, entrypoint in entries:
         name = f'MouseMacroStocazzSuperpower-{system}-{language}'
         args = [sys.executable, '-m', 'PyInstaller', '--noconfirm', '--onefile', '--windowed',
                 '--noupx', '--name', name, '--distpath', str(output),

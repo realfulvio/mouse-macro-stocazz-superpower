@@ -12,7 +12,7 @@ from dataclasses import dataclass, replace
 from enum import Enum
 from typing import Callable, Iterable
 
-from .events import BUTTON_OF_DOWN, BUTTON_OF_UP, MOVE_ABS, WHEEL, MacroEvent
+from .events import BUTTON_OF_DOWN, BUTTON_OF_UP, MOVE_ABS, MOVE_REL, WHEEL, MacroEvent
 
 
 class LoopMode(Enum):
@@ -59,6 +59,7 @@ def _double_click_indices(events: list[MacroEvent], options: PlaybackOptions) ->
     pairs: set[int] = set()
     previous_down = None
     released = False
+    relative_x = relative_y = 0.0
     for i, event in enumerate(events):
         if event.kind in BUTTON_OF_DOWN:
             if (previous_down is not None and released and options.double_click_seconds > 0
@@ -71,12 +72,19 @@ def _double_click_indices(events: list[MacroEvent], options: PlaybackOptions) ->
             else:
                 previous_down = event
             released = False
+            relative_x = relative_y = 0.0
         elif event.kind in BUTTON_OF_UP:
             released = previous_down is not None and BUTTON_OF_UP[event.kind] == BUTTON_OF_DOWN[previous_down.kind]
         elif event.kind == WHEEL or (event.kind == "move_abs" and previous_down is not None
                 and (abs(event.x - previous_down.x) > 4 or abs(event.y - previous_down.y) > 4)):
             previous_down = None
             released = False
+        elif event.kind == MOVE_REL and previous_down is not None:
+            relative_x += event.dx
+            relative_y += event.dy
+            if abs(relative_x) > 4 or abs(relative_y) > 4:
+                previous_down = None
+                released = False
     return pairs
 
 
@@ -94,7 +102,8 @@ def _humanize_cycle(events: list[MacroEvent], times: list[float],
     """Restituisce una copia del giro con percorsi e velocita' dei soli movimenti liberi
     (cursore senza tasti premuti) variati. Non cambia numero, ordine, tipo e tempo di
     pressioni/rilasci/rotella; primo e ultimo punto di ogni tragitto restano esatti,
-    quindi i clic arrivano sempre sulle stesse coordinate."""
+    quindi i clic arrivano sempre sulle stesse coordinate. I movimenti relativi (Linux)
+    conservano la somma dx/dy di ogni tragitto e i loro tempi."""
     out = [replace(e) for e in events]
     new_times = list(times)
     held: set[str] = set()
@@ -106,15 +115,50 @@ def _humanize_cycle(events: list[MacroEvent], times: list[float],
             held.add(BUTTON_OF_DOWN[evt.kind])
         elif evt.kind in BUTTON_OF_UP:
             held.discard(BUTTON_OF_UP[evt.kind])
-        if evt.kind != MOVE_ABS or held:
+        if evt.kind not in (MOVE_ABS, MOVE_REL) or held:
             i += 1
             continue
         j = i
-        while j + 1 < n and events[j + 1].kind == MOVE_ABS:
+        while j + 1 < n and events[j + 1].kind == evt.kind:
             j += 1
-        _humanize_run(events, out, times, new_times, i, j, rng)
+        if evt.kind == MOVE_ABS:
+            _humanize_run(events, out, times, new_times, i, j, rng)
+        else:
+            _humanize_relative_run(events, out, i, j, rng)
         i = j + 1
     return out, new_times
+
+
+def _humanize_relative_run(events, out, a, b, rng) -> None:
+    """Linux: varia la forma dei movimenti relativi a..b conservando la somma dx/dy.
+
+    Il punto di arrivo, e quindi il clic seguente, resta lo stesso della
+    registrazione. I tempi non cambiano: con l'accelerazione del puntatore del
+    compositor una velocita' diversa sposterebbe il cursore di una quantita' diversa."""
+    if b - a < 2:
+        return
+    xs, ys = [0.0], [0.0]
+    for k in range(a, b + 1):
+        xs.append(xs[-1] + events[k].dx)
+        ys.append(ys[-1] + events[k].dy)
+    chord = math.hypot(xs[-1], ys[-1])
+    if chord < HUMAN_MIN_CHORD:
+        return
+    nx, ny = -ys[-1] / chord, xs[-1] / chord
+    arc = min(HUMAN_MAX_DEVIATION, chord * rng.uniform(0.02, 0.08)) * rng.choice((-1, 1))
+    wave = min(HUMAN_MAX_DEVIATION / 3, chord * rng.uniform(0.0, 0.03)) * rng.choice((-1, 1))
+    steps = b - a + 1
+    # Spostamenti interi rispetto al percorso registrato: nulli all'inizio e alla fine.
+    offsets = [(0, 0)]
+    for s in range(1, steps):
+        u = s / steps
+        d = arc * math.sin(math.pi * u) + wave * math.sin(2.0 * math.pi * u)
+        offsets.append((int(round(nx * d + rng.uniform(-0.8, 0.8))),
+                        int(round(ny * d + rng.uniform(-0.8, 0.8)))))
+    offsets.append((0, 0))
+    for s, k in enumerate(range(a, b + 1), start=1):
+        out[k].dx = events[k].dx + offsets[s][0] - offsets[s - 1][0]
+        out[k].dy = events[k].dy + offsets[s][1] - offsets[s - 1][1]
 
 
 def _humanize_run(events, out, times, new_times, a, b, rng) -> None:
