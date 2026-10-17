@@ -50,3 +50,24 @@ Interruttore nelle Opzioni, **spento all'avvio**. Quando è acceso, a ogni giro 
 Apri le opzioni, clicca sul numero e usa Ctrl+A per sostituirlo. Sono ammessi da 1 a 999 giri. I valori vuoti o fuori intervallo impediscono la riproduzione: 1000 non viene trasformato in 100.
 
 Il pannello mostra il modello comunicato dal driver del mouse. Se rileva più dispositivi, indica il primo modello e quanti altri sono presenti; il replay resta globale. I dispositivi senza un nome di prodotto possono comparire come HID o PS/2.
+
+## Linux (release linux-v1.0.0)
+
+La versione Linux si scarica dalla release [linux-v1.0.0](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.0.0) oppure con un comando nel terminale:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/realfulvio/mouse-macro-stocazz-superpower/main/install.sh | bash
+```
+
+Il comando verifica lo SHA-256, installa in `~/.local/share/MouseMacroStocazzSuperpower`, aggiunge l’icona nel menu e avvia il pannello. Nessun avvio automatico, nessun sudo.
+
+1. **Permessi, una volta sola.** Per leggere il mouse e i tasti F9/F10 serve l’accesso ai dispositivi di input. Lancia `bash ~/.local/share/MouseMacroStocazzSuperpower/current/setup-linux-input.sh` (chiede la password di sudo): installa una regola udev `uaccess` valida solo per chi usa la sessione locale attiva. Esci e rientra, poi premi **Aggiorna elenco**. Non avviare il programma come root.
+2. **Il cursore riparte da dove si trova.** Su Linux la macro salva spostamenti relativi, non coordinate: prima di registrare e prima di ogni replay porta il cursore nello stesso punto di partenza. Non cambiare sensibilità, accelerazione del mouse o scala dello schermo; per la massima precisione scegli il profilo di accelerazione **piatto** nelle impostazioni del mouse.
+3. **Registra e riproduci** come su Windows: F9 inizia e termina, F10 riproduce e ferma. Durante l’attività il pannello diventa una barra compatta, appena trasparente, con contatori e un grande **Stop**. Se fermi con il pulsante Stop, il clic su Stop non entra nella macro.
+4. **Opzioni**: ripetizioni, Normale/Rapida 2×, Cambia scheda (Ctrl+Tab fra i giri), Pagine lente, **Movimento umano**, modalità (N volte, Infinito, Durata), doppio clic, skin e aggiornamenti. Il Movimento umano cambia la forma dei tragitti e le pause ma conserva la somma degli spostamenti fra due clic: i clic cadono negli stessi punti.
+5. **Emergenza**: Ctrl+Alt+F11. Su molti desktop questa combinazione passa anche a una console di testo nera: la macro è comunque ferma, torna al desktop con Ctrl+Alt+F1, F2 o F7. **Ctrl+Maiusc+F11** ferma senza cambiare console.
+6. **Aggiornamenti**: il pallino in alto è verde se sei aggiornato, giallo se c’è una versione Linux nuova, viola/grigio se non si riesce a controllare. Il controllo all’avvio si spegne dal dialogo Aggiornamenti.
+7. **Se qualcosa va storto**: in `~/.config/MouseMacroStocazzSuperpower` trovi `ultimo-replay.json` (traccia dell’ultimo replay), `errore.log` e le preferenze (posizione e dimensione della finestra, skin, controllo aggiornamenti, mouse scelto).
+
+Le macro Linux e Windows non sono intercambiabili: Windows salva coordinate assolute, Linux spostamenti relativi.
+
