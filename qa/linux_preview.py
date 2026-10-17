@@ -1,6 +1,6 @@
 """Show the Linux panel in a given state without input devices (screenshots, QA).
 
-Usage: python qa/linux_preview.py [ready|recording|playing|options|updates] [it|en]
+Usage: python qa/linux_preview.py [ready|recording|playing|options|updates] [it|en] [unicorno|palio]
 """
 from pathlib import Path
 import asyncio
@@ -17,6 +17,7 @@ from macro.session import State
 
 STATE = sys.argv[1] if len(sys.argv) > 1 else 'ready'
 LANGUAGE = sys.argv[2] if len(sys.argv) > 2 else 'it'
+SKIN = sys.argv[3] if len(sys.argv) > 3 else 'unicorno'
 
 
 class FakeRecorder:
@@ -25,6 +26,7 @@ class FakeRecorder:
 
 async def start(page):
     folder = tempfile.mkdtemp(prefix='mm-preview-')
+    (Path(folder) / 'settings.json').write_text('{"skin": "%s"}' % SKIN)
     panel = linux_main.LinuxPanel(page, LANGUAGE, preferences=Path(folder) / 'settings.json')
     panel.devices = [('/dev/input/event5', 'Logitech G304')]
     panel.mouse.value = '/dev/input/event5'
