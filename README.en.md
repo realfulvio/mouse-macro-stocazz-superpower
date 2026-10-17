@@ -4,7 +4,7 @@
 
 <p align="center">
 Record your mouse, replay it as many times as you need.<br>
-A small always-on-top panel for Windows: no installer, no Python to install.
+A small always-on-top panel for Windows and Linux: no installer, no Python to install.
 </p>
 
 <p align="center">
