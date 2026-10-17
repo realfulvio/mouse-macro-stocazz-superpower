@@ -54,19 +54,19 @@ def _linux_checks(checks, result, language):
     environment = result.setdefault('environment', {})
     try:
         environment['detected_mouse_count'] = len(list_mice())
-    except OSError as error:
+    except Exception as error:  # evdev raises its own error types too
         environment['detected_mouse_count'] = f'{type(error).__name__}: {error}'
     environment['mouse_models'] = mouse_models()
     player = LinuxPlayer()
     try:
         player._ensure()
         environment['uinput'] = 'ok'
-    except OSError as error:
+    except Exception as error:  # e.g. evdev.UInputError when /dev/uinput is missing
         environment['uinput'] = f'{type(error).__name__}: {error}'
     finally:
         try:
             player.close()
-        except OSError:
+        except Exception:
             pass
     checks['backend_import'] = True
     with tempfile.TemporaryDirectory() as folder:
