@@ -282,6 +282,37 @@ class LinuxPanelTests(unittest.TestCase):
         self.assertEqual(command[1], '--wait-for-exit')
         self.page.window.destroy.assert_awaited_once()
 
+    def test_portable_appimage_updates_itself_instead_of_installing(self):
+        panel = self.panel()
+        name = linux_main.linux_updater.APPIMAGE.format('1.0.1')
+        release = {'version': '1.0.1', 'assets': {name: 'https://x/a'}}
+        panel.update = {'state': 'available', 'latest': '1.0.1', 'release': release}
+        current = self.folder / 'old.AppImage'
+        new = self.folder / name
+        with patch.dict(linux_main.os.environ, {'APPIMAGE': str(current)}), \
+             patch.object(linux_main.linux_updater, 'install_appimage', return_value=new) as portable, \
+             patch.object(linux_main.linux_updater, 'install') as install, \
+             patch.object(linux_main.subprocess, 'Popen') as popen:
+            asyncio.run(panel.install_update())
+        portable.assert_called_once_with(release, str(current))
+        install.assert_not_called()
+        self.assertEqual(popen.call_args.args[0][:2], [str(new), '--wait-for-exit'])
+
+    def test_flatpak_never_installs_updates_itself(self):
+        panel = self.panel()
+        panel.update = {'state': 'available', 'latest': '1.0.1', 'release': {'version': '1.0.1', 'assets': {}}}
+        with patch.dict(linux_main.os.environ, {'FLATPAK_ID': 'io.github.realfulvio.MouseMacroStocazzSuperpower'}):
+            panel.update_menu()
+            dialog = self.page.dialogs.pop()
+            install = next(c for c in walk(dialog) if isinstance(c, ft.Button) and c.icon == ft.Icons.DOWNLOAD)
+            self.assertTrue(install.disabled)
+            self.assertIn('Flatpak', ' '.join(texts(install)))
+            with patch.object(linux_main.linux_updater, 'install') as install_call, \
+                 patch.object(linux_main.linux_updater, 'install_appimage') as portable:
+                asyncio.run(panel.install_update())
+        install_call.assert_not_called()
+        portable.assert_not_called()
+
     def test_failed_install_keeps_panel_open_with_error(self):
         panel = self.panel()
         panel.update = {'state': 'available', 'latest': '1.0.1', 'release': {'version': '1.0.1'}}

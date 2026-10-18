@@ -163,6 +163,41 @@ class InstallTests(unittest.TestCase):
             self.assertEqual(linux_updater.data_root(), Path(self.temp.name) / 'MouseMacroStocazzSuperpower')
 
 
+@unittest.skipUnless(sys.platform == 'linux', 'Portable AppImage')
+class AppImageInstallTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.folder = Path(self.temp.name)
+        self.current = self.folder / linux_updater.APPIMAGE.format('1.0.0')
+        self.current.write_bytes(b'old')
+
+    def release(self, data, sha=None):
+        name = linux_updater.APPIMAGE.format('1.0.1')
+        sums = f'{sha or hashlib.sha256(data).hexdigest()}  {name}\n'.encode()
+        files = {'https://x/image': data, 'https://x/sums': sums}
+        opener = lambda request, timeout=None: FakeResponse(files[request.full_url])
+        return {'version': '1.0.1', 'assets': {name: 'https://x/image',
+                                               linux_updater.SUMS.format('1.0.1'): 'https://x/sums'}}, opener
+
+    def test_new_appimage_replaces_the_running_file_next_to_it(self):
+        release, opener = self.release(b'new image')
+        target = linux_updater.install_appimage(release, self.current, opener)
+        self.assertEqual(target, self.folder / linux_updater.APPIMAGE.format('1.0.1'))
+        self.assertEqual(target.read_bytes(), b'new image')
+        self.assertTrue(os.access(target, os.X_OK))
+        self.assertFalse(self.current.exists())
+        self.assertEqual(sorted(p.name for p in self.folder.iterdir()), [target.name])
+
+    def test_bad_checksum_or_missing_asset_keeps_the_old_file(self):
+        release, opener = self.release(b'new image', sha='0' * 64)
+        with self.assertRaisesRegex(UpdateError, 'SHA-256'):
+            linux_updater.install_appimage(release, self.current, opener)
+        with self.assertRaisesRegex(UpdateError, 'AppImage'):
+            linux_updater.install_appimage({'version': '1.0.1', 'assets': {}}, self.current, opener)
+        self.assertEqual([p.name for p in self.folder.iterdir()], [self.current.name])
+
+
 class CertificateTests(unittest.TestCase):
     def test_system_bundle_is_preferred_then_certifi(self):
         import ssl
