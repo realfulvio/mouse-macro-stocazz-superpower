@@ -27,7 +27,7 @@ modules:
     sources:
       - type: archive
         url: https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/linux-v1.0.0/MouseMacroStocazzSuperpower-Linux-v1.0.0.tar.gz
-        sha256: SHA256_OF_THE_RELEASE_TARBALL
+        sha256: 4fe5f0a99733c3ccd8b83420a39572a47f6e767b9238ab32ad98afcc60599e1c
       - type: file
         path: launcher.sh
       - type: file

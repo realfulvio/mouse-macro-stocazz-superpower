@@ -51,7 +51,7 @@ Versione **linux-v1.0.0** per Linux x86_64, X11 e Wayland, con le stesse funzion
 curl -fsSL https://raw.githubusercontent.com/realfulvio/mouse-macro-stocazz-superpower/main/install.sh | bash
 ```
 
-Lo script trova l'ultima release Linux, verifica lo SHA-256, installa in `~/.local/share`, aggiunge l'icona nel menu e avvia il pannello. In alternativa scarica il pacchetto `tar.gz` dalla [release linux-v1.0.0](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.0.0), controlla gli SHA-256 ed esegui `MouseMacroStocazzSuperpower-Linux-IT`. Una versione portable a doppio clic (AppImage) e una versione Flatpak sono in preparazione.
+Lo script trova l'ultima release Linux, verifica lo SHA-256, installa in `~/.local/share`, aggiunge l'icona nel menu e avvia il pannello. In alternativa scarica il pacchetto `tar.gz` dalla [release linux-v1.0.0](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.0.0), controlla gli SHA-256 ed esegui `MouseMacroStocazzSuperpower-Linux-IT`. Nella stessa release ci sono anche la **versione portable AppImage** (un unico file: rendilo eseguibile una volta, poi basta un doppio clic; si aggiorna da sola) e il pacchetto **Flatpak** (si apre con il gestore software).
 
 ## Da sapere, con onestà
 
