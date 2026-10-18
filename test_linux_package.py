@@ -9,6 +9,7 @@ import sys
 import tarfile
 import tempfile
 import unittest
+import unittest.mock
 
 import package_linux
 from macro.linux_updater import BINARIES, PACKAGE, SUMS
@@ -73,6 +74,37 @@ class LinuxPackageTests(unittest.TestCase):
         net = Net({'https://x/a': self.archive.read_bytes(), 'https://x/s': self.sums.read_bytes()})
         target = linux_updater.install(release, self.base / 'data', net)
         self.assertTrue(all(os.access(target / name, os.X_OK) for name in BINARIES))
+
+    def test_appdir_has_launcher_desktop_entry_icon_and_both_binaries(self):
+        appdir = package_linux.make_appdir(self.dist, self.base / 'AppDir')
+        for name in BINARIES:
+            self.assertTrue(os.access(appdir / 'usr' / 'bin' / name, os.X_OK))
+        self.assertTrue(os.access(appdir / 'AppRun', os.X_OK))
+        desktop = (appdir / 'mouse-macro-stocazz-superpower.desktop').read_text()
+        self.assertIn('Icon=mouse-macro-stocazz-superpower', desktop)
+        self.assertTrue((appdir / 'mouse-macro-stocazz-superpower.png').is_file())
+        self.assertTrue((appdir / '.DirIcon').is_file())
+
+    def test_apprun_picks_language_from_locale_and_forwards_arguments(self):
+        appdir = package_linux.make_appdir(self.dist, self.base / 'AppDir')
+        log = self.base / 'apprun.log'
+        for locale, expected in (('it_IT.UTF-8', 'Linux-IT'), ('en_US.UTF-8', 'Linux-EN'), ('', 'Linux-EN')):
+            with self.subTest(locale=locale):
+                env = {'PATH': os.environ['PATH'], 'LANG': locale, 'MMSS_TEST_LOG': str(log)}
+                subprocess.run([str(appdir / 'AppRun'), '--wait-for-exit', '42'], env=env, check=True, timeout=20)
+                self.assertEqual(log.read_text().split(), [f'MouseMacroStocazzSuperpower-{expected}',
+                                                           '--wait-for-exit', '42'])
+
+    def test_appimage_is_listed_in_checksums_when_built(self):
+        tool = self.base / 'fake-appimagetool'
+        tool.write_text('#!/bin/sh\n[ -x "$2/AppRun" ] && printf AI > "$3"\n')
+        tool.chmod(0o755)
+        with unittest.mock.patch.dict(os.environ, {'APPIMAGETOOL': str(tool)}):
+            package_linux.build(self.dist)
+        image = self.dist / f'MouseMacroStocazzSuperpower-Linux-v{LINUX_VERSION}-x86_64.AppImage'
+        self.assertTrue(os.access(image, os.X_OK))
+        names = [line.split()[1] for line in self.sums.read_text().splitlines()]
+        self.assertEqual(names, [self.archive.name, 'install.sh', image.name])
 
     # install.sh ----------------------------------------------------------
     def publish(self, tag=None, archive=None):
@@ -139,6 +171,35 @@ class LinuxPackageTests(unittest.TestCase):
         result = self.run_installer(server, '--no-start')
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('non trovo una release Linux', result.stderr)
+
+
+class FlatpakFilesTests(unittest.TestCase):
+    def test_bundle_permissions_match_the_manifest(self):
+        args = package_linux.flatpak_finish_args()
+        for needed in ('--socket=wayland', '--socket=fallback-x11', '--device=all', '--share=network',
+                       '--persist=.flet', '--filesystem=home', '--share=ipc'):
+            self.assertIn(needed, args)
+        manifest = (ROOT / 'flatpak' / f'{package_linux.FLATPAK_ID}.yml').read_text()
+        runtime, branch = package_linux.FLATPAK_RUNTIME
+        self.assertIn(f'runtime: {runtime}\n', manifest)
+        self.assertIn(f"runtime-version: '{branch}'", manifest)
+
+    def test_metainfo_and_desktop_entry_are_consistent(self):
+        import xml.etree.ElementTree as ET
+        app = package_linux.FLATPAK_ID
+        root = ET.parse(ROOT / 'flatpak' / f'{app}.metainfo.xml').getroot()
+        self.assertEqual(root.findtext('id'), app)
+        self.assertEqual(root.find('launchable').text, f'{app}.desktop')
+        self.assertEqual(root.find('releases/release').get('version'), LINUX_VERSION)
+        desktop = (ROOT / 'flatpak' / f'{app}.desktop').read_text()
+        self.assertIn(f'Icon={app}\n', desktop)
+        self.assertIn('Exec=mouse-macro-stocazz-superpower\n', desktop)
+
+    @unittest.skipUnless(sys.platform == 'linux', 'POSIX launcher')
+    def test_flatpak_launcher_picks_language_from_locale(self):
+        launcher = (ROOT / 'flatpak' / 'launcher.sh').read_text()
+        self.assertIn('/app/lib/mmss/MouseMacroStocazzSuperpower-Linux-$LANGUAGE', launcher)
+        self.assertTrue(os.access(ROOT / 'flatpak' / 'launcher.sh', os.X_OK))
 
 
 if __name__ == '__main__':
