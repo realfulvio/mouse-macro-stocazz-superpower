@@ -26,6 +26,13 @@ API_URL = f'https://api.github.com/repos/{REPO}/releases?per_page=50'
 TAG_PREFIX = 'linux-v'
 PACKAGE = 'MouseMacroStocazzSuperpower-Linux-v{}'
 SUMS = 'SHA256SUMS-linux-v{}.txt'
+APPIMAGE = 'MouseMacroStocazzSuperpower-Linux-v{}-x86_64.AppImage'
+FLATPAK = 'MouseMacroStocazzSuperpower-Linux-v{}.flatpak'
+
+
+def in_flatpak():
+    """Flatpak installs are updated by flatpak itself, never by the app."""
+    return bool(os.environ.get('FLATPAK_ID')) or os.path.exists('/.flatpak-info')
 BINARIES = ('MouseMacroStocazzSuperpower-Linux-IT', 'MouseMacroStocazzSuperpower-Linux-EN')
 
 
@@ -159,6 +166,40 @@ def install(release, root=None, opener=None, keep=()):
     finally:
         shutil.rmtree(work, ignore_errors=True)
     prune(root, keep=[target, *keep])
+    return target
+
+
+def install_appimage(release, current, opener=None):
+    """Portable AppImage: download the new AppImage next to the running one,
+    verify it, then remove the old file (the running process keeps its copy)."""
+    version = release['version']
+    name, sums_name = APPIMAGE.format(version), SUMS.format(version)
+    try:
+        image_url, sums_url = release['assets'][name], release['assets'][sums_name]
+    except KeyError as error:
+        raise UpdateError('La release non contiene l’AppImage e SHA256SUMS attesi.') from error
+    opener = opener or default_opener()
+    current = Path(current)
+    folder = current.parent
+    work = Path(tempfile.mkdtemp(prefix='.mmss-update-', dir=folder))
+    try:
+        try:
+            _download(sums_url, work / 'sums.txt', opener)
+            _download(image_url, work / name, opener)
+        except OSError as error:
+            raise UpdateError('Download non riuscito: controlla la connessione.') from error
+        expected = expected_digest(work / 'sums.txt', name)
+        with open(work / name, 'rb') as stream:
+            digest = hashlib.file_digest(stream, 'sha256').hexdigest()
+        if expected is None or digest != expected:
+            raise UpdateError('SHA-256 diverso dall’atteso: download scartato.')
+        (work / name).chmod(0o755)
+        target = folder / name
+        os.replace(work / name, target)
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+    if current.resolve() != target.resolve():
+        current.unlink(missing_ok=True)
     return target
 
 

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.realfulvio.MouseMacroStocazzSuperpower</id>
+  <name>Mouse Macro Stocazz Superpower</name>
+  <summary>Record mouse gestures and replay them</summary>
+  <summary xml:lang="it">Registra i gesti del mouse e li ripete</summary>
+  <developer id="io.github.realfulvio">
+    <name>hcok</name>
+  </developer>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>LicenseRef-proprietary=https://polyformproject.org/licenses/noncommercial/1.0.0/</project_license>
+  <description>
+    <p>A small panel that records mouse movements, clicks, double clicks, drags and the wheel, then replays them from 1 to 999 times, at normal or double speed.</p>
+    <p xml:lang="it">Un piccolo pannello che registra movimenti, clic, doppi clic, trascinamenti e rotella del mouse e li ripete da 1 a 999 volte, a velocità normale o doppia.</p>
+    <ul>
+      <li>Compact semi-transparent activity bar with counters and a large Stop button</li>
+      <li>Optional Ctrl+Tab between cycles, slow pages and human-like movement</li>
+      <li>Global F9/F10 shortcuts and Ctrl+Alt+F11 / Ctrl+Shift+F11 emergency stop</li>
+      <li>Records the mouse only: no keyboard logging, no screenshots</li>
+    </ul>
+    <p>Reading the mouse and the global shortcuts needs access to input devices: install the udev uaccess rule described in the documentation. Movements are relative: start each replay from the same cursor position.</p>
+  </description>
+  <launchable type="desktop-id">io.github.realfulvio.MouseMacroStocazzSuperpower.desktop</launchable>
+  <url type="homepage">https://github.com/realfulvio/mouse-macro-stocazz-superpower</url>
+  <url type="bugtracker">https://github.com/realfulvio/mouse-macro-stocazz-superpower/issues</url>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/realfulvio/mouse-macro-stocazz-superpower/main/docs/screenshots/linux-v100-pannello.png</image>
+      <caption>Main panel</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/realfulvio/mouse-macro-stocazz-superpower/main/docs/screenshots/linux-v100-barra.png</image>
+      <caption>Compact activity bar during playback</caption>
+    </screenshot>
+  </screenshots>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="1.0.0" date="2026-10-18">
+      <url type="details">https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.0.0</url>
+    </release>
+  </releases>
+</component>

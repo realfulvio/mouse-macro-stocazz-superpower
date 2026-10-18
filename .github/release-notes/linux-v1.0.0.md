@@ -23,6 +23,11 @@ Lo script (allegato anche qui come `install.sh`) scarica `MouseMacroStocazzSuper
 
 A mano: scarica il tar.gz e il file SHA256SUMS, controlla con `sha256sum -c --ignore-missing SHA256SUMS-linux-v1.0.0.txt`, estrai e apri `MouseMacroStocazzSuperpower-Linux-IT` (o `-EN`).
 
+### Versione portable e Flatpak
+
+- **AppImage** (`MouseMacroStocazzSuperpower-Linux-v1.0.0-x86_64.AppImage`): un unico file, come lo ZIP portable di Windows. Rendilo eseguibile una volta (tasto destro → Proprietà → Permessi → Eseguibile, oppure `chmod +x`) e aprilo con un doppio clic. Si aggiorna da solo dal pallino, con verifica SHA-256.
+- **Flatpak** (`MouseMacroStocazzSuperpower-Linux-v1.0.0.flatpak`): aprilo con il gestore software oppure `flatpak install --user MouseMacroStocazzSuperpower-Linux-v1.0.0.flatpak`. Usa il runtime GNOME 51 di Flathub. Gli aggiornamenti si fanno installando il nuovo `.flatpak`; la pubblicazione su Flathub è in preparazione (ricetta in `flatpak/`).
+
 ### Permessi e limiti
 
 - **Permessi, una volta sola**: `bash ~/.local/share/MouseMacroStocazzSuperpower/current/setup-linux-input.sh` installa una regola udev `uaccess` (chiede la password di sudo), valida solo per l'utente della sessione locale attiva. Poi esci e rientra. Non avviare il programma come root.
@@ -30,4 +35,4 @@ A mano: scarica il tar.gz e il file SHA256SUMS, controlla con `sha256sum -c --ig
 - Su Wayland la posizione della finestra e il "sempre in primo piano" dipendono dal compositor.
 - Serve Linux x86_64; i binari sono compilati su Ubuntu 22.04 (glibc 2.35 o più recente).
 
-Esito dei controlli e limiti: [PR #3](https://github.com/realfulvio/mouse-macro-stocazz-superpower/pull/3). Gli SHA-256 sono in `SHA256SUMS-linux-v1.0.0.txt`.
+Esito dei controlli e limiti: [PR #3](https://github.com/realfulvio/mouse-macro-stocazz-superpower/pull/3). Gli SHA-256 di tutti i file sono in `SHA256SUMS-linux-v1.0.0.txt`.
