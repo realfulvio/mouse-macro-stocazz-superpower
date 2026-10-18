@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Mouse Macro Stocazz Superpower
+Comment=Record mouse gestures and replay them
+Comment[it]=Registra i gesti del mouse e li ripete
+Exec=mouse-macro-stocazz-superpower
+Icon=io.github.realfulvio.MouseMacroStocazzSuperpower
+Terminal=false
+Categories=Utility;
+Keywords=macro;mouse;automation;clicker;
