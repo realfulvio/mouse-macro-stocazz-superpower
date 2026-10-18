@@ -85,6 +85,7 @@ EN_TEMPLATES = [
     (r'Aggiornato · versione (.+)', r'Up to date · version \1'),
     (r'Scarica e installa la versione (.+)', r'Download and install version \1'),
     (r'Scarico la versione (.+)…', r'Downloading version \1…'),
+    (r'Flatpak: aggiorna dal gestore software o scarica il nuovo \.flatpak', r'Flatpak: update from the software centre or download the new .flatpak'),
     (r'Mouse rilevati: (.+)', r'Mice detected: \1'),
     (r'Mouse: modello non disponibile', r'Mouse: model unavailable'),
 ]
@@ -656,11 +657,13 @@ class LinuxPanel:
         async def install(e=None):
             self.page.pop_dialog()
             await self.install_update()
-        install_label = (f'Scarica e installa la versione {self.update["latest"]}' if available
+        flatpak = linux_updater.in_flatpak()
+        install_label = ('Flatpak: aggiorna dal gestore software o scarica il nuovo .flatpak' if flatpak and available else
+                         f'Scarica e installa la versione {self.update["latest"]}' if available
                          else 'Nessun aggiornamento da installare')
         install_button = self.button(install_label, install, self.colors['play'] if available else None,
                                      ft.Icons.DOWNLOAD)
-        install_button.disabled = not available
+        install_button.disabled = not available or flatpak
         self.page.show_dialog(ft.AlertDialog(
             title=self.text('Aggiornamenti', 22, True),
             content=ft.Container(ft.Column([
@@ -685,15 +688,22 @@ class LinuxPanel:
 
     async def install_update(self):
         release = self.update.get('release')
-        if self.update['state'] != 'available' or not release or self.session.state in ACTIVE:
+        if (self.update['state'] != 'available' or not release or self.session.state in ACTIVE
+                or linux_updater.in_flatpak()):
             return
         self.dialog_open = True
         self.session.message = f'Scarico la versione {release["version"]}…'
         self.render()
         try:
-            current = linux_updater.running_package()
-            target = await asyncio.to_thread(linux_updater.install, release, None, None,
-                                             [current] if current else [])
+            appimage = os.environ.get('APPIMAGE')
+            if appimage and linux_updater.APPIMAGE.format(release['version']) in release.get('assets', {}):
+                # Portable copy: replace the AppImage file itself, like the Windows portable ZIP.
+                binary = await asyncio.to_thread(linux_updater.install_appimage, release, appimage)
+            else:
+                current = linux_updater.running_package()
+                target = await asyncio.to_thread(linux_updater.install, release, None, None,
+                                                 [current] if current else [])
+                binary = target / linux_updater.BINARIES[1 if self.language == 'en' else 0]
         except Exception as error:
             self.dialog_open = False
             self.session.error(error if isinstance(error, UpdateError) else
@@ -701,8 +711,7 @@ class LinuxPanel:
             self.render()
             return
         self.dialog_open = False
-        binary = target / linux_updater.BINARIES[1 if self.language == 'en' else 0]
-        subprocess.Popen([str(binary), '--wait-for-exit', str(os.getpid())], cwd=str(target),
+        subprocess.Popen([str(binary), '--wait-for-exit', str(os.getpid())], cwd=str(Path(binary).parent),
                          start_new_session=True, close_fds=True)
         await self.close_window()
 

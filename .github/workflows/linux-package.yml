@@ -13,6 +13,7 @@ on:
       - 'package_linux.py'
       - 'build_release.py'
       - 'install.sh'
+      - 'flatpak/**'
       - 'scripts/setup-linux-input.sh'
       - 'requirements.txt'
       - '.github/workflows/linux-package.yml'
@@ -35,13 +36,27 @@ jobs:
         run: python -m unittest discover -v
       - name: Build IT/EN binaries
         run: python build_release.py
-      - name: Build tar.gz, install.sh and SHA256SUMS
+      - name: Tools for the portable AppImage and the Flatpak bundle
+        run: |
+          curl -fsSL -o appimagetool https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-x86_64.AppImage
+          chmod +x appimagetool
+          sudo apt-get update -q && sudo apt-get install -y -q flatpak
+          flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          flatpak install --user -y --noninteractive flathub org.gnome.Platform//51
+      - name: Build tar.gz, install.sh, AppImage, Flatpak and SHA256SUMS
+        env:
+          APPIMAGETOOL: ${{ github.workspace }}/appimagetool
+          APPIMAGE_EXTRACT_AND_RUN: '1'
+          FLATPAK_BUNDLE: '1'
         run: python package_linux.py
       - name: Headless self-test of both binaries
         run: |
           dist/linux/MouseMacroStocazzSuperpower-Linux-IT --self-test it.json
           dist/linux/MouseMacroStocazzSuperpower-Linux-EN --self-test en.json
-          cat it.json en.json
+          APPIMAGE_EXTRACT_AND_RUN=1 dist/linux/MouseMacroStocazzSuperpower-Linux-v*-x86_64.AppImage --self-test appimage.json
+          flatpak install --user -y --noninteractive --bundle dist/linux/MouseMacroStocazzSuperpower-Linux-v*.flatpak
+          flatpak run io.github.realfulvio.MouseMacroStocazzSuperpower --self-test flatpak.json
+          cat it.json en.json appimage.json
       - name: Verify checksums
         working-directory: dist/linux
         run: sha256sum -c SHA256SUMS-linux-v*.txt
@@ -52,4 +67,6 @@ jobs:
             dist/linux/MouseMacroStocazzSuperpower-Linux-v*.tar.gz
             dist/linux/SHA256SUMS-linux-v*.txt
             dist/linux/install.sh
+            dist/linux/MouseMacroStocazzSuperpower-Linux-v*-x86_64.AppImage
+            dist/linux/MouseMacroStocazzSuperpower-Linux-v*.flatpak
           if-no-files-found: error

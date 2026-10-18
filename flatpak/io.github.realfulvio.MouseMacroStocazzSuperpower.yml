@@ -1,0 +1,36 @@
+# flatpak-builder manifest (starting point for Flathub). It repackages the
+# official Linux release binaries; the local bundle in the GitHub release is
+# produced by package_linux.py with the same files and permissions.
+app-id: io.github.realfulvio.MouseMacroStocazzSuperpower
+runtime: org.gnome.Platform
+runtime-version: '51'
+sdk: org.gnome.Sdk
+command: mouse-macro-stocazz-superpower
+finish-args:
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+  - --device=all          # /dev/input/event* (recording, F9/F10) and /dev/uinput (playback)
+  - --share=network       # anonymous update check only
+  - --persist=.flet       # Flet desktop client cache
+  - --filesystem=home     # Save/Load .mmr macros
+modules:
+  - name: mouse-macro
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 MouseMacroStocazzSuperpower-Linux-IT /app/lib/mmss/MouseMacroStocazzSuperpower-Linux-IT
+      - install -Dm755 MouseMacroStocazzSuperpower-Linux-EN /app/lib/mmss/MouseMacroStocazzSuperpower-Linux-EN
+      - install -Dm755 launcher.sh /app/bin/mouse-macro-stocazz-superpower
+      - install -Dm644 icon.png /app/share/icons/hicolor/256x256/apps/io.github.realfulvio.MouseMacroStocazzSuperpower.png
+      - install -Dm644 io.github.realfulvio.MouseMacroStocazzSuperpower.desktop -t /app/share/applications
+      - install -Dm644 io.github.realfulvio.MouseMacroStocazzSuperpower.metainfo.xml -t /app/share/metainfo
+    sources:
+      - type: archive
+        url: https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/linux-v1.0.0/MouseMacroStocazzSuperpower-Linux-v1.0.0.tar.gz
+        sha256: SHA256_OF_THE_RELEASE_TARBALL
+      - type: file
+        path: launcher.sh
+      - type: file
+        path: io.github.realfulvio.MouseMacroStocazzSuperpower.desktop
+      - type: file
+        path: io.github.realfulvio.MouseMacroStocazzSuperpower.metainfo.xml
