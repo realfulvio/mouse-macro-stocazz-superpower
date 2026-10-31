@@ -397,6 +397,16 @@ class LinuxPanelTests(unittest.TestCase):
         self_test.assert_called_once_with('report.json', 'en')
         self.assertTrue(linux_main.wait_for_exit(2**22 + 12345, timeout=1))
 
+    def test_no_graphical_session_stops_before_flet(self):
+        with patch.dict(linux_main.os.environ, {'DISPLAY': '', 'WAYLAND_DISPLAY': ''}), \
+                patch.object(linux_main.linux_setup, 'startup_failure') as failure, \
+                patch.object(linux_main.ft, 'run') as flet_run:
+            with self.assertRaises(SystemExit) as stop:
+                linux_main.run('it', [])
+        self.assertEqual(stop.exception.code, 1)
+        flet_run.assert_not_called()
+        self.assertTrue(failure.call_args.kwargs['no_display'])
+
 
 class PanelModelTests(unittest.TestCase):
     def test_read_settings_validates_every_value(self):

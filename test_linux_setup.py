@@ -90,6 +90,17 @@ class LinuxSetupTests(unittest.TestCase):
             self.assertIn('could not start', title)
             self.assertIn('libsecret', text)
 
+    def test_no_display_is_reported_without_dialogs(self):
+        self.assertFalse(linux_setup.has_display({}))
+        self.assertTrue(linux_setup.has_display({'WAYLAND_DISPLAY': 'wayland-0'}))
+        with tempfile.TemporaryDirectory() as folder, \
+                patch.object(linux_setup, 'flet_clients') as clients, \
+                patch.object(linux_setup, 'show_message') as show:
+            linux_setup.startup_failure(folder, 'it', no_display=True)
+            clients.assert_not_called()
+            show.assert_not_called()
+            self.assertIn('Nessuna sessione grafica', (Path(folder) / 'errore-avvio.log').read_text(encoding='utf-8'))
+
 
 if __name__ == '__main__':
     unittest.main()
