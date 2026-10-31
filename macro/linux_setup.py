@@ -96,6 +96,10 @@ def grant_access(timeout=300):
                               capture_output=True, timeout=timeout, env=clean_env())
     except (OSError, subprocess.TimeoutExpired) as error:
         return False, str(error)
+    if done.returncode == 127 and 'authentication agent' in (done.stderr or ''):
+        # No polkit agent in this session (e.g. Steam Game Mode / gamescope):
+        # no password prompt was ever shown, so it is not a cancel.
+        return False, 'senza_agente'
     if done.returncode in (126, 127):  # dialog dismissed or not authorized
         return False, 'annullato'
     if done.returncode:
