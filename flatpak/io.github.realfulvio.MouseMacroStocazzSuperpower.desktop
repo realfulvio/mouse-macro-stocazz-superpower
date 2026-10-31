@@ -7,4 +7,5 @@ Exec=mouse-macro-stocazz-superpower
 Icon=io.github.realfulvio.MouseMacroStocazzSuperpower
 Terminal=false
 Categories=Utility;
+StartupWMClass=com.appveyor.flet
 Keywords=macro;mouse;automation;clicker;

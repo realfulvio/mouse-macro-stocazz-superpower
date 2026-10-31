@@ -51,9 +51,9 @@ Apri le opzioni, clicca sul numero e usa Ctrl+A per sostituirlo. Sono ammessi da
 
 Il pannello mostra il modello comunicato dal driver del mouse. Se rileva più dispositivi, indica il primo modello e quanti altri sono presenti; il replay resta globale. I dispositivi senza un nome di prodotto possono comparire come HID o PS/2.
 
-## Linux (release linux-v1.0.0)
+## Linux (release linux-v1.1.0)
 
-La versione Linux si scarica dalla release [linux-v1.0.0](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.0.0) oppure con un comando nel terminale:
+La versione Linux si scarica dalla release [linux-v1.1.0](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.1.0) oppure con un comando nel terminale:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/realfulvio/mouse-macro-stocazz-superpower/main/install.sh | bash
@@ -62,10 +62,10 @@ curl -fsSL https://raw.githubusercontent.com/realfulvio/mouse-macro-stocazz-supe
 Il comando verifica lo SHA-256, installa in `~/.local/share/MouseMacroStocazzSuperpower`, aggiunge l’icona nel menu e avvia il pannello. Nessun avvio automatico, nessun sudo.
 
 In alternativa:
-- **AppImage portable**: un solo file da scaricare dalla release. Rendilo eseguibile una volta (tasto destro → Proprietà → Permessi → Eseguibile) e poi aprilo con un doppio clic, come la versione portable di Windows. Si aggiorna da solo dal pallino.
+- **AppImage portable (doppio clic)**: un solo file da scaricare dalla release. Rendilo eseguibile una volta (tasto destro → Proprietà → Permessi → Eseguibile) e poi aprilo con un doppio clic, come la versione portable di Windows. Dopo il primo avvio compare anche nel menu delle applicazioni. Si aggiorna da solo dal pallino.
 - **Flatpak**: apri il file `.flatpak` della release con il gestore software. Gli aggiornamenti si fanno installando il nuovo `.flatpak`.
 
-1. **Permessi, una volta sola.** Per leggere il mouse e i tasti F9/F10 serve l’accesso ai dispositivi di input. Lancia `bash ~/.local/share/MouseMacroStocazzSuperpower/current/setup-linux-input.sh` (chiede la password di sudo): installa una regola udev `uaccess` valida solo per chi usa la sessione locale attiva. Esci e rientra, poi premi **Aggiorna elenco**. Non avviare il programma come root.
+1. **Permessi, una volta sola.** Per leggere il mouse e i tasti F9/F10 serve l’accesso ai dispositivi di input. Se in cima al pannello compare **Concedi accesso**, premilo e inserisci la password nella finestra del sistema: fatto. In alternativa (o nel Flatpak) lancia `bash ~/.local/share/MouseMacroStocazzSuperpower/current/setup-linux-input.sh` (chiede la password di sudo): installa una regola udev `uaccess` valida solo per chi usa la sessione locale attiva. Esci e rientra, poi premi **Aggiorna elenco**. Non avviare il programma come root.
 2. **Il cursore riparte da dove si trova.** Su Linux la macro salva spostamenti relativi, non coordinate: prima di registrare e prima di ogni replay porta il cursore nello stesso punto di partenza. Non cambiare sensibilità, accelerazione del mouse o scala dello schermo; per la massima precisione scegli il profilo di accelerazione **piatto** nelle impostazioni del mouse.
 3. **Registra e riproduci** come su Windows: F9 inizia e termina, F10 riproduce e ferma. Durante l’attività il pannello diventa una barra compatta, appena trasparente, con contatori e un grande **Stop**. Se fermi con il pulsante Stop, il clic su Stop non entra nella macro.
 4. **Opzioni**: ripetizioni, Normale/Rapida 2×, Cambia scheda (Ctrl+Tab fra i giri), Pagine lente, **Movimento umano**, modalità (N volte, Infinito, Durata), doppio clic, skin e aggiornamenti. Il Movimento umano cambia la forma dei tragitti e le pause ma conserva la somma degli spostamenti fra due clic: i clic cadono negli stessi punti.

@@ -7,7 +7,7 @@ from .events import Macro, BUTTON_OF_DOWN, BUTTON_OF_UP, LEFT_DOWN, MOVE_REL
 from .engine import play, PlaybackEnd, PlaybackOptions, LoopMode
 import math
 
-VERSION = '1.1.1'
+VERSION = '1.1.2'
 
 
 class State(Enum):
