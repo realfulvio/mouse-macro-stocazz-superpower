@@ -45,6 +45,12 @@ class LinuxSetupTests(unittest.TestCase):
                 patch.object(linux_setup, 'in_flatpak', return_value=False), \
                 patch.object(linux_setup.subprocess, 'run', return_value=subprocess.CompletedProcess([], 126, '', '')):
             self.assertEqual(linux_setup.grant_access(), (False, 'annullato'))
+        no_agent = subprocess.CompletedProcess([], 127, '', 'Error creating textual authentication agent: '
+                                               'Error opening current controlling terminal')
+        with patch.object(linux_setup.shutil, 'which', return_value='/usr/bin/pkexec'), \
+                patch.object(linux_setup, 'in_flatpak', return_value=False), \
+                patch.object(linux_setup.subprocess, 'run', return_value=no_agent):
+            self.assertEqual(linux_setup.grant_access(), (False, 'senza_agente'))
         with patch.object(linux_setup, 'in_flatpak', return_value=True):
             self.assertFalse(linux_setup.grant_access()[0])
             self.assertFalse(linux_setup.can_grant())
