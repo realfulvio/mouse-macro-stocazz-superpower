@@ -62,7 +62,8 @@ Version 1.1.3 added installing from the exe with Start menu and Desktop shortcut
 - Save and load macros as `.mmr` files.
 - Optional **Ctrl+Tab between cycles** to move through browser tabs (off by default; never after the last cycle).
 - **Human-like movement** (optional, off at startup): on every cycle the cursor follows a slightly different curve at a non-uniform speed, and pauses vary a little. Clicks always land on the same recorded points; drags and the wheel are unchanged. It does not make automation invisible: many sites forbid it in their terms.
-- Records the mouse only: no keyboard keys, no screenshots. The only network access is the update check, anonymous and optional.
+- Records the mouse. **On Windows it can also record the keyboard**, but only if you turn it on from the top dot's menu (*Registra anche la tastiera*; off at startup): typed keys are stored in the macro file in plain text, **passwords included**. F9, F10 and Ctrl+Alt+F11 are never recorded. No screenshots. The only network access is the update check, anonymous and optional.
+- **Launchable macro** (Windows): in *Save* choose "Macro avviabile con un doppio clic (*.cmd)". It writes a `.cmd` and a `.mmr` side by side, with the repeats and speed set in the panel. Double clicking the `.cmd` asks for confirmation and replays the macro; Ctrl+Alt+F11 stops. It is not an exe: it contains no program and uses the Mouse Macro installed on the PC (with this feature), so SmartScreen and antivirus see no new file to judge. The target PC needs Mouse Macro installed.
 
 
 ## Skins and updates
