@@ -40,7 +40,8 @@ def main():
         '-r',str(ROOT/'requirements-windows.txt')],check=True)
     shutil.copy2(ROOT/'windows_main.py',app/'windows_main.py')
     shutil.copy2(ROOT/'windows_visual.py',app/'windows_visual.py')
-    for folder in ('horses','icons','fonts'):
+    shutil.copy2(ROOT/'windows_settings.py',app/'windows_settings.py')
+    for folder in ('horses','icons','fonts','skins'):
         target_assets = app/'assets'/folder
         target_assets.mkdir(parents=True)
         for asset in (ROOT/'assets'/folder).iterdir():

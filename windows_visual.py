@@ -50,6 +50,22 @@ SKINS = {
 }
 DEFAULT_SKIN = 'bambola'
 CURRENT = {'skin': DEFAULT_SKIN}
+
+
+def register_mod_skins(infos):
+    """Replace the installed theme mods (macro.mods.ModInfo) in SKINS; keys are 'mod:<id>'."""
+    from macro import mods
+    for name in [n for n, v in SKINS.items() if v.get('mod')]:
+        del SKINS[name]
+    for info in infos:
+        if info.kind == 'theme':
+            try:
+                colors, regions, folder = mods.load_theme(info)
+            except (OSError, ValueError, KeyError):
+                continue
+            SKINS['mod:' + info.id] = dict(label=info.name, prefix=None, folder=folder, mod=True,
+                                           colors={**BAMBOLA, **colors}, regions=regions)
+
 COLORS = dict(UNICORN)
 
 def apply_skin(name):
@@ -127,8 +143,9 @@ class Theme:
         for path in (ROOT/'icons').glob('*.svg'): self.icons[path.stem]=ET.parse(path).getroot()
     def load_images(self):
         """(Re)load the mascot of the skin selected with apply_skin()."""
-        prefix=SKINS[CURRENT['skin']]['prefix']
-        images={state:ptrcall(D.GdipLoadImageFromFile,str(ROOT/'horses'/f'{prefix}_{state}.png')) for state in STATES}
+        skin=SKINS[CURRENT['skin']]
+        path=lambda state:(skin['folder']/f'{state}.png') if skin.get('folder') else ROOT/'horses'/f"{skin['prefix']}_{state}.png"
+        images={state:ptrcall(D.GdipLoadImageFromFile,str(path(state))) for state in STATES}
         sizes={}
         for state,image in images.items():
             w=C.c_uint();h=C.c_uint()

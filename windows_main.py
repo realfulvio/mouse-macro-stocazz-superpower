@@ -12,13 +12,13 @@ import sys
 import threading
 import traceback
 import time
-from windows_visual import Theme, Canvas, COLORS, Paint, DrawItem, SKINS, CURRENT, apply_skin
+from windows_visual import Theme, Canvas, COLORS, Paint, DrawItem, SKINS, CURRENT, apply_skin, register_mod_skins, DEFAULT_SKIN
 
 from macro.windows_backend import (WindowsRecorder, WindowsPlayer, GlobalHotkeys,
     HOTKEY_RECORD, HOTKEY_PLAY, HOTKEY_EMERGENCY, screen_geometry, window_rect)
 from macro.session import Session, State, VERSION, validate_gestures
 from macro.engine import PlaybackOptions
-from macro import updater, win_tray
+from macro import updater, win_tray, mods
 from macro.mouse_devices import mouse_names, mouse_label
 from macro.events import BUTTON_OF_DOWN, BUTTON_OF_UP, WHEEL
 
@@ -106,6 +106,7 @@ WM_APP = 0x8001
 ACTIVE_SIZE = (288, 64)  # logical pixels; the normal panel remains available at rest
 ACTIVE_ALPHA = 242  # 95% opaque: a slight transparency, including the controls
 FOLDER = Path(os.environ.get('LOCALAPPDATA', Path.home())) / 'MouseMacroStocazzSuperpower'
+MODS_DIR = FOLDER / 'mods'
 
 
 def parse_repeats(text):
@@ -150,6 +151,11 @@ class Panel:
             pass
         if not isinstance(self.settings, dict):
             self.settings = {}
+        self.settings_window = None
+        try:
+            register_mod_skins(mods.installed(MODS_DIR))
+        except Exception:
+            pass  # una mod rovinata non deve impedire l'avvio
         apply_skin(self.settings.get('skin'))
         self.theme = Theme()
         self.proc = WNDPROC(self.wndproc)
@@ -692,12 +698,39 @@ class Panel:
                     self.post('play')
             elif choice == win_tray.STOP_ALL:
                 self.hotkey(HOTKEY_EMERGENCY)
+            elif choice == win_tray.SETTINGS:
+                self.open_settings()
             elif choice == win_tray.CLOSE_TO_TRAY:
                 self.settings['close_to_tray'] = not self.settings.get('close_to_tray', False)
                 self.write_settings()
             elif choice == win_tray.QUIT:
                 self.quitting = True
                 U.PostMessageW(self.hwnd, WM_CLOSE, 0, 0)
+
+    def open_settings(self):
+        try:
+            if self.settings_window is None:
+                from windows_settings import SettingsWindow
+                self.settings_window = SettingsWindow(self, MODS_DIR)
+            self.settings_window.show()
+        except Exception:
+            self.session.message = 'Impostazioni non disponibili: vedi errore.log.'
+            try:
+                (FOLDER/'errore.log').write_text(traceback.format_exc(), 'utf-8')
+            except OSError:
+                pass
+
+    def release_mod_skin(self, mod_id):
+        """Stop using a mod theme before its files are replaced or deleted (GDI+ locks the PNGs)."""
+        if CURRENT['skin'] == 'mod:' + mod_id:
+            self.set_skin(DEFAULT_SKIN)
+            self.render()
+
+    def reload_mod_skins(self):
+        register_mod_skins(mods.installed(MODS_DIR))
+        if CURRENT['skin'] not in SKINS:
+            self.set_skin(DEFAULT_SKIN)
+        self.render()
 
     def tray_menu(self, visible):
         menu = U.CreatePopupMenu()

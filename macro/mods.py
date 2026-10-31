@@ -212,10 +212,17 @@ def install(package, mods_dir) -> ModInfo:
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(data)
         (staging / 'sha256.txt').write_text(info.sha256, 'utf-8')
-        final = mods_dir / info.id
+        final, backup = mods_dir / info.id, mods_dir / f'.vecchia-{info.id}'
+        shutil.rmtree(backup, ignore_errors=True)
         if final.exists():
-            shutil.rmtree(final)
-        os.replace(staging, final)
+            os.replace(final, backup)  # se un file è in uso fallisce qui e la mod vecchia resta intatta
+        try:
+            os.replace(staging, final)
+        except OSError:
+            if backup.exists():
+                os.replace(backup, final)
+            raise
+        shutil.rmtree(backup, ignore_errors=True)
     except OSError as error:
         shutil.rmtree(staging, ignore_errors=True)
         raise ModError(f'Installazione non riuscita: {error.strerror or error}') from error
