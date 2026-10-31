@@ -38,7 +38,7 @@ Se Windows blocca l'exe, usa `Mouse Macro v1.1.1 (senza exe).cmd` incluso nello 
 ## Skin e aggiornamenti
 
 - Il tondo con i puntini in alto apre il menu delle **skin** (Unicorno, Palio). La scelta viene ricordata.
-- Il **pallino** accanto è verde se sei aggiornato, giallo se c'è una versione nuova, grigio se non si riesce a controllare. Cliccalo per controllare ora, installare l'ultima versione (con verifica SHA-256 e riavvio) o disattivare il controllo all'avvio.
+- Il **pallino** accanto è verde se sei aggiornato, giallo se c'è una versione nuova, grigio se non si riesce a controllare. Se all'avvio trova una versione nuova te la propone subito (una volta per versione, mai durante registrazione o replay). Cliccalo per controllare ora, installare l'ultima versione (con verifica SHA-256 e riavvio) o disattivare il controllo all'avvio.
 - Il controllo è l'unica richiesta di rete del programma: legge in modo anonimo l'ultima release su GitHub. Non viene installato nulla senza un tuo clic. La verifica SHA-256 protegge da download corrotti; non sostituisce una firma digitale dell'editore.
 
 ## Movimento umano

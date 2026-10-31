@@ -682,18 +682,26 @@ class Panel:
                 self.post(('update_failed', previous, f'Controllo non riuscito: {error}', manual))
         threading.Thread(target=work, name='update-check', daemon=True).start()
 
-    def install_update(self):
+    def install_update(self, startup=False):
+        """Ask, then update; return False when the user says no."""
         release = self.update.get('release')
         if self.update['state'] != 'available' or not release:
-            return
+            return False
+        if startup:
+            question = (f'È disponibile la versione {release["version"]} (hai la {VERSION}).\n\n'
+                        'Scaricarla da GitHub, verificarla e installarla adesso? Il programma si riavvia da solo '
+                        'e le macro salvate non vengono toccate.\n\n'
+                        'Se rispondi No puoi aggiornare quando vuoi dal pallino in alto.')
+        else:
+            question = (f'Scaricare la versione {release["version"]} da GitHub, verificarla e riavviare il programma?\n\n'
+                        'Le macro salvate non vengono toccate.')
         self.dialog_open = True
         try:
-            answer = U.MessageBoxW(self.hwnd, f'Scaricare la versione {release["version"]} da GitHub, verificarla e riavviare il programma?\n\n'
-                'Le macro salvate non vengono toccate.', f'Mouse Macro {VERSION} · hcok', 0x24)
+            answer = U.MessageBoxW(self.hwnd, question, f'Mouse Macro {VERSION} · hcok', 0x24)
         finally:
             self.dialog_open = False
         if answer != 6:
-            return
+            return False
         self.session.message = f'Scarico la versione {release["version"]}…'
         current = Path(__file__).resolve().parent.parent
         def work():
@@ -705,6 +713,7 @@ class Panel:
             except Exception as error:
                 self.post(('update_failed', 'available', f'Aggiornamento non riuscito: {error}', True))
         threading.Thread(target=work, name='update-install', daemon=True).start()
+        return True
 
     def worker_result(self, kind, *args):
         if kind == 'update_checked':
@@ -713,6 +722,14 @@ class Panel:
             if manual or state == 'available':
                 self.session.message = (f'Disponibile la versione {release["version"]}: clicca il pallino in alto.'
                                         if state == 'available' else f'Sei aggiornato: versione {VERSION}.')
+            # Startup check: offer the update right away, once per version, and
+            # never in the middle of a recording or a replay.
+            if (not manual and state == 'available' and self.session.state == State.READY
+                    and not self.dialog_open and self.settings.get('skip_update') != release['version']):
+                if not self.install_update(startup=True):
+                    self.settings['skip_update'] = release['version']
+                    self.write_settings()
+                self.render()
         elif kind == 'update_failed':
             previous, message, manual = args
             self.update['state'] = previous if previous != 'checking' else 'unknown'
