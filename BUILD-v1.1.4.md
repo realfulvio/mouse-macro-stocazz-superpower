@@ -15,4 +15,4 @@ Per compilare offline, conserva in `vendor/` il runtime `python-3.13.16-embed-am
 
 Gli output sono lo ZIP versionato, l'alias `MouseMacroStocazzSuperpower-Windows-Portable.zip` e `SHA256SUMS-v1.1.4.txt`. Il manifest elenca tutti i file e i relativi hash. Il launcher `.cmd` usa lo stesso runtime e gli stessi sorgenti del launcher `.exe`.
 
-Prima di pubblicare, verifica l'esatto ZIP sul desktop interattivo. Non ricompilarlo dopo il collaudo senza ripetere le prove. Rispetto alla v1.1.2 cambia solo il launcher `.exe`: dallo ZIP propone l'installazione per l'utente (menu Start, desktop, App installate) e da installato avvia sempre la versione più recente in `%LOCALAPPDATA%\MouseMacroStocazzSuperpower\Portable`; [risultati e limiti della v1.1.1](docs/ESITO-COLLAUDO-v1.1.1.md).
+Prima di pubblicare, verifica l'esatto ZIP sul desktop interattivo. Non ricompilarlo dopo il collaudo senza ripetere le prove. Rispetto alla v1.1.3 cambia solo il pannello: all’avvio propone subito l’aggiornamento quando ne esce uno; [risultati e limiti della v1.1.1](docs/ESITO-COLLAUDO-v1.1.1.md).
