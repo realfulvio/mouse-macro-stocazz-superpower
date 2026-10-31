@@ -18,7 +18,7 @@ from macro.windows_backend import (WindowsRecorder, WindowsPlayer, GlobalHotkeys
     HOTKEY_RECORD, HOTKEY_PLAY, HOTKEY_EMERGENCY, screen_geometry, window_rect)
 from macro.session import Session, State, VERSION, validate_gestures
 from macro.engine import PlaybackOptions
-from macro import updater
+from macro import updater, win_tray
 from macro.mouse_devices import mouse_names, mouse_label
 from macro.events import BUTTON_OF_DOWN, BUTTON_OF_UP, WHEEL
 
@@ -77,6 +77,8 @@ api(G, 'SetTextColor', W.DWORD, [W.HDC, W.DWORD])
 api(G, 'SetBkColor', W.DWORD, [W.HDC, W.DWORD])
 api(G, 'CreateSolidBrush', W.HBRUSH, [W.DWORD])
 api(U, 'DestroyWindow', W.BOOL, [W.HWND])
+api(U, 'IsWindowVisible', W.BOOL, [W.HWND])
+api(U, 'IsIconic', W.BOOL, [W.HWND])
 api(C.windll.uxtheme,'SetWindowTheme',C.c_long,[W.HWND,W.LPCWSTR,W.LPCWSTR])
 api(U, 'LoadImageW', W.HANDLE, [W.HINSTANCE,W.LPCWSTR,W.UINT,C.c_int,C.c_int,W.UINT])
 api(U, 'LoadCursorW', W.HANDLE, [W.HINSTANCE, C.c_void_p])
@@ -116,6 +118,8 @@ def parse_repeats(text):
 class Panel:
     def __init__(self):
         self.hwnd = None
+        self.tray = None  # i messaggi arrivano già durante CreateWindowEx
+        self.quitting = False
         self.controls = {}
         self.queue = queue.SimpleQueue()
         self.repeats = 1
@@ -193,6 +197,12 @@ class Panel:
                 0,0,1,1,self.hwnd,W.HMENU(cid),self.instance,None)
         for control in self.controls.values():C.windll.uxtheme.SetWindowTheme(control,'','')
         self.layout(U.GetDpiForWindow(self.hwnd))
+        self.quitting = False
+        try:
+            self.tray = win_tray.Tray(self.hwnd, Path(__file__).resolve().parent/'assets'/'icon.ico',
+                                      f'Mouse Macro Stocazz Superpower {VERSION}')
+        except Exception:
+            self.tray = None  # senza tray il pannello funziona come prima
         self.hotkeys = GlobalHotkeys(self.hotkey)
         self.hotkeys.start()
         if self.hotkeys.failed:
@@ -664,6 +674,45 @@ class Panel:
                                     else 'Controllo aggiornamenti all’avvio disattivato: nessun accesso alla rete.')
         self.render()
 
+    def tray_event(self, lp):
+        action = win_tray.click_action(lp)
+        visible = bool(U.IsWindowVisible(self.hwnd)) and not U.IsIconic(self.hwnd)
+        if action == 'toggle':
+            U.ShowWindow(self.hwnd, 0 if visible else 9)
+        elif action == 'menu':
+            choice = self.tray_menu(visible)
+            if choice == win_tray.SHOW:
+                U.ShowWindow(self.hwnd, 0 if visible else 9)
+            elif choice == win_tray.RECORD:
+                self.post('record')
+            elif choice == win_tray.PLAY:
+                if self.session.state in (State.PLAYING, State.STOPPING):
+                    self.session.request_stop()
+                else:
+                    self.post('play')
+            elif choice == win_tray.STOP_ALL:
+                self.hotkey(HOTKEY_EMERGENCY)
+            elif choice == win_tray.CLOSE_TO_TRAY:
+                self.settings['close_to_tray'] = not self.settings.get('close_to_tray', False)
+                self.write_settings()
+            elif choice == win_tray.QUIT:
+                self.quitting = True
+                U.PostMessageW(self.hwnd, WM_CLOSE, 0, 0)
+
+    def tray_menu(self, visible):
+        menu = U.CreatePopupMenu()
+        try:
+            for item_id, label, flags in win_tray.menu_items(visible, self.settings.get('close_to_tray', False)):
+                U.AppendMenuW(menu, flags, item_id or 0, label)
+            point = W.POINT()
+            U.GetCursorPos(C.byref(point))
+            U.SetForegroundWindow(self.hwnd)  # senza, il menu non si chiude cliccando fuori
+            choice = U.TrackPopupMenu(menu, 0x182, point.x, point.y, 0, self.hwnd, None)
+            U.PostMessageW(self.hwnd, 0, 0, 0)
+            return choice
+        finally:
+            U.DestroyMenu(menu)
+
     def check_updates(self, manual=False):
         """Anonymous read of the latest GitHub release, off the UI thread."""
         if self.update['state'] == 'checking':
@@ -739,6 +788,7 @@ class Panel:
             target = Path(args[0])
             subprocess.Popen([str(target/'runtime'/'pythonw.exe'), '-B', str(target/'app'/'windows_main.py'), '--wait-for-exit'],
                              cwd=str(target), creationflags=0x00000008|0x00000200, close_fds=True)
+            self.quitting = True
             U.PostMessageW(self.hwnd, WM_CLOSE, 0, 0)
 
     def read_repeats(self):
@@ -902,8 +952,20 @@ class Panel:
                 return 0
             if msg == 0x232 and self.hwnd:  # WM_EXITSIZEMOVE
                 self.save_position()
+            if self.tray and msg == self.tray.created_message:  # Explorer riavviato: rimetti l'icona
+                self.tray.add()
+                return 0
+            if msg == win_tray.WM_TRAY:
+                self.tray_event(lp)
+                return 0
+            if msg == WM_CLOSE and self.hwnd and win_tray.should_hide_on_close(
+                    self.settings.get('close_to_tray', False), self.quitting, bool(self.tray and self.tray.ok)):
+                U.ShowWindow(hwnd, 0)  # SW_HIDE: hotkey e icona restano attive
+                return 0
             if msg == WM_CLOSE and self.hwnd:
                 self.closing = True
+                if self.tray:
+                    self.tray.remove()
                 self.save_position()
                 U.KillTimer(hwnd,1)
                 try:
