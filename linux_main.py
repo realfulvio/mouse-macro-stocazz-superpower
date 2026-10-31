@@ -14,9 +14,10 @@ import traceback
 
 import flet as ft
 
-from macro import linux_updater
+from macro import linux_setup, linux_updater
 from macro.updater import UpdateError
-from macro.linux_backend import LinuxRecorder, LinuxPlayer, GlobalHotkeys, list_mice, mouse_models
+from macro.linux_backend import (LinuxRecorder, LinuxPlayer, GlobalHotkeys, UINPUT_DENIED, list_mice,
+                                 mouse_models)
 from macro.mouse_devices import mouse_label
 from macro.panel_model import (LINUX_VERSION, SKINS, UPDATE_DOT, parse_repeats, playback_options,
                                settings_path, read_settings, write_settings, save_replay_trace,
@@ -28,6 +29,11 @@ NORMAL_SIZE = (440, 800)
 EXPANDED_WIDTH = 840
 ACTIVE_SIZE = (440, 132)  # compact bar while recording or playing
 ACTIVE_OPACITY = 0.95     # like the Windows bar: slightly see-through
+ACCESS_TEXT = ('Il programma non può ancora leggere il mouse e i tasti F9/F10. Premi Concedi accesso: '
+               'il sistema chiede la password una volta sola.')
+ACCESS_MANUAL = 'Il programma non può ancora leggere il mouse. Apri la Guida per configurare l’accesso una volta.'
+ACCESS_RELOGIN = ('Regola installata. Se il mouse non compare ancora, esci e rientra nella sessione, '
+                  'poi premi Aggiorna elenco.')
 EN = {
     'Pronto': 'Ready', 'Registrazione': 'Recording', 'Riproduzione': 'Playback',
     'Arresto…': 'Stopping…', 'Errore': 'Error', 'Registra': 'Record',
@@ -74,6 +80,17 @@ EN = {
     'Registrazione fermata con un pulsante premuto. Registra di nuovo il gesto completo.':
         'Recording stopped with a button held. Record the complete gesture again.',
     'Imposta da 1 a 999 ripetizioni.': 'Set 1 to 999 repeats.',
+    'Concedi accesso': 'Grant access',
+    ACCESS_TEXT: 'The program cannot read the mouse and the F9/F10 keys yet. Press Grant access: '
+                 'the system asks for your password once.',
+    ACCESS_MANUAL: 'The program cannot read the mouse yet. Open Help to configure access once.',
+    'Accesso al mouse concesso.': 'Mouse access granted.',
+    ACCESS_RELOGIN: 'Rule installed. If the mouse is still missing, log out and back in, then press Refresh devices.',
+    'Configurazione annullata.': 'Setup cancelled.',
+    UINPUT_DENIED: 'Cannot create the virtual mouse: /dev/uinput is missing or not accessible. '
+                   'Press "Grant access" in the panel.',
+    'Scorciatoie globali non disponibili: accesso tastiera necessario.':
+        'Global shortcuts unavailable: keyboard access required.',
 }
 EN_TEMPLATES = [
     (r'Mouse: giro 1/(\d+)', r'Mouse: cycle 1/\1'),
@@ -113,6 +130,7 @@ class LinuxPanel:
         self.dirty = threading.Event()
         self.devices = []
         self.models = []
+        self.access = {'events': True, 'uinput': True, 'rule': False}
         self.speed = 1.0
         self.update = {'state': 'unknown', 'latest': None, 'release': None}
         self.last_options = None
@@ -215,6 +233,13 @@ class LinuxPanel:
                                  value=self.settings.get('device'), on_select=self.mouse_changed)
         self.refresh = self.button('Aggiorna elenco', self.refresh_devices, icon=ft.Icons.REFRESH)
         self.device_hint = self.text('', 16, muted=True)
+        self.access_text = self.text(ACCESS_TEXT if linux_setup.can_grant() else ACCESS_MANUAL, 16)
+        self.access_button = self.button('Concedi accesso', self.grant_access, self.colors['record'],
+                                         ft.Icons.LOCK_OPEN, visible=linux_setup.can_grant())
+        self.access_banner = self.card(ft.Column([ft.Row([ft.Icon(ft.Icons.WARNING_AMBER_ROUNDED,
+                                                                  color=self.colors['record']),
+                                                          ft.Container(self.access_text, expand=True)]),
+                                                  ft.Row([self.access_button])], spacing=10), visible=False)
         self.normal = self.button('Normale', lambda e:self.set_speed(1.0), expand=True)
         self.rapid = self.button('Rapida 2×', lambda e:self.set_speed(2.0), expand=True)
         self.next_tab = ft.Switch(value=False, on_change=self.option_changed)
@@ -255,7 +280,7 @@ class LinuxPanel:
         self.main_column = ft.Column([
             ft.Row([ft.Column([self.text('Mouse Macro',24,True),self.text('Stocazz Superpower',18,muted=True)],
                               expand=True), self.header_dot]),
-            self.status_card,ft.Row([self.record]),ft.Row([self.play]),
+            self.access_banner,self.status_card,ft.Row([self.record]),ft.Row([self.play]),
             self.card(ft.Row([self.text('Ripetizioni',18,True,expand=True),self.minus,self.repeat,self.plus])),
             ft.Row([self.save,self.load]), self.mouse,self.refresh,self.device_hint,
         ],spacing=12,expand=True,scroll=ft.ScrollMode.AUTO)
@@ -364,6 +389,8 @@ class LinuxPanel:
         self.activity_count.value = self.activity_detail(state, count, seconds)
         self.activity_hint.value = ('F9 stop' if state==State.RECORDING else 'F10 stop · Ctrl+Alt+F11')
         self.mouse_model.value = self.mouse_text()
+        self.access_banner.visible = not self.preview and self.access_missing()
+        self.access_button.disabled = active or self.dialog_open
         self.normal_view.visible,self.activity_view.visible = not active,active
         self.footer.visible = self.shortcut_hint.visible = not active
         self.options.visible = self.expanded and not active
@@ -371,6 +398,9 @@ class LinuxPanel:
         self.play.disabled = active or self.dialog_open or not self.valid_macro()
         self.save.disabled = active or self.dialog_open or not self.valid_macro()
         self.load.disabled = active or self.dialog_open
+        for button in (self.record, self.play, self.save, self.load):
+            # Colored buttons keep their color when disabled: dim them so it shows.
+            button.opacity = 0.45 if button.disabled else 1.0
         self.stop.disabled = state==State.STOPPING
         self.stop.tooltip = 'F9' if state==State.RECORDING else 'F10'
         self.progress.visible = state in (State.PLAYING,State.STOPPING) and self.mode.value=='count'
@@ -405,11 +435,6 @@ class LinuxPanel:
 
     async def start(self):
         await self.refresh_devices()
-        self.hotkeys = GlobalHotkeys(self.hotkey)
-        await asyncio.to_thread(self.hotkeys.start)
-        if self.hotkeys.failed:
-            self.shortcut_hint.value = ('Scorciatoie globali non disponibili: accesso tastiera necessario.'
-                                        if self.language=='it' else 'Global shortcuts unavailable: keyboard access required.')
         self.page.run_task(self.pump)
         if self.settings.get('check_updates', True):
             self.page.run_task(self.check_updates)
@@ -578,9 +603,46 @@ class LinuxPanel:
         self.page.add(self.root)
         self.render()
 
+    async def start_hotkeys(self):
+        """(Re)start the global F9/F10 listener: also after access is granted,
+        without restarting the program."""
+        if self.hotkeys and not self.hotkeys.failed:
+            return
+        if self.hotkeys:
+            await asyncio.to_thread(self.hotkeys.stop)
+        self.hotkeys = GlobalHotkeys(self.hotkey)
+        await asyncio.to_thread(self.hotkeys.start)
+        self.shortcut_hint.value = self.tr('Scorciatoie globali non disponibili: accesso tastiera necessario.'
+                                           if self.hotkeys.failed else 'F9 · F10 · Ctrl+Alt+F11')
+
+    def access_missing(self):
+        return (not self.devices or not self.access.get('uinput')
+                or bool(self.hotkeys and self.hotkeys.failed))
+
+    async def grant_access(self, e=None):
+        if self.session.state in ACTIVE or self.dialog_open:
+            return
+        self.dialog_open = True
+        self.render()
+        try:
+            ok, detail = await asyncio.to_thread(linux_setup.grant_access)
+        finally:
+            self.dialog_open = False
+        if not ok:
+            self.session.message = 'Configurazione annullata.' if detail == 'annullato' else detail
+            self.render()
+            return
+        await asyncio.sleep(1)  # logind applies the seat ACLs right after the udev change event
+        await self.refresh_devices()
+        self.session.message = 'Accesso al mouse concesso.' if not self.access_missing() else ACCESS_RELOGIN
+        self.render()
+
     async def refresh_devices(self,e=None):
         self.devices=await asyncio.to_thread(list_mice)
         self.models=await asyncio.to_thread(mouse_models)
+        self.access=await asyncio.to_thread(linux_setup.input_access)
+        if not self.preview:
+            await self.start_hotkeys()
         self.mouse.options=[ft.DropdownOption(key=p,text=n) for p,n in self.devices]
         paths={p for p,n in self.devices}
         if self.mouse.value not in paths:
@@ -726,9 +788,11 @@ class LinuxPanel:
                  'Su molti desktop Ctrl+Alt+F11 passa anche a una console di testo: la macro si ferma '
                  'comunque; torna al desktop con Ctrl+Alt+F1, F2 o F7. Ctrl+Maiusc+F11 ferma tutto '
                  'senza cambiare console.\n\n'
-                 'Servono accesso al mouse e, per i tasti globali, alla tastiera. La configurazione '
-                 'mirata è in scripts/setup-linux-input.sh; dopo il login aggiorna l’elenco. '
-                 'Non eseguire tutta l’app come root.')
+                 'Servono accesso al mouse e, per i tasti globali, alla tastiera. Se in alto compare '
+                 'Concedi accesso, premilo: il sistema chiede la password una volta e installa una regola '
+                 'udev che vale solo per chi è seduto alla sessione locale. Senza quel pulsante (Flatpak) '
+                 'esegui una volta da terminale setup-linux-input.sh dalla pagina del progetto, poi esci, '
+                 'rientra e aggiorna l’elenco. Non eseguire tutta l’app come root.')
         if self.language=='en':
             message=('F9 records/stops; F10 plays/stops; Ctrl+Alt+F11 stops immediately.\n\n'
                      'Linux uses relative movements. Start from the same cursor position; keep mouse '
@@ -739,9 +803,11 @@ class LinuxPanel:
                      'hide automation: check the terms of the site you use.\n\n'
                      'On many desktops Ctrl+Alt+F11 also switches to a text console: playback stops anyway; '
                      'return with Ctrl+Alt+F1, F2 or F7. Ctrl+Shift+F11 stops without switching console.\n\n'
-                     'Mouse access and keyboard access for global shortcuts '
-                     'are required. See scripts/setup-linux-input.sh, then log in again and refresh devices. '
-                     'Do not run the entire app as root.')
+                     'Mouse access and keyboard access for global shortcuts are required. If Grant access '
+                     'appears at the top, press it: the system asks for your password once and installs a udev '
+                     'rule that only applies to the user at the local session. Without that button (Flatpak) run '
+                     'setup-linux-input.sh from the project page once in a terminal, then log in again and '
+                     'refresh devices. Do not run the entire app as root.')
         self.page.show_dialog(ft.AlertDialog(title=self.text('Guida',22,True),
             content=ft.Container(ft.Column([self.text(message,16)],scroll=ft.ScrollMode.AUTO,tight=True),width=520),
             actions=[self.button('OK',lambda e:self.page.pop_dialog())]))
@@ -802,12 +868,17 @@ def run(language='it', argv=None):
         save_error_log(config_dir(), ''.join(traceback.format_exception(args.exc_type, args.exc_value,
                                                                           args.exc_traceback)))
     threading.excepthook = log_thread_error
+    if os.environ.get('APPIMAGE'):
+        # Portable copy: after the first double click it is also in the applications menu.
+        linux_setup.integrate_appimage(os.environ['APPIMAGE'], Path(__file__).resolve().parent/'assets'/'icon.png')
     if os.environ.get('WAYLAND_DISPLAY'):
         # Flet treats a Linux session without DISPLAY as a headless server and
         # would open a web server; a pure Wayland desktop has a native window.
         import flet.app as flet_app
         flet_app.is_linux_server = lambda: False
+    opened = threading.Event()
     async def start(page):
+        opened.set()
         try:
             await main(page,language)
         except Exception:
@@ -817,4 +888,10 @@ def run(language='it', argv=None):
         ft.run(start,assets_dir=str(Path(__file__).resolve().parent/'assets'))
     except Exception:
         save_error_log(config_dir(), traceback.format_exc(), 'errore-avvio.log')
+        linux_setup.startup_failure(config_dir(), language)
         raise
+    if not opened.is_set():
+        # The window process exited before connecting (e.g. a missing system library):
+        # started with a double click, nothing would be visible at all.
+        linux_setup.startup_failure(config_dir(), language)
+        raise SystemExit(1)

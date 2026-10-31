@@ -212,6 +212,47 @@ class LinuxPanelTests(unittest.TestCase):
         english.render()
         self.assertEqual(english.mouse_model.value, 'Mouse: model unavailable')
 
+    # Access without a terminal -------------------------------------------
+    def refresh(self, panel, mice, access, hotkeys_failed):
+        hotkeys = MagicMock(failed=['F9'] if hotkeys_failed else [])
+        with patch.object(linux_main, 'GlobalHotkeys', return_value=hotkeys) as factory, \
+             patch.object(linux_main, 'list_mice', return_value=mice), \
+             patch.object(linux_main, 'mouse_models', return_value=[]), \
+             patch.object(linux_main.linux_setup, 'input_access', return_value=access):
+            asyncio.run(panel.refresh_devices())
+        return factory
+
+    def test_access_banner_appears_until_mouse_keyboard_and_uinput_work(self):
+        panel = self.panel()
+        self.refresh(panel, [], {'events': False, 'uinput': False, 'rule': False}, True)
+        self.assertTrue(panel.access_banner.visible)
+        self.assertIn('Scorciatoie globali non disponibili', panel.shortcut_hint.value)
+        # After access is granted the same refresh restarts the global shortcuts.
+        factory = self.refresh(panel, [('/dev/input/event5', 'Mouse')],
+                               {'events': True, 'uinput': True, 'rule': True}, False)
+        factory.assert_called_once()
+        self.assertFalse(panel.access_banner.visible)
+        self.assertEqual(panel.shortcut_hint.value, 'F9 · F10 · Ctrl+Alt+F11')
+        # Working shortcuts are not restarted on later refreshes.
+        factory = self.refresh(panel, [('/dev/input/event5', 'Mouse')],
+                               {'events': True, 'uinput': True, 'rule': True}, False)
+        factory.assert_not_called()
+
+    def test_grant_access_refreshes_devices_or_reports_cancel(self):
+        panel = self.panel()
+        panel.refresh_devices = AsyncMock()
+        with patch.object(linux_main.linux_setup, 'grant_access', return_value=(False, 'annullato')):
+            asyncio.run(panel.grant_access())
+        self.assertEqual(panel.session.message, 'Configurazione annullata.')
+        panel.refresh_devices.assert_not_called()
+        panel.devices, panel.access = [('/dev/input/event5', 'Mouse')], {'events': True, 'uinput': True}
+        with patch.object(linux_main.linux_setup, 'grant_access', return_value=(True, '')), \
+             patch.object(linux_main.asyncio, 'sleep', AsyncMock()):
+            asyncio.run(panel.grant_access())
+        panel.refresh_devices.assert_awaited_once()
+        self.assertEqual(panel.session.message, 'Accesso al mouse concesso.')
+        self.assertFalse(panel.dialog_open)
+
     # Updates -------------------------------------------------------------
     def start(self, panel):
         hotkeys = MagicMock(failed=[])
@@ -258,12 +299,12 @@ class LinuxPanelTests(unittest.TestCase):
         dialog = self.page.dialogs.pop()
         install = next(c for c in walk(dialog) if isinstance(c, ft.Button) and c.icon == ft.Icons.DOWNLOAD)
         self.assertTrue(install.disabled)
-        panel.update = {'state': 'available', 'latest': '1.0.1', 'release': {'version': '1.0.1'}}
+        panel.update = {'state': 'available', 'latest': '9.0.1', 'release': {'version': '9.0.1'}}
         panel.update_menu()
         dialog = self.page.dialogs.pop()
         install = next(c for c in walk(dialog) if isinstance(c, ft.Button) and c.icon == ft.Icons.DOWNLOAD)
         self.assertFalse(install.disabled)
-        self.assertIn('Disponibile la versione 1.0.1 (hai la 1.0.0)', texts(dialog))
+        self.assertIn(f'Disponibile la versione 9.0.1 (hai la {panel_model.LINUX_VERSION})', texts(dialog))
         panel.session.state = State.PLAYING
         panel.update_menu()
         self.assertEqual(self.page.dialogs, [])
@@ -315,7 +356,7 @@ class LinuxPanelTests(unittest.TestCase):
 
     def test_failed_install_keeps_panel_open_with_error(self):
         panel = self.panel()
-        panel.update = {'state': 'available', 'latest': '1.0.1', 'release': {'version': '1.0.1'}}
+        panel.update = {'state': 'available', 'latest': '9.0.1', 'release': {'version': '9.0.1'}}
         error = linux_main.UpdateError('SHA-256 diverso dall’atteso: download scartato.')
         with patch.object(linux_main.linux_updater, 'install', side_effect=error), \
              patch.object(linux_main.subprocess, 'Popen') as popen:
@@ -332,7 +373,7 @@ class LinuxPanelTests(unittest.TestCase):
         panel.session.last_trace = [{'type': 'playback_start'}, {'type': 'playback_end', 'outcome': 'done'}]
         panel.render()
         trace = json.loads((self.folder / 'ultimo-replay.json').read_text())
-        self.assertEqual((trace['version'], trace['platform'], trace['outcome']), ('1.0.0', 'linux', 'pronto'))
+        self.assertEqual((trace['version'], trace['platform'], trace['outcome']), (panel_model.LINUX_VERSION, 'linux', 'pronto'))
         self.assertEqual(trace['options']['mode'], 'repeat_count')
         self.assertTrue(trace['options']['humanize'])
         self.assertEqual(len(trace['records']), 2)
