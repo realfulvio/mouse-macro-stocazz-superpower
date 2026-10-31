@@ -2,8 +2,14 @@
 
 The only network access of the program. Nothing runs automatically except the
 anonymous read of the latest release tag; downloading and installing happen only
-when the user asks. The ZIP is verified against the SHA256SUMS file published in
-the same release before anything is extracted.
+when the user asks. Every downloaded file is verified against the SHA256SUMS file
+published in the same release before it is used.
+
+Two kinds of copies are updated differently:
+- portable (ZIP or install.ps1): the new ZIP is extracted next to the old one;
+- installed with the setup program (unins000.exe next to runtime/): the new
+  setup is downloaded and run silently, so shortcuts and the entry in
+  "Installed apps" keep pointing at the same folder.
 """
 from __future__ import annotations
 import hashlib
@@ -19,6 +25,8 @@ REPO = 'realfulvio/mouse-macro-stocazz-superpower'
 API_URL = f'https://api.github.com/repos/{REPO}/releases/latest'
 TIMEOUT = 8
 PACKAGE = 'MouseMacroStocazzSuperpower-Windows-v{}'
+SETUP = 'MouseMacroStocazzSuperpower-Setup-v{}.exe'
+SETUP_ARGS = ('/SILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-')
 MAX_BYTES = 200 * 1024 * 1024
 
 
@@ -75,33 +83,64 @@ def _download(url, target, opener=None):
             out.write(chunk)
 
 
+def is_installed(app_root):
+    """True when this copy was installed by the setup program (it has an uninstaller)."""
+    return any(Path(app_root).glob('unins*.exe'))
+
+
+def _fetch_verified(release, name, work, opener=None, missing='La release non contiene i file attesi.'):
+    """Download asset `name` of `release` into `work`; check it against SHA256SUMS."""
+    sums_name = f'SHA256SUMS-v{release["version"]}.txt'
+    try:
+        url, sums_url = release['assets'][name], release['assets'][sums_name]
+    except KeyError as error:
+        raise UpdateError(missing) from error
+    try:
+        _download(sums_url, work / 'sums.txt', opener)
+        _download(url, work / name, opener)
+    except OSError as error:
+        raise UpdateError('Download non riuscito: controlla la connessione.') from error
+    expected = None
+    for line in (work / 'sums.txt').read_text('utf-8', 'replace').splitlines():
+        parts = line.split()
+        if len(parts) == 2 and parts[1].lstrip('*') == name:
+            expected = parts[0].lower()
+    digest = hashlib.sha256((work / name).read_bytes()).hexdigest()
+    if expected is None or digest != expected:
+        raise UpdateError('SHA-256 diverso dall’atteso: download scartato.')
+    return work / name
+
+
+def download_setup(release, opener=None):
+    """Download and verify the setup program of `release`; return its path.
+
+    The file stays in a fresh temporary folder because it is run right after;
+    Windows cleans %TEMP% on its own.
+    """
+    name = SETUP.format(release['version'])
+    work = Path(tempfile.mkdtemp(prefix='mmss-setup-'))
+    try:
+        setup = _fetch_verified(release, name, work, opener,
+                                'La release non contiene il programma di installazione.')
+        if setup.read_bytes()[:2] != b'MZ':
+            raise UpdateError('Il programma di installazione scaricato non è valido.')
+    except BaseException:
+        shutil.rmtree(work, ignore_errors=True)
+        raise
+    (work / 'sums.txt').unlink(missing_ok=True)
+    return setup
+
+
 def install(release, root, opener=None, keep=()):
     """Download, verify and extract `release` under `root`; return the package folder."""
     version = release['version']
     package = PACKAGE.format(version)
     zip_name = package + '.zip'
-    sums_name = f'SHA256SUMS-v{version}.txt'
-    try:
-        zip_url, sums_url = release['assets'][zip_name], release['assets'][sums_name]
-    except KeyError as error:
-        raise UpdateError('La release non contiene ZIP e SHA256SUMS attesi.') from error
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
     work = Path(tempfile.mkdtemp(prefix='mmss-update-'))
     try:
-        try:
-            _download(sums_url, work / 'sums.txt', opener)
-            _download(zip_url, work / zip_name, opener)
-        except OSError as error:
-            raise UpdateError('Download non riuscito: controlla la connessione.') from error
-        expected = None
-        for line in (work / 'sums.txt').read_text('utf-8', 'replace').splitlines():
-            parts = line.split()
-            if len(parts) == 2 and parts[1].lstrip('*') == zip_name:
-                expected = parts[0].lower()
-        digest = hashlib.sha256((work / zip_name).read_bytes()).hexdigest()
-        if expected is None or digest != expected:
-            raise UpdateError('SHA-256 diverso dall’atteso: download scartato.')
+        _fetch_verified(release, zip_name, work, opener, 'La release non contiene ZIP e SHA256SUMS attesi.')
         staging = work / 'extract'
         with zipfile.ZipFile(work / zip_name) as archive:
             if archive.testzip() is not None:

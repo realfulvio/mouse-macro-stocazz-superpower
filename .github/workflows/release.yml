@@ -22,11 +22,17 @@ jobs:
         run: python build_native_windows.py
       - name: Check package manifest
         run: python qa/check_package.py
+      - name: Install Inno Setup 6 if missing
+        run: |
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) { choco install innosetup --no-progress -y }
+      - name: Build setup program
+        run: python build_windows_installer.py
       - uses: actions/upload-artifact@v4
         with:
           name: windows-portable-candidate
           path: |
             dist/windows/MouseMacroStocazzSuperpower-Windows-*.zip
+            dist/windows/MouseMacroStocazzSuperpower-Setup-*.exe
             dist/windows/SHA256SUMS-*.txt
           if-no-files-found: error
 # A build artifact is a candidate. Interactive acceptance must be repeated on

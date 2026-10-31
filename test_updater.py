@@ -2,6 +2,7 @@
 import hashlib
 import io
 import json
+import shutil
 import tempfile
 import unittest
 import zipfile
@@ -31,7 +32,9 @@ def make_zip(version, extra=None, complete=True):
 
 
 class FakeNet:
-    def __init__(self, version='1.2.0', zip_bytes=None, sha=None, fail=False):
+    def __init__(self, version='1.2.0', zip_bytes=None, sha=None, fail=False, setup_bytes=b'MZsetup', setup_sha=None):
+        self.setup_bytes = setup_bytes
+        self.setup_sha = setup_sha or hashlib.sha256(setup_bytes).hexdigest()
         self.version = version
         self.zip_bytes = zip_bytes if zip_bytes is not None else make_zip(version)
         self.sha = sha or hashlib.sha256(self.zip_bytes).hexdigest()
@@ -43,6 +46,7 @@ class FakeNet:
             'assets': [
                 {'name': package + '.zip', 'browser_download_url': 'https://x/zip'},
                 {'name': f'SHA256SUMS-v{version}.txt', 'browser_download_url': 'https://x/sums'},
+                {'name': updater.SETUP.format(version), 'browser_download_url': 'https://x/setup'},
             ]}
 
     def __call__(self, request, timeout=None):
@@ -54,8 +58,11 @@ class FakeNet:
             return FakeResponse(json.dumps(self.release).encode())
         if url == 'https://x/zip':
             return FakeResponse(self.zip_bytes)
+        if url == 'https://x/setup':
+            return FakeResponse(self.setup_bytes)
         package = updater.PACKAGE.format(self.version)
-        return FakeResponse(f'{self.sha}  {package}.zip\n{self.sha}  Other.zip\n'.encode())
+        setup = updater.SETUP.format(self.version)
+        return FakeResponse(f'{self.sha}  {package}.zip\n{self.sha}  Other.zip\n{self.setup_sha}  {setup}\n'.encode())
 
 
 class VersionTests(unittest.TestCase):
@@ -143,6 +150,43 @@ class InstallTests(unittest.TestCase):
         self.assertFalse(old.exists())
         self.assertTrue(running.exists())
         self.assertTrue(other.exists())
+
+
+class SetupTests(unittest.TestCase):
+    def test_installed_copy_is_recognised_by_its_uninstaller(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertFalse(updater.is_installed(tmp))
+            (Path(tmp) / 'unins000.exe').write_bytes(b'MZ')
+            self.assertTrue(updater.is_installed(tmp))
+
+    def test_setup_is_downloaded_and_verified(self):
+        net = FakeNet('1.2.0')
+        setup = updater.download_setup(updater.fetch_latest(net), net)
+        try:
+            self.assertEqual(setup.name, updater.SETUP.format('1.2.0'))
+            self.assertEqual(setup.read_bytes(), b'MZsetup')
+            self.assertEqual([p.name for p in setup.parent.iterdir()], [setup.name])
+        finally:
+            shutil.rmtree(setup.parent)
+
+    def test_setup_with_wrong_hash_is_rejected_and_removed(self):
+        net = FakeNet('1.2.0', setup_sha='0' * 64)
+        before = set(Path(tempfile.gettempdir()).glob('mmss-setup-*'))
+        with self.assertRaises(updater.UpdateError):
+            updater.download_setup(updater.fetch_latest(net), net)
+        self.assertEqual(set(Path(tempfile.gettempdir()).glob('mmss-setup-*')), before)
+
+    def test_release_without_setup_is_a_readable_error(self):
+        net = FakeNet('1.2.0')
+        release = updater.fetch_latest(net)
+        del release['assets'][updater.SETUP.format('1.2.0')]
+        with self.assertRaises(updater.UpdateError):
+            updater.download_setup(release, net)
+
+    def test_setup_that_is_not_a_program_is_rejected(self):
+        net = FakeNet('1.2.0', setup_bytes=b'<html>')
+        with self.assertRaises(updater.UpdateError):
+            updater.download_setup(updater.fetch_latest(net), net)
 
 
 if __name__ == '__main__':
