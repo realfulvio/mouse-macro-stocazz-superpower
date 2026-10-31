@@ -99,3 +99,7 @@ def ask_save_macro(title: str, file_name: str = "macro.mmr", owner=None):
 def ask_open_path(title: str, owner=None) -> str | None:
     return _run_dialog(False, title, "", [("Mouse macro (*.mmr; *.json)", "*.mmr;*.json"),
                                           ("*.*", "*.*")], "mmr", owner)
+
+
+def ask_open_mod(title: str, owner=None) -> str | None:
+    return _run_dialog(False, title, "", [("Mod Mouse Macro (*.mmmod)", "*.mmmod")], "mmmod", owner)
