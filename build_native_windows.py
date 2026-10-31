@@ -1,7 +1,7 @@
 """Reproducible Windows build procedure: official embed + pinned pure Python wheels."""
 from pathlib import Path
 import argparse, hashlib, json, shutil, subprocess, sys, urllib.request, zipfile
-VERSION = '1.1.2'
+VERSION = '1.1.3'
 ROOT = Path(__file__).resolve().parent
 PACKAGE = f'MouseMacroStocazzSuperpower-Windows-v{VERSION}'
 
@@ -71,14 +71,14 @@ def main():
         subprocess.run(['dotnet',str(sdk),'/nologo','/target:winexe','/platform:x64','/optimize+',
             '/deterministic+','/nostdlib+',
             *('/reference:'+str(refdir/name) for name in ('mscorlib.dll','System.dll','System.Windows.Forms.dll')),
-            '/out:'+str(exe),str(ROOT/'launcher.cs')],check=True)
+            '/win32icon:'+str(ROOT/'assets'/'icon.ico'),'/out:'+str(exe),str(ROOT/'launcher.cs')],check=True)
     else:
         subprocess.run([str(csc),'/nologo','/target:winexe','/platform:x64','/optimize+',
-            '/reference:System.Windows.Forms.dll','/out:'+str(exe),str(ROOT/'launcher.cs')],check=True)
+            '/reference:System.Windows.Forms.dll','/win32icon:'+str(ROOT/'assets'/'icon.ico'),'/out:'+str(exe),str(ROOT/'launcher.cs')],check=True)
     manifest = {'version':VERSION,'engine_base':'v0.16.0-beta',
         'runtime':'Python 3.13.16 official embeddable x64',
         'embed_sha256':hashlib.sha256(embed.read_bytes()).hexdigest(),
-        'launcher':'unsigned .NET Framework launcher plus .cmd alternative; original signed pythonw.exe; explicit startup',
+        'launcher':'unsigned .NET Framework launcher with per-user installer (Start menu and Desktop shortcuts) plus .cmd alternative; original signed pythonw.exe; explicit startup',
         'compiler':'Roslyn SDK 10.0.112, net48 reference assemblies 1.0.3' if args.cross else '.NET Framework csc.exe v4.0.30319 on Windows',
         'validation':'See the release acceptance report for the exact tested ZIP hash',
         'sha256':{str(p.relative_to(stage)).replace('\\','/'):hashlib.sha256(p.read_bytes()).hexdigest()
