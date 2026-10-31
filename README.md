@@ -4,11 +4,11 @@
 
 <p align="center">
 Registra il mouse e ripeti la sequenza quante volte vuoi.<br>
-Un piccolo pannello sempre in primo piano per Windows e Linux: niente installer, niente Python da installare.
+Un piccolo pannello sempre in primo piano per Windows e Linux: Python è incluso, niente da configurare.
 </p>
 
 <p align="center">
-<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.1.2"><b>⬇ Scarica per Windows</b></a>
+<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.0/MouseMacroStocazzSuperpower-Setup-v1.2.0.exe"><b>⬇ Scarica per Windows</b></a>
 · <a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.1.0"><b>⬇ Scarica per Linux</b></a>
 · <a href="GUIDA-ITALIANA.md">Guida italiana</a>
 · <a href="docs/ESITO-COLLAUDO-v1.1.1.md">Esito dei controlli</a>
@@ -19,6 +19,18 @@ Un piccolo pannello sempre in primo piano per Windows e Linux: niente installer,
 &nbsp;
 <img src="docs/screenshots/v111-windows11-expanded.png" alt="Windows 11" width="440">
 </p>
+
+## Installazione su Windows
+
+**1.** Scarica [`MouseMacroStocazzSuperpower-Setup-v1.2.0.exe`](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.0/MouseMacroStocazzSuperpower-Setup-v1.2.0.exe) e aprilo.
+
+**2.** Segui l'installazione: non servono permessi di amministratore. Il programma va in `%LOCALAPPDATA%\Programs\Mouse Macro Stocazz Superpower` e compare nel menu Start e (se lasci la casella spuntata) sul desktop.
+
+**3.** A ogni avvio il programma controlla se c'è una versione nuova e ti chiede se installarla: scarica il nuovo setup da GitHub, ne verifica lo SHA-256, si chiude, si aggiorna e riparte da solo. Le macro e le impostazioni restano.
+
+Per disinstallarlo: *Impostazioni → App → App installate → Mouse Macro Stocazz Superpower → Disinstalla*. Le impostazioni in `%LOCALAPPDATA%\MouseMacroStocazzSuperpower` e le tue macro `.mmr` non vengono cancellate.
+
+Il setup non è firmato digitalmente: la prima volta SmartScreen può mostrare *"Windows ha protetto il PC"*. Scegli *Ulteriori informazioni → Esegui comunque*, oppure usa una delle vie qui sotto. I collegamenti avviano il `pythonw.exe` ufficiale firmato dalla Python Software Foundation, non un exe nostro.
 
 ## Avvio rapido da PowerShell
 
@@ -40,19 +52,21 @@ Lo script scarica la release ufficiale da GitHub, ne verifica lo SHA-256, la est
 
 ## Altri modi di installare
 
-1. Scarica `MouseMacroStocazzSuperpower-Windows-v1.1.2.zip` dalla [release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.1.2).
+Versione portable, senza installazione:
+
+1. Scarica `MouseMacroStocazzSuperpower-Windows-v1.2.0.zip` dalla [release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.2.0).
 2. Estrai **tutto** lo ZIP in una cartella.
-3. Apri `Mouse Macro v1.1.2.exe`. Se Windows lo blocca, apri invece `Mouse Macro v1.1.2 (senza exe).cmd`.
+3. Apri `Mouse Macro v1.2.0.exe`. Se Windows lo blocca, apri invece `Mouse Macro v1.2.0 (senza exe).cmd`.
 
 Serve Windows x64; l'exe richiede anche .NET Framework 4 (già presente in Windows 10/11), il `.cmd` no. Python è incluso. L'interfaccia è in italiano. Lo SHA-256 dello ZIP è pubblicato con ogni release.
 
 ### Windows blocca l'exe?
 
-Il launcher `.exe` non è firmato: SmartScreen o il *Controllo intelligente delle app* (Smart App Control) di Windows 11 possono bloccarlo (*"Un criterio di controllo dell'applicazione ha bloccato il file"*). Le due vie senza exe, cioè il comando PowerShell qui sopra e il file **`Mouse Macro v1.1.2 (senza exe).cmd`** nello ZIP, sono state provate con Smart App Control nella v1.1.0 (Windows 11 build 26300, [rapporto precedente](docs/ESITO-COLLAUDO-v1.1.0.md)); la verifica SAC non è stata ripetuta per le v1.1.1 e v1.1.2. Il `.cmd` avvia direttamente il `pythonw.exe` firmato PSF con gli stessi file. Se SmartScreen avvisa, usa *Ulteriori informazioni → Esegui comunque*; se blocca ancora, tasto destro sullo ZIP → *Proprietà* → **Sblocca** prima di estrarlo.
+Il launcher `.exe` non è firmato: SmartScreen o il *Controllo intelligente delle app* (Smart App Control) di Windows 11 possono bloccarlo (*"Un criterio di controllo dell'applicazione ha bloccato il file"*). Le due vie senza exe, cioè il comando PowerShell qui sopra e il file **`Mouse Macro v1.2.0 (senza exe).cmd`** nello ZIP, sono state provate con Smart App Control nella v1.1.0 (Windows 11 build 26300, [rapporto precedente](docs/ESITO-COLLAUDO-v1.1.0.md)); la verifica SAC non è stata ripetuta dalla v1.1.1 in poi. Il `.cmd` avvia direttamente il `pythonw.exe` firmato PSF con gli stessi file. Se SmartScreen avvisa, usa *Ulteriori informazioni → Esegui comunque*; se blocca ancora, tasto destro sullo ZIP → *Proprietà* → **Sblocca** prima di estrarlo.
 
 Se anche queste vie vengono bloccate sul tuo PC, scrivilo nelle [Issues](https://github.com/realfulvio/mouse-macro-stocazz-superpower/issues).
 
-La v1.1.2 riporta in vista il pannello già aperto (anche se ridotto a icona) quando lo riapri con un doppio clic; motore invariato rispetto alla v1.1.1. [Download Portable](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.1.2/MouseMacroStocazzSuperpower-Windows-Portable.zip).
+La v1.2.0 aggiunge il programma di installazione e propone l'aggiornamento direttamente all'avvio; motore invariato rispetto alla v1.1.2. [Download Portable](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.0/MouseMacroStocazzSuperpower-Windows-Portable.zip).
 
 ## Cosa fa
 
@@ -76,7 +90,7 @@ La v1.1.2 riporta in vista il pannello già aperto (anche se ridotto a icona) qu
 </p>
 
 - **Skin**: il tondo con i puntini in alto, accanto ai pulsanti della finestra, apre il menu delle skin: *Unicorno* (viola scuro, predefinita) e *Palio* (chiara, un sauro con i nastri di contrada). La scelta viene ricordata. Durante registrazione e riproduzione il pannello torna alla barra compatta, con il cavallo della skin scelta.
-- **Aggiornamenti**: il pallino accanto al tondo è **verde** se hai l'ultima versione, **giallo** se ne è uscita una nuova, **grigio** se non si riesce a controllare. Cliccandolo puoi controllare subito, scaricare e installare l'ultima versione (verifica lo SHA-256 e poi riavvia) oppure disattivare il controllo all'avvio.
+- **Aggiornamenti**: il pallino accanto al tondo è **verde** se hai l'ultima versione, **giallo** se ne è uscita una nuova, **grigio** se non si riesce a controllare. Quando all'avvio trova una versione nuova te la propone subito (una volta per versione; mai durante una registrazione o un replay). Cliccando il pallino puoi controllare subito, scaricare e installare l'ultima versione (verifica lo SHA-256 e poi riavvia) oppure disattivare il controllo all'avvio. La copia installata si aggiorna con il nuovo setup, quella portable scaricando il nuovo ZIP.
 - **Rete**: l'unica richiesta di rete del programma è la lettura anonima dell'ultima release su GitHub. Non viene scaricato né installato nulla senza un tuo clic, e il controllo si può spegnere dal menu del pallino.
 
 ## Uso
