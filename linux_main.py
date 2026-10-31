@@ -19,7 +19,7 @@ from macro.updater import UpdateError
 from macro.linux_backend import (LinuxRecorder, LinuxPlayer, GlobalHotkeys, UINPUT_DENIED, list_mice,
                                  mouse_models)
 from macro.mouse_devices import mouse_label
-from macro.panel_model import (LINUX_VERSION, SKINS, UPDATE_DOT, parse_repeats, playback_options,
+from macro.panel_model import (LINUX_VERSION, BAMBOLA, SKINS, DEFAULT_SKIN, DARK_SKINS, UPDATE_DOT, parse_repeats, playback_options,
                                settings_path, read_settings, write_settings, save_replay_trace,
                                save_error_log)
 from macro.session import Session, State, validate_gestures
@@ -28,6 +28,9 @@ ACTIVE = (State.RECORDING, State.PLAYING, State.STOPPING)
 NORMAL_SIZE = (440, 800)
 EXPANDED_WIDTH = 840
 ACTIVE_SIZE = (440, 132)  # compact bar while recording or playing
+BAMBOLA_HERO = tuple(BAMBOLA['linux']['hero'])               # horse in the status card
+BAMBOLA_BAR = tuple(BAMBOLA['linux']['bar_head']['size'])    # head of the horse in the compact bar
+ACTIVE_SIZES = {'bambola': tuple(BAMBOLA['linux']['active_size'])}  # per-skin override: the Bambola bar is as small as TinyTask
 ACTIVE_OPACITY = 0.95     # like the Windows bar: slightly see-through
 ACCESS_TEXT = ('Il programma non può ancora leggere il mouse e i tasti F9/F10. Premi Concedi accesso: '
                'il sistema chiede la password una volta sola.')
@@ -122,7 +125,7 @@ class LinuxPanel:
         self.path = Path(preferences) if preferences else settings_path()
         self.folder = self.path.parent  # diagnostics live next to the preferences
         self.settings = read_settings(self.path)
-        self.skin = self.settings.get('skin', 'unicorno')
+        self.skin = self.settings.get('skin', DEFAULT_SKIN)
         self.colors = SKINS[self.skin]
         self.commands = queue.Queue()
         self.hotkeys = None
@@ -143,7 +146,7 @@ class LinuxPanel:
         self.page.title = f'Mouse Macro {LINUX_VERSION} · Linux · hcok'
         self.page.fonts = {'Outfit': 'fonts/Outfit.ttf'}
         self.page.theme = ft.Theme(font_family='Outfit', color_scheme_seed=self.colors['play'])
-        self.page.theme_mode = ft.ThemeMode.DARK if self.skin == 'unicorno' else ft.ThemeMode.LIGHT
+        self.page.theme_mode = ft.ThemeMode.DARK if self.skin in DARK_SKINS else ft.ThemeMode.LIGHT
         self.page.padding = 16
         self.page.bgcolor = self.colors['background']
         window = self.settings.get('window', {})
@@ -190,7 +193,9 @@ class LinuxPanel:
         return ft.Container(content=control, padding=16, bgcolor=self.colors['surface'],
                             border=ft.Border.all(1, self.colors['border']), border_radius=14, **kwargs)
 
-    def horse(self, state='pronto', size=72):
+    def horse(self, state='pronto', size=72, bar=False):
+        if self.skin == 'bambola':
+            return self.bambola_horse(state, bar)
         prefix = 'palio' if self.skin == 'palio' else 'unicorn'
         if prefix == 'palio':
             return ft.Image(src=f'horses/{prefix}_{state}.png', width=size, height=size,
@@ -205,6 +210,22 @@ class LinuxPanel:
                                  top=-y*scale+(size-h*scale)/2, exclude_from_semantics=True)],
                         width=size, height=size, clip_behavior=ft.ClipBehavior.HARD_EDGE)
 
+    # Bambola clips are cropped animated WebP (assets/horses, data in assets/skins/bambola.json).
+    BAMBOLA_SIZE = tuple(BAMBOLA['images']['frame'])
+    BAMBOLA_HEAD = tuple(BAMBOLA['linux']['bar_head']['crop'])  # head and neck (x, y, w, h)
+
+    def bambola_horse(self, state, bar=False):
+        src = f'horses/bambola_{state}.webp'
+        width, height = self.BAMBOLA_SIZE
+        if not bar:
+            return ft.Image(src=src, width=BAMBOLA_HERO[0], height=BAMBOLA_HERO[1],
+                            fit=ft.BoxFit.CONTAIN, exclude_from_semantics=True)
+        x, y, w, h = self.BAMBOLA_HEAD
+        scale = BAMBOLA_BAR[0] / w
+        return ft.Stack([ft.Image(src=src, width=width*scale, height=height*scale, left=-x*scale,
+                                  top=-y*scale, exclude_from_semantics=True)],
+                        width=BAMBOLA_BAR[0], height=BAMBOLA_BAR[1], clip_behavior=ft.ClipBehavior.HARD_EDGE)
+
     def build(self):
         self.status = self.text('Pronto', 26, True)
         self.message = self.text(self.session.message, 16, muted=True)
@@ -212,12 +233,26 @@ class LinuxPanel:
         self.mascot = ft.Container(self.horse())
         self.dot = ft.Container(width=12, height=12, border_radius=6, bgcolor=self.colors['ready'])
         self.mouse_model = self.text(self.mouse_text(), 16, muted=True)
-        self.status_card = self.card(ft.Column([
-            ft.Row([ft.Column([ft.Row([self.dot, self.status]), self.message], expand=True), self.mascot]),
-            ft.Row([ft.Column([self.text('Eventi',16,muted=True), self.event_count], expand=True),
-                    ft.Column([self.text('Durata',16,muted=True), self.duration], expand=True)]),
-            self.mouse_model,
-        ], spacing=14))
+        if self.skin == 'bambola':
+            # Large horse on the right, status and counters over the open space on the left.
+            self.mascot = ft.Container(self.horse(), right=-8, bottom=-4)
+            self.status_card = self.card(ft.Column([
+                ft.Stack([self.mascot,
+                          ft.Column([ft.Row([self.dot, self.status]), ft.Container(self.message, width=170)],
+                                    spacing=6, left=0, top=0),
+                          ft.Row([ft.Column([self.text('Eventi',16,muted=True), self.event_count], spacing=0),
+                                  ft.Column([self.text('Durata',16,muted=True), self.duration], spacing=0)],
+                                 spacing=24, left=0, bottom=0)],
+                         height=BAMBOLA_HERO[1] + 4, clip_behavior=ft.ClipBehavior.HARD_EDGE),
+                self.mouse_model,
+            ], spacing=10))
+        else:
+            self.status_card = self.card(ft.Column([
+                ft.Row([ft.Column([ft.Row([self.dot, self.status]), self.message], expand=True), self.mascot]),
+                ft.Row([ft.Column([self.text('Eventi',16,muted=True), self.event_count], expand=True),
+                        ft.Column([self.text('Durata',16,muted=True), self.duration], expand=True)]),
+                self.mouse_model,
+            ], spacing=14))
         self.record = self.button('Registra', self.record_clicked, self.colors['record'],
                                   ft.Icons.FIBER_MANUAL_RECORD, tooltip='F9')
         self.play = self.button('Riproduci', self.play_clicked, self.colors['play'],
@@ -261,7 +296,7 @@ class LinuxPanel:
                                          on_blur=self.preference_changed)
         self.skin_choice = ft.Dropdown(label=self.tr('Skin'),value=self.skin,text_size=16,
                                        options=[ft.DropdownOption(key=k,text=self.tr(v)) for k,v in
-                                                [('unicorno','Unicorno'),('palio','Palio')]],
+                                                [('bambola','Bambola'),('unicorno','Unicorno'),('palio','Palio')]],
                                        on_select=self.skin_changed)
         self.update_dot = ft.Container(width=14, height=14, border_radius=7)
         self.update_button = ft.Button(
@@ -290,21 +325,42 @@ class LinuxPanel:
         ],spacing=12,expand=True,scroll=ft.ScrollMode.AUTO)
         self.normal_view = ft.Row([self.main_column,self.options],spacing=16,expand=True)
         # Compact bar shown alone while recording or playing, as on Windows.
-        self.activity_horse = ft.Container(self.horse('registrazione', 48))
-        self.activity_status = self.text('Registrazione',22,True)
-        self.activity_count = self.text('',18)
-        self.activity_hint = self.text('',14,muted=True)
-        self.stop = ft.Button(content=self.text('Stop',24,True), icon=ft.Icons.STOP_ROUNDED,
-                              on_click=self.stop_clicked, bgcolor=self.colors['record'],
-                              color=self.colors['text'], width=140, height=72,
-                              style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=14)))
-        self.progress = ft.ProgressBar(value=0,color=self.colors['play'],bgcolor=self.colors['border'],visible=False)
-        self.activity_view = ft.WindowDragArea(ft.Column([
-            ft.Row([self.activity_horse,
-                    ft.Column([self.activity_status,self.activity_count,self.activity_hint],spacing=2,expand=True),
-                    self.stop], spacing=12),
-            self.progress,
-        ],spacing=8), maximizable=False, visible=False)
+        compact = self.skin == 'bambola'
+        self.activity_horse = ft.Container(self.horse('registrazione', 48, bar=True) if compact
+                                           else self.horse('registrazione', 48))
+        tight = {'style': ft.TextStyle(height=1.1)} if compact else {}  # line-height multiplier: three lines must fit in 69 px
+        self.activity_status = self.text('Registrazione',17 if compact else 22,True,**tight)
+        self.activity_count = self.text('',12 if compact else 18,**tight)
+        self.activity_hint = self.text('',10.5 if compact else 14,muted=True,**tight)
+        if compact:
+            self.stop = ft.Button(content=ft.Icon(ft.Icons.STOP_ROUNDED, color=self.colors['text'], size=22),
+                                  on_click=self.stop_clicked, bgcolor=self.colors['record'], width=44, height=40,
+                                  style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=9),
+                                                       padding=ft.Padding.all(0)))
+        else:
+            self.stop = ft.Button(content=self.text('Stop',24,True), icon=ft.Icons.STOP_ROUNDED,
+                                  on_click=self.stop_clicked, bgcolor=self.colors['record'],
+                                  color=self.colors['text'], width=140, height=72,
+                                  style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=14)))
+        self.progress = ft.ProgressBar(value=0,color=self.colors['play'],bgcolor=self.colors['border'],visible=False,
+                                       **({'bar_height': 3} if compact else {}))
+        if compact:
+            # 300x72 like a TinyTask-sized bar: horse head, three short lines, square Stop.
+            self.activity_view = ft.WindowDragArea(ft.Column([
+                ft.Row([self.activity_horse,
+                        ft.Column([self.activity_status,self.activity_count,self.activity_hint],spacing=0,expand=True,
+                                  alignment=ft.MainAxisAlignment.CENTER),
+                        ft.Container(self.stop, padding=ft.Padding.only(right=10))],
+                       spacing=8, vertical_alignment=ft.CrossAxisAlignment.CENTER, height=BAMBOLA_BAR[1]-6),
+                self.progress, ft.Container(height=3),
+            ],spacing=0), maximizable=False, visible=False)
+        else:
+            self.activity_view = ft.WindowDragArea(ft.Column([
+                ft.Row([self.activity_horse,
+                        ft.Column([self.activity_status,self.activity_count,self.activity_hint],spacing=2,expand=True),
+                        self.stop], spacing=12),
+                self.progress,
+            ],spacing=8), maximizable=False, visible=False)
         self.footer = ft.Row([
             ft.IconButton(ft.Icons.HELP_OUTLINE,on_click=self.help,tooltip=self.tr('Guida'),icon_size=28,
                           icon_color=self.colors['text'],bgcolor=self.colors['surface'],width=52,height=52),
@@ -338,17 +394,22 @@ class LinuxPanel:
         if active == self.active_view:
             return
         window = self.page.window
+        active_size = ACTIVE_SIZES.get(self.skin, ACTIVE_SIZE)
         if active:
             self.remember_window()
-            window.min_height = 140
-            window.width, window.height = ACTIVE_SIZE
+            window.min_width = min(420, active_size[0])
+            window.min_height = min(140, active_size[1])
+            window.width, window.height = active_size
+            self.page.padding = 0 if self.skin in ACTIVE_SIZES else 16
             try:
                 window.opacity = ACTIVE_OPACITY
             except (AttributeError, ValueError):
                 pass
             self.started = time.monotonic()
         else:
+            window.min_width = 420
             window.min_height = 380
+            self.page.padding = 16
             window.width = EXPANDED_WIDTH if self.expanded else self.normal_size[0]
             window.height = self.normal_size[1]
             try:
@@ -383,7 +444,7 @@ class LinuxPanel:
                                        'error' if state==State.ERROR else 'ready']
         horse_state = 'registrazione' if state==State.RECORDING else 'riproduzione' if active else 'errore' if state==State.ERROR else 'pronto'
         self.mascot.content = self.horse(horse_state)
-        self.activity_horse.content = self.horse(horse_state, 48)
+        self.activity_horse.content = self.horse(horse_state, 48, bar=True)
         self.activity_status.color = self.colors['record' if state==State.RECORDING else 'text']
         recorder = self.session.recorder
         count = recorder.current_event_count if recorder and state==State.RECORDING else len(self.session.macro.events)
@@ -406,6 +467,8 @@ class LinuxPanel:
             # Colored buttons keep their color when disabled: dim them so it shows.
             button.opacity = 0.45 if button.disabled else 1.0
         self.stop.disabled = state==State.STOPPING
+        if self.skin == 'bambola':
+            self.stop.bgcolor = self.colors['play' if state==State.PLAYING else 'record']
         self.stop.tooltip = 'F9' if state==State.RECORDING else 'F10'
         self.progress.visible = state in (State.PLAYING,State.STOPPING) and self.mode.value=='count'
         try:
@@ -594,7 +657,7 @@ class LinuxPanel:
         device=self.mouse.value
         self.colors=SKINS[self.skin]
         self.page.bgcolor=self.colors['background']
-        self.page.theme_mode=ft.ThemeMode.DARK if self.skin=='unicorno' else ft.ThemeMode.LIGHT
+        self.page.theme_mode=ft.ThemeMode.DARK if self.skin in DARK_SKINS else ft.ThemeMode.LIGHT
         self.page.theme=ft.Theme(font_family='Outfit',color_scheme_seed=self.colors['play'])
         self.build()
         self.repeat.value,self.mode.value,self.minutes.value=repeats,mode,minutes

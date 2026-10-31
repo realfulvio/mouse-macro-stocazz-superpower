@@ -132,7 +132,7 @@ class LinuxPanelTests(unittest.TestCase):
 
     # Compact active bar -------------------------------------------------
     def test_recording_and_playback_show_compact_semi_transparent_bar(self):
-        panel = self.panel()
+        panel = self.panel({'skin': 'unicorno'})
         self.macro(panel)
         panel.session.state = State.RECORDING
         panel.session.recorder = SimpleNamespace(current_event_count=42)
@@ -156,6 +156,46 @@ class LinuxPanelTests(unittest.TestCase):
         panel.render()
         self.assertEqual((window.width, window.height, window.opacity), (*linux_main.NORMAL_SIZE, 1.0))
         self.assertTrue(panel.normal_view.visible and panel.footer.visible)
+
+    def test_bambola_is_default_skin_with_micro_bar(self):
+        panel = self.panel()
+        self.assertEqual(panel.skin, 'bambola')
+        self.assertEqual(panel_model.read_settings(self.prefs)['skin'], 'bambola')
+        self.assertEqual(self.page.theme_mode, ft.ThemeMode.DARK)
+        self.assertEqual(self.page.bgcolor, panel_model.SKINS['bambola']['background'])
+        self.macro(panel)
+        panel.session.state = State.RECORDING
+        panel.session.recorder = SimpleNamespace(current_event_count=42)
+        panel.render()
+        window = self.page.window
+        self.assertEqual((window.width, window.height), (300, 72))
+        self.assertLessEqual(window.min_width, 300)
+        self.assertEqual(self.page.padding, 0)
+        self.assertEqual(panel.activity_hint.value, 'F9 stop')
+        self.assertTrue(panel.activity_count.value.startswith('42 eventi · 00:0'))
+        self.assertLessEqual(panel.stop.height, 44)
+        panel.session.recorder = None
+        panel.session.state = State.PLAYING
+        panel.render()
+        self.assertEqual(panel.activity_hint.value, 'F10 stop · Ctrl+Alt+F11')
+        panel.session.state = State.READY
+        panel.render()
+        self.assertEqual((window.width, window.height, window.min_width), (*linux_main.NORMAL_SIZE, 420))
+        self.assertEqual(self.page.padding, 16)
+
+    def test_bambola_horse_assets_exist_for_every_state(self):
+        root = Path(linux_main.__file__).parent / 'assets' / 'horses'
+        for state in ('pronto', 'registrazione', 'riproduzione', 'errore'):
+            self.assertTrue((root / f'bambola_{state}.webp').is_file())
+            self.assertTrue((root / f'bambola_{state}.png').is_file())
+
+    def test_skin_can_switch_from_bambola_and_back(self):
+        panel = self.panel()
+        for skin in ('unicorno', 'palio', 'bambola'):
+            panel.skin_choice.value = skin
+            panel.skin_changed()
+            self.assertEqual(panel.skin, skin)
+            self.assertEqual(self.saved()['skin'], skin)
 
     def test_compact_bar_counters_for_unlimited_and_duration_modes(self):
         panel = self.panel(language='en')
