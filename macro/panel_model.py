@@ -10,7 +10,7 @@ from .engine import PlaybackOptions, LoopMode
 
 # The Linux package has its own release line (tags linux-v*); the Windows
 # VERSION in macro/session.py is unrelated.
-LINUX_VERSION = '1.1.0'
+LINUX_VERSION = '1.1.1'
 
 SKINS = {
     'unicorno': dict(background='#1A0F2E', surface='#2A1642', border='#4B2A7A',
