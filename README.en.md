@@ -8,7 +8,7 @@ A small always-on-top panel for Windows and Linux: no installer, no Python to in
 </p>
 
 <p align="center">
-<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.1.2"><b>⬇ Download for Windows</b></a>
+<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.1.3"><b>⬇ Download for Windows</b></a>
 · <a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.1.1"><b>⬇ Download for Linux</b></a>
 · <a href="GUIDA-ITALIANA.md">Italian guide</a>
 · <a href="docs/ESITO-COLLAUDO-v1.1.1.md">Test report</a>
@@ -40,19 +40,19 @@ The script downloads the official release from GitHub, verifies its SHA-256, ext
 
 ## Other ways to install
 
-1. Download `MouseMacroStocazzSuperpower-Windows-v1.1.2.zip` from the [release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.1.2).
+1. Download `MouseMacroStocazzSuperpower-Windows-v1.1.3.zip` from the [release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.1.3).
 2. Extract the **whole** ZIP into a folder.
-3. Run `Mouse Macro v1.1.2.exe`. If Windows blocks it, run `Mouse Macro v1.1.2 (senza exe).cmd` instead.
+3. Run `Mouse Macro v1.1.3.exe` and answer **Yes** (*Sì*): it installs into your user folder (no administrator rights) and creates Start menu and Desktop shortcuts; uninstall it from *Settings → Installed apps*. **No** runs it from the ZIP without installing. If Windows blocks the exe, run `Mouse Macro v1.1.3 (senza exe).cmd` instead.
 
 Requires x64 Windows; the exe also needs .NET Framework 4 (included in Windows 10/11), the `.cmd` does not. Python is bundled. The interface is in Italian. The SHA-256 of the ZIP is published with each release.
 
 ### Windows blocks the exe?
 
-The `.exe` launcher is not code-signed, so SmartScreen or Windows 11 *Smart App Control* may block it (*"An application control policy has blocked this file"*). The two exe-free ways, the PowerShell command above and the **`Mouse Macro v1.1.2 (senza exe).cmd`** file in the ZIP, were tested with Smart App Control in v1.1.0 (Windows 11 build 26300, [previous report](docs/ESITO-COLLAUDO-v1.1.0.md)); SAC acceptance was not repeated for v1.1.1. The `.cmd` starts the PSF-signed `pythonw.exe` directly with the same files. If SmartScreen warns, choose *More info → Run anyway*; if it still blocks, right-click the ZIP → *Properties* → **Unblock** before extracting.
+The `.exe` launcher is not code-signed, so SmartScreen or Windows 11 *Smart App Control* may block it (*"An application control policy has blocked this file"*). The two exe-free ways, the PowerShell command above and the **`Mouse Macro v1.1.3 (senza exe).cmd`** file in the ZIP, were tested with Smart App Control in v1.1.0 (Windows 11 build 26300, [previous report](docs/ESITO-COLLAUDO-v1.1.0.md)); SAC acceptance was not repeated for v1.1.1, v1.1.2 and v1.1.3. The `.cmd` starts the PSF-signed `pythonw.exe` directly with the same files. If SmartScreen warns, choose *More info → Run anyway*; if it still blocks, right-click the ZIP → *Properties* → **Unblock** before extracting.
 
 If these are blocked on your PC too, please open an [issue](https://github.com/realfulvio/mouse-macro-stocazz-superpower/issues).
 
-Version 1.1.2 brings the already open panel back into view (even when minimized) when you open it again; the engine is unchanged from 1.1.1. [Portable download](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.1.2/MouseMacroStocazzSuperpower-Windows-Portable.zip).
+Version 1.1.3 installs itself with a double click on the exe (Start menu, Desktop, *Installed apps*) and checks for updates at startup; the engine is unchanged from 1.1.2. [Portable download](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.1.3/MouseMacroStocazzSuperpower-Windows-Portable.zip).
 
 ## What it does
 
