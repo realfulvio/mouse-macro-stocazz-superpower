@@ -12,7 +12,7 @@ import threading
 import time
 from typing import Callable
 
-from evdev import InputDevice, UInput, ecodes, list_devices
+from evdev import InputDevice, UInput, UInputError, ecodes, list_devices
 
 from .events import (
     LEFT_DOWN,
@@ -27,6 +27,14 @@ from .events import (
 )
 
 VIRTUAL_DEVICE_NAME = "MouseMacroStudio Virtual Mouse"
+# A new uinput device is not used until the compositor (libinput) has opened it:
+# events written earlier are dropped, so the first movements of a replay were lost
+# and every following click landed off target. Likewise, destroying the device
+# right after the last event can drop the final button release.
+UINPUT_SETTLE_SECONDS = 0.5
+UINPUT_DRAIN_SECONDS = 0.1
+UINPUT_DENIED = ('Impossibile creare il mouse virtuale: /dev/uinput non disponibile o senza permessi. '
+                 'Premi "Concedi accesso" nel pannello.')
 
 HOTKEY_RECORD = 1
 HOTKEY_PLAY = 2
@@ -178,13 +186,24 @@ _CAPABILITIES = {
 
 
 class LinuxPlayer:
-    def __init__(self):
+    def __init__(self, settle: float = UINPUT_SETTLE_SECONDS):
         self._ui: UInput | None = None
         self._held: set[str] = set()
+        self._settle = settle
+        # Create the device now: permission errors reach the panel before playback
+        # starts, and the settle pause is spent before the first event.
+        self._ensure()
 
     def _ensure(self) -> UInput:
         if self._ui is None:
-            self._ui = UInput(_CAPABILITIES, name=VIRTUAL_DEVICE_NAME)
+            try:
+                self._ui = UInput(_CAPABILITIES, name=VIRTUAL_DEVICE_NAME)
+            except PermissionError as error:
+                raise PermissionError(UINPUT_DENIED) from error
+            except (OSError, UInputError) as error:  # /dev/uinput missing or not writable
+                raise PermissionError(UINPUT_DENIED) from error
+            if self._settle:
+                time.sleep(self._settle)
         return self._ui
 
     def close_tab(self) -> None:
@@ -269,6 +288,8 @@ class LinuxPlayer:
             try:
                 self.release_held(set(self._held))
             finally:
+                if self._settle:
+                    time.sleep(UINPUT_DRAIN_SECONDS)
                 self._ui.close()
                 self._ui = None
 
