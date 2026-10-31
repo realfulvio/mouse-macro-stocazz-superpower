@@ -51,9 +51,9 @@ Apri le opzioni, clicca sul numero e usa Ctrl+A per sostituirlo. Sono ammessi da
 
 Il pannello mostra il modello comunicato dal driver del mouse. Se rileva più dispositivi, indica il primo modello e quanti altri sono presenti; il replay resta globale. I dispositivi senza un nome di prodotto possono comparire come HID o PS/2.
 
-## Linux (release linux-v1.1.0)
+## Linux (release linux-v1.1.1)
 
-La versione Linux si scarica dalla release [linux-v1.1.0](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.1.0) oppure con un comando nel terminale:
+La versione Linux si scarica dalla release [linux-v1.1.1](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.1.1) oppure con un comando nel terminale:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/realfulvio/mouse-macro-stocazz-superpower/main/install.sh | bash
