@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 
 RULE_FILE = '/etc/udev/rules.d/70-mouse-macro.rules'
 # Kept identical to scripts/setup-linux-input.sh (checked by the tests).
@@ -196,21 +197,32 @@ def show_message(title, text):
     return None
 
 
-def startup_failure(log_folder, language='it'):
+def has_display(env=None):
+    env = os.environ if env is None else env
+    return bool(env.get('DISPLAY') or env.get('WAYLAND_DISPLAY'))
+
+
+def startup_failure(log_folder, language='it', no_display=False):
     """Called when the window never opened: explain why and where the log is."""
     missing = []
-    clients = flet_clients()
+    clients = [] if no_display else flet_clients()
     if clients:
         missing = missing_libraries(clients[0])
     log = Path(log_folder) / 'errore-avvio.log'
     if language == 'en':
         title = 'Mouse Macro could not start'
-        text = (f'Missing system libraries: {", ".join(missing)}.\n\n{install_hint(missing)}'
-                if missing else f'The window could not be opened. Details in {log}')
+        if no_display:
+            text = 'No graphical session (DISPLAY and WAYLAND_DISPLAY are empty): start it from the desktop.'
+        else:
+            text = (f'Missing system libraries: {", ".join(missing)}.\n\n{install_hint(missing)}'
+                    if missing else f'The window could not be opened. Details in {log}')
     else:
         title = 'Mouse Macro non si è avviato'
-        text = (f'Mancano librerie di sistema: {", ".join(missing)}.\n\n{install_hint(missing)}'
-                if missing else f'Impossibile aprire la finestra. Dettagli in {log}')
+        if no_display:
+            text = 'Nessuna sessione grafica (DISPLAY e WAYLAND_DISPLAY vuote): avvialo dal desktop.'
+        else:
+            text = (f'Mancano librerie di sistema: {", ".join(missing)}.\n\n{install_hint(missing)}'
+                    if missing else f'Impossibile aprire la finestra. Dettagli in {log}')
     try:
         log.parent.mkdir(parents=True, exist_ok=True)
         with open(log, 'a', encoding='utf-8') as stream:
@@ -218,5 +230,8 @@ def startup_failure(log_folder, language='it'):
                          f'DISPLAY={os.environ.get("DISPLAY", "")} WAYLAND_DISPLAY={os.environ.get("WAYLAND_DISPLAY", "")}\n\n')
     except OSError:
         pass
-    show_message(title, text.strip())
+    if no_display:
+        print(f'{title}: {text}', file=sys.stderr)
+    else:
+        show_message(title, text.strip())
     return missing
