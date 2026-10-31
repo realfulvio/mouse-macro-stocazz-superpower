@@ -20,7 +20,7 @@ NOTIFYICON_VERSION_4 = 4
 ICON_ID = 1
 
 # Identificatori delle voci di menu (restituiti da TrackPopupMenu).
-SHOW, RECORD, PLAY, STOP_ALL, CLOSE_TO_TRAY, QUIT = 1, 2, 3, 4, 5, 6
+SHOW, RECORD, PLAY, STOP_ALL, CLOSE_TO_TRAY, QUIT, SETTINGS = 1, 2, 3, 4, 5, 6, 7
 MF_STRING, MF_CHECKED, MF_GRAYED, MF_SEPARATOR = 0, 8, 3, 0x800
 
 
@@ -33,6 +33,7 @@ def menu_items(visible: bool, close_to_tray: bool, busy: bool = False):
         (PLAY, 'Riproduci · F10', MF_STRING),
         (STOP_ALL, 'Ferma tutto · Ctrl+Alt+F11', MF_STRING),
         (None, None, MF_SEPARATOR),
+        (SETTINGS, 'Impostazioni e mod…', MF_STRING),
         (CLOSE_TO_TRAY, 'Chiudi nel tray', MF_CHECKED if close_to_tray else MF_STRING),
         (None, None, MF_SEPARATOR),
         (QUIT, 'Esci', MF_STRING),
