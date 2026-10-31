@@ -40,6 +40,9 @@ class MONITORINFO(C.Structure):
     _fields_ = [('cbSize', W.DWORD), ('rcMonitor', W.RECT), ('rcWork', W.RECT), ('dwFlags', W.DWORD)]
 
 
+WINDOW_CLASS = 'MouseMacroSuperpower017'
+
+
 def api(lib, name, result, args):
     fn = getattr(lib, name)
     fn.restype, fn.argtypes = result, args
@@ -64,6 +67,7 @@ api(U, 'SetFocus', W.HWND, [W.HWND])
 api(U, 'WindowFromPoint', W.HWND, [W.POINT])
 api(U, 'EnableWindow', W.BOOL, [W.HWND, W.BOOL])
 api(U, 'ShowWindow', W.BOOL, [W.HWND, C.c_int])
+api(U, 'FindWindowW', W.HWND, [W.LPCWSTR, W.LPCWSTR])
 api(U, 'CreatePopupMenu', W.HMENU, [])
 api(U, 'AppendMenuW', W.BOOL, [W.HMENU, W.UINT, C.c_size_t, W.LPCWSTR])
 api(U, 'TrackPopupMenu', C.c_int, [W.HMENU, W.UINT, C.c_int, C.c_int, C.c_int, W.HWND, C.c_void_p])
@@ -148,7 +152,7 @@ class Panel:
         self.instance = K.GetModuleHandleW(None)
         icon = U.LoadImageW(None,str(Path(__file__).resolve().parent/'assets'/'icon.ico'),1,0,0,0x10|0x40)
         wc = WNDCLASS(0, self.proc, 0, 0, self.instance, icon,
-                      U.LoadCursorW(None, C.c_void_p(32512)), W.HBRUSH(16), None, 'MouseMacroSuperpower017')
+                      U.LoadCursorW(None, C.c_void_p(32512)), W.HBRUSH(16), None, WINDOW_CLASS)
         if not U.RegisterClassW(C.byref(wc)):
             raise C.WinError()
         dpi = U.GetDpiForSystem()
@@ -917,6 +921,13 @@ class Panel:
                 U.DispatchMessageW(C.byref(msg))
 
 
+def show_running_panel():
+    hwnd = U.FindWindowW(WINDOW_CLASS, None)
+    if hwnd:
+        U.ShowWindow(hwnd, 9)  # SW_RESTORE: also un-minimizes; the panel never takes focus
+    return bool(hwnd)
+
+
 def main():
     wait = '--wait-for-exit' in sys.argv  # relaunch after an update: let the old instance close first
     deadline = time.monotonic() + 20
@@ -924,9 +935,11 @@ def main():
         mutex = K.CreateMutexW(None, False, 'Local\\MouseMacroSuperpower017')
         if K.GetLastError() != 183:
             break
-        # Second launch leaves the original session and its global hotkeys alone.
+        # Second launch leaves the original session and its global hotkeys alone,
+        # but shows its panel: a double click on a minimized copy did nothing visible.
         K.CloseHandle(mutex)
         if not wait or time.monotonic() > deadline:
+            show_running_panel()
             return
         time.sleep(0.3)
     try:

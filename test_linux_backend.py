@@ -3,6 +3,7 @@ import unittest
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
+from macro.panel_model import LINUX_VERSION
 from macro.events import LEFT_DOWN, LEFT_UP, MIDDLE_DOWN, MIDDLE_UP, MOVE_REL, RIGHT_DOWN, RIGHT_UP, WHEEL, MacroEvent
 
 if sys.platform == 'linux':
@@ -156,7 +157,27 @@ class LinuxBackendTests(unittest.TestCase):
                     self.assertTrue(data['checks']['linux_panel_creation'])
                     self.assertIn(type(error).__name__, data['environment']['uinput'])
                     self.assertEqual(data['environment']['detected_mouse_count'], 0)
-                    self.assertEqual(data['linux_version'], '1.0.0')
+                    self.assertEqual(data['linux_version'], LINUX_VERSION)
+
+    def test_player_creates_virtual_mouse_upfront_and_waits_for_the_compositor(self):
+        calls = []
+        with patch.object(backend, 'UInput', side_effect=lambda *a, **k: calls.append('create') or MagicMock()), \
+                patch.object(backend.time, 'sleep', side_effect=lambda s: calls.append(s)):
+            player = backend.LinuxPlayer()
+            self.assertEqual(calls, ['create', backend.UINPUT_SETTLE_SECONDS])
+            player.apply_event(MacroEvent(0, MOVE_REL, dx=1, dy=1))
+            self.assertEqual(calls, ['create', backend.UINPUT_SETTLE_SECONDS])
+            player.close()
+            self.assertEqual(calls[-1], backend.UINPUT_DRAIN_SECONDS)
+
+    def test_player_turns_uinput_errors_into_a_readable_message(self):
+        for error in (PermissionError('denied'), backend.UInputError('"/dev/uinput" cannot be opened for writing')):
+            with self.subTest(error=type(error).__name__), patch.object(backend, 'UInput', side_effect=error):
+                with self.assertRaises(PermissionError) as caught:
+                    backend.LinuxPlayer()
+                self.assertEqual(str(caught.exception), backend.UINPUT_DENIED)
+                self.assertIs(caught.exception.__cause__, error)
+
 
 if __name__ == '__main__':
     unittest.main()
