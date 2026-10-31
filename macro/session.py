@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import threading
 from enum import Enum
-from .events import Macro, BUTTON_OF_DOWN, BUTTON_OF_UP, LEFT_DOWN, MOVE_REL
+from .events import Macro, BUTTON_OF_DOWN, BUTTON_OF_UP, KEY_DOWN, KEY_UP, LEFT_DOWN, MOVE_REL
 from .engine import play, PlaybackEnd, PlaybackOptions, LoopMode
 import math
 
@@ -21,8 +21,15 @@ class State(Enum):
 
 def validate_gestures(events):
     held = set()
+    keys = set()
     for event in events:
-        if event.kind in BUTTON_OF_DOWN:
+        if event.kind == KEY_DOWN:
+            keys.add(event.key)   # la ripetizione automatica del tasto non è un errore
+        elif event.kind == KEY_UP:
+            if event.key not in keys:
+                raise ValueError('La macro contiene un tasto rilasciato senza pressione. Registra di nuovo.')
+            keys.remove(event.key)
+        elif event.kind in BUTTON_OF_DOWN:
             name = BUTTON_OF_DOWN[event.kind]
             if name in held:
                 raise ValueError('La macro contiene una pressione duplicata. Registra di nuovo.')
@@ -34,7 +41,9 @@ def validate_gestures(events):
             held.remove(name)
     if held:
         raise ValueError('Registrazione fermata con un pulsante premuto. Registra di nuovo il gesto completo.')
-    if not any(e.kind in BUTTON_OF_DOWN or e.kind == 'wheel' for e in events):
+    if keys:
+        raise ValueError('Registrazione fermata con un tasto premuto. Registra di nuovo.')
+    if not any(e.kind in BUTTON_OF_DOWN or e.kind == 'wheel' or e.kind == KEY_DOWN for e in events):
         raise ValueError('Nessun clic o rotella nella macro. Registra i gesti del mouse.')
 
 
@@ -101,7 +110,7 @@ class Session:
                     validate_gestures(events)
                     # Remove only the initial idle cursor path, never a drag or
                     # an arbitrary suffix; app gestures were excluded at source.
-                    first = next(i for i, e in enumerate(events) if e.kind in BUTTON_OF_DOWN or e.kind == 'wheel')
+                    first = next(i for i, e in enumerate(events) if e.kind in BUTTON_OF_DOWN or e.kind in ('wheel', KEY_DOWN))
                     if self.platform == 'windows':
                         events = events[first:]
                     base = events[0].t
@@ -225,6 +234,22 @@ class Session:
                 self.error(error)
                 return False
             self.message = 'Macro salvata.'
+        self.notify()
+        return True
+
+    def export(self, path, repeats=1, speed=1, slow=False, human=False, next_tab=False):
+        """Salva la macro come coppia .mmr + .cmd avviabile con un doppio clic (vedi macro.export)."""
+        from .export import export_launcher
+        with self.lock:
+            if self.state not in (State.READY, State.ERROR):
+                return False
+            try:
+                validate_gestures(self.macro.events)
+                cmd, _mmr = export_launcher(self.macro, path, repeats, speed, slow, human, next_tab)
+            except Exception as error:
+                self.error(error)
+                return False
+            self.message = f'Macro avviabile creata: {cmd.name}. Serve Mouse Macro installato sul PC dove la apri.'
         self.notify()
         return True
 
