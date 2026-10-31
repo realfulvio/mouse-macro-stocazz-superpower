@@ -2,6 +2,7 @@
 from __future__ import annotations
 import ctypes as C
 from ctypes import wintypes as W
+import json
 import math
 from pathlib import Path
 import re
@@ -34,16 +35,37 @@ PALIO = dict(background='#F6E7C8', surface='#FFF6DF', alt='#EBD3A0', border='#D2
              record_hover='#D9533A', record_pressed='#9E2D18', record_bottom='#A93018', record_edge='#E8745C',
              play_hover='#2F78AD', play_pressed='#164767', play_bottom='#184E78',
              dot_ok='#7BE0A0', dot_new='#FFD36B', dot_off='#D9B7A0')
+BAMBOLA_DATA = json.loads((ROOT/'skins'/'bambola.json').read_text('utf-8'))  # declarative theme data
+BAMBOLA = BAMBOLA_DATA['palette']['windows']
 # `regions` crops the supplied unicorn PNGs (they carry catalog captions);
 # None means the whole, already tight-cropped, image.
 SKINS = {
+    # Bambola: full-body PNGs (560x400, from the il-maneggio clips); regions crop head and neck.
+    'bambola': dict(label='Bambola', prefix='bambola', colors=BAMBOLA,
+                    regions={state: tuple(box) for state, box in BAMBOLA_DATA['windows']['regions'].items()}),
     'unicorno': dict(label='Unicorno', prefix='unicorn', colors=UNICORN,
                      regions={'pronto': (180, 194, 126, 113), 'registrazione': (184, 191, 144, 114),
                               'riproduzione': (179, 181, 151, 119), 'errore': (209, 181, 134, 123)}),
     'palio': dict(label='Palio', prefix='palio', colors=PALIO, regions=None),
 }
-DEFAULT_SKIN = 'unicorno'
+DEFAULT_SKIN = 'bambola'
 CURRENT = {'skin': DEFAULT_SKIN}
+
+
+def register_mod_skins(infos):
+    """Replace the installed theme mods (macro.mods.ModInfo) in SKINS; keys are 'mod:<id>'."""
+    from macro import mods
+    for name in [n for n, v in SKINS.items() if v.get('mod')]:
+        del SKINS[name]
+    for info in infos:
+        if info.kind == 'theme':
+            try:
+                colors, regions, folder = mods.load_theme(info)
+            except (OSError, ValueError, KeyError):
+                continue
+            SKINS['mod:' + info.id] = dict(label=info.name, prefix=None, folder=folder, mod=True,
+                                           colors={**BAMBOLA, **colors}, regions=regions)
+
 COLORS = dict(UNICORN)
 
 def apply_skin(name):
@@ -121,8 +143,9 @@ class Theme:
         for path in (ROOT/'icons').glob('*.svg'): self.icons[path.stem]=ET.parse(path).getroot()
     def load_images(self):
         """(Re)load the mascot of the skin selected with apply_skin()."""
-        prefix=SKINS[CURRENT['skin']]['prefix']
-        images={state:ptrcall(D.GdipLoadImageFromFile,str(ROOT/'horses'/f'{prefix}_{state}.png')) for state in STATES}
+        skin=SKINS[CURRENT['skin']]
+        path=lambda state:(skin['folder']/f'{state}.png') if skin.get('folder') else ROOT/'horses'/f"{skin['prefix']}_{state}.png"
+        images={state:ptrcall(D.GdipLoadImageFromFile,str(path(state))) for state in STATES}
         sizes={}
         for state,image in images.items():
             w=C.c_uint();h=C.c_uint()
