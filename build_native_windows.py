@@ -40,7 +40,8 @@ def main():
         '-r',str(ROOT/'requirements-windows.txt')],check=True)
     shutil.copy2(ROOT/'windows_main.py',app/'windows_main.py')
     shutil.copy2(ROOT/'windows_visual.py',app/'windows_visual.py')
-    for folder in ('horses','icons','fonts'):
+    shutil.copy2(ROOT/'windows_settings.py',app/'windows_settings.py')
+    for folder in ('horses','icons','fonts','skins'):
         target_assets = app/'assets'/folder
         target_assets.mkdir(parents=True)
         for asset in (ROOT/'assets'/folder).iterdir():
@@ -49,7 +50,7 @@ def main():
     shutil.copy2(ROOT/'assets'/'icon.ico',app/'assets'/'icon.ico')
     macro = app/'macro'
     macro.mkdir()
-    for name in ('__init__.py','events.py','engine.py','session.py','windows_backend.py','win_dialogs.py','updater.py','mouse_devices.py'):
+    for name in ('__init__.py','events.py','engine.py','session.py','windows_backend.py','win_dialogs.py','updater.py','mouse_devices.py','win_tray.py','mods.py'):
         shutil.copy2(ROOT/'macro'/name,macro/name)
     for name in ('LICENSE','THIRD-PARTY-NOTICES.md','GUIDA-ITALIANA.md'):
         if (ROOT/name).exists():
