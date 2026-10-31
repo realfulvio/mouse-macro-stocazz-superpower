@@ -31,6 +31,34 @@ class PanelTests(unittest.TestCase):
         p.layout = layout
         return p
 
+    def update_panel(self, state=None, settings=None):
+        p=self.panel();p.session=SimpleNamespace(state=state or ui.State.READY,message='')
+        p.settings=dict(settings or {});p.dialog_open=False
+        p.update={'state':'checking','latest':None,'release':None}
+        p.install_update=MagicMock(return_value=False);p.write_settings=MagicMock();p.render=MagicMock()
+        return p
+
+    def test_startup_check_offers_new_version_and_remembers_no(self):
+        p=self.update_panel()
+        p.worker_result('update_checked','available',{'version':'9.0.0'},False)
+        p.install_update.assert_called_once_with(startup=True)
+        self.assertEqual(p.settings['skip_update'],'9.0.0')
+        p.install_update.reset_mock()
+        p.worker_result('update_checked','available',{'version':'9.0.0'},False)
+        p.install_update.assert_not_called()
+
+    def test_startup_check_never_interrupts_recording_or_replay(self):
+        for state in (ui.State.RECORDING, ui.State.PLAYING):
+            p=self.update_panel(state)
+            p.worker_result('update_checked','available',{'version':'9.0.0'},False)
+            p.install_update.assert_not_called()
+
+    def test_manual_check_and_current_version_ask_nothing(self):
+        p=self.update_panel()
+        p.worker_result('update_checked','available',{'version':'9.0.0'},True)
+        p.worker_result('update_checked','current',{'version':ui.VERSION},False)
+        p.install_update.assert_not_called()
+
     def test_edit_creation_notification_before_handle_assignment_is_ignored(self):
         p=self.panel();p.controls={};p.session=SimpleNamespace(state=ui.State.READY)
         p.read_repeats=MagicMock(side_effect=AssertionError('Handle not assigned yet'))
