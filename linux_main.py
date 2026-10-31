@@ -868,6 +868,11 @@ def run(language='it', argv=None):
         save_error_log(config_dir(), ''.join(traceback.format_exception(args.exc_type, args.exc_value,
                                                                           args.exc_traceback)))
     threading.excepthook = log_thread_error
+    if not linux_setup.has_display():
+        # Without a graphical session Flet falls back to a web server and tries to
+        # pip-install flet-web, which crashes inside the frozen binary: stop here.
+        linux_setup.startup_failure(config_dir(), language, no_display=True)
+        raise SystemExit(1)
     if os.environ.get('APPIMAGE'):
         # Portable copy: after the first double click it is also in the applications menu.
         linux_setup.integrate_appimage(os.environ['APPIMAGE'], Path(__file__).resolve().parent/'assets'/'icon.png')
