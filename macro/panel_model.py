@@ -8,11 +8,19 @@ from pathlib import Path
 
 from .engine import PlaybackOptions, LoopMode
 
+def load_skin(name):
+    """Declarative theme data (palette, clips, crops, sizes) shared by Linux and Windows."""
+    path = Path(__file__).resolve().parent.parent / 'assets' / 'skins' / f'{name}.json'
+    return json.loads(path.read_text('utf-8'))
+
+
 # The Linux package has its own release line (tags linux-v*); the Windows
 # VERSION in macro/session.py is unrelated.
 LINUX_VERSION = '1.1.1'
 
+BAMBOLA = load_skin('bambola')  # theme data lives in assets/skins/bambola.json
 SKINS = {
+    'bambola': BAMBOLA['palette']['linux'],
     'unicorno': dict(background='#1A0F2E', surface='#2A1642', border='#4B2A7A',
                      text='#F9F7FF', muted='#DED5EF', record='#FF2D93', play='#8B5CF6',
                      ready='#3ED072', warning='#FFC83D', error='#FF4D6D'),
@@ -20,6 +28,8 @@ SKINS = {
                  text='#3A1710', muted='#60452E', record='#C23B22', play='#1F5D8C',
                  ready='#2E8B4F', warning='#8A5A00', error='#B3261E'),
 }
+DEFAULT_SKIN = 'bambola'
+DARK_SKINS = ('unicorno', 'bambola')
 UPDATE_DOT = {'current': 'ready', 'available': 'warning'}  # other states: 'border'
 WINDOW_LIMITS = {'width': (420, 4000), 'height': (380, 4000), 'left': (-20000, 20000), 'top': (-20000, 20000)}
 
@@ -83,7 +93,7 @@ def read_settings(path):
     click = str(value.get('double_click_ms', '400'))
     # Input injection preferences (speed, next tab, human movement) are reset
     # on every launch, as on Windows; only presentation and devices persist.
-    return {'skin': value.get('skin') if value.get('skin') in SKINS else 'unicorno',
+    return {'skin': value.get('skin') if value.get('skin') in SKINS else DEFAULT_SKIN,
             'device': value.get('device') if isinstance(value.get('device'), str) else None,
             'double_click_ms': click if click.isdecimal() and 100 <= int(click) <= 1000 else '400',
             'check_updates': value.get('check_updates', True) if isinstance(value.get('check_updates', True), bool) else True,

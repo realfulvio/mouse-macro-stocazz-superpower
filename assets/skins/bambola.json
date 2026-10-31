@@ -1,0 +1,123 @@
+{
+ "id": "bambola",
+ "label": "Bambola",
+ "dark": true,
+ "source": "clip WebM VP9 con alfa del repo il-maneggio, public/horses/video/bambola-s14 (immagini dell'autore)",
+ "states": {
+  "pronto": "riposo",
+  "registrazione": "ascolta",
+  "riproduzione": "contento",
+  "errore": "nitrito"
+ },
+ "images": {
+  "animated": "horses/bambola_{state}.webp",
+  "still": "horses/bambola_{state}.png",
+  "frame": [
+   480,
+   343
+  ]
+ },
+ "palette": {
+  "linux": {
+   "background": "#1A1024",
+   "surface": "#2A1A3C",
+   "border": "#54396F",
+   "text": "#FAF4FF",
+   "muted": "#E9CF9F",
+   "record": "#D9622B",
+   "play": "#8B5CF6",
+   "ready": "#3ED072",
+   "warning": "#F2C14E",
+   "error": "#FF4D6D"
+  },
+  "windows": {
+   "background": "#1A1024",
+   "surface": "#2A1A3C",
+   "alt": "#3A2554",
+   "border": "#54396F",
+   "text": "#FAF4FF",
+   "muted": "#E9CF9F",
+   "record": "#D9622B",
+   "play": "#8B5CF6",
+   "ready": "#3ED072",
+   "warning": "#F2C14E",
+   "error": "#FF4D6D",
+   "disabled": "#4A3A5F",
+   "faded": "#9A88B5",
+   "header_top": "#2E1B44",
+   "header_bottom": "#22132F",
+   "header_text": "#FAF4FF",
+   "header_muted": "#E9CF9F",
+   "header_a": "#E9CF9F",
+   "header_b": "#D9622B",
+   "chrome": "#2E1B44",
+   "chrome_hover": "#3A2554",
+   "surface_bottom": "#22132F",
+   "surface_hover": "#35214D",
+   "input": "#22132F",
+   "button": "#2E1B44",
+   "button_hover": "#3A2554",
+   "on_accent": "#FFFFFF",
+   "record_hover": "#E57A44",
+   "record_pressed": "#B24D1E",
+   "record_bottom": "#C0521F",
+   "record_edge": "#EF9568",
+   "play_hover": "#A78BFA",
+   "play_pressed": "#6D48D7",
+   "play_bottom": "#6740AF",
+   "dot_ok": "#3ED072",
+   "dot_new": "#F2C14E",
+   "dot_off": "#9A88B5"
+  }
+ },
+ "linux": {
+  "hero": [
+   270,
+   193
+  ],
+  "bar_head": {
+   "size": [
+    80,
+    72
+   ],
+   "crop": [
+    24,
+    0,
+    187,
+    169
+   ]
+  },
+  "active_size": [
+   300,
+   72
+  ]
+ },
+ "windows": {
+  "regions": {
+   "pronto": [
+    30,
+    0,
+    230,
+    205
+   ],
+   "registrazione": [
+    30,
+    0,
+    230,
+    205
+   ],
+   "riproduzione": [
+    20,
+    0,
+    240,
+    214
+   ],
+   "errore": [
+    0,
+    0,
+    260,
+    232
+   ]
+  }
+ }
+}

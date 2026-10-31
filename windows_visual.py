@@ -2,6 +2,7 @@
 from __future__ import annotations
 import ctypes as C
 from ctypes import wintypes as W
+import json
 import math
 from pathlib import Path
 import re
@@ -34,15 +35,20 @@ PALIO = dict(background='#F6E7C8', surface='#FFF6DF', alt='#EBD3A0', border='#D2
              record_hover='#D9533A', record_pressed='#9E2D18', record_bottom='#A93018', record_edge='#E8745C',
              play_hover='#2F78AD', play_pressed='#164767', play_bottom='#184E78',
              dot_ok='#7BE0A0', dot_new='#FFD36B', dot_off='#D9B7A0')
+BAMBOLA_DATA = json.loads((ROOT/'skins'/'bambola.json').read_text('utf-8'))  # declarative theme data
+BAMBOLA = BAMBOLA_DATA['palette']['windows']
 # `regions` crops the supplied unicorn PNGs (they carry catalog captions);
 # None means the whole, already tight-cropped, image.
 SKINS = {
+    # Bambola: full-body PNGs (560x400, from the il-maneggio clips); regions crop head and neck.
+    'bambola': dict(label='Bambola', prefix='bambola', colors=BAMBOLA,
+                    regions={state: tuple(box) for state, box in BAMBOLA_DATA['windows']['regions'].items()}),
     'unicorno': dict(label='Unicorno', prefix='unicorn', colors=UNICORN,
                      regions={'pronto': (180, 194, 126, 113), 'registrazione': (184, 191, 144, 114),
                               'riproduzione': (179, 181, 151, 119), 'errore': (209, 181, 134, 123)}),
     'palio': dict(label='Palio', prefix='palio', colors=PALIO, regions=None),
 }
-DEFAULT_SKIN = 'unicorno'
+DEFAULT_SKIN = 'bambola'
 CURRENT = {'skin': DEFAULT_SKIN}
 COLORS = dict(UNICORN)
 
