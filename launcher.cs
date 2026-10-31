@@ -183,12 +183,14 @@ class Launcher {
             MessageBox.Show("Alcuni file sono ancora in uso (il pannello è aperto?): " + error.Message + "\n" + Packages,
                             "Mouse Macro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
-        // A running exe cannot delete itself: cmd removes it once this process has exited.
-        ProcessStartInfo later = new ProcessStartInfo("cmd.exe", "/c ping -n 3 127.0.0.1 >nul & del /f /q \"" + Installed + "\"");
+        MessageBox.Show(Name + " è stato disinstallato.", "Mouse Macro", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        // A running exe cannot delete itself: cmd removes it once this process has exited
+        // (started last, after the message box, and retried for a few seconds).
+        ProcessStartInfo later = new ProcessStartInfo("cmd.exe", "/c for /l %i in (1,1,10) do (ping -n 2 127.0.0.1 >nul & del /f /q \"" +
+                                                      Installed + "\" 2>nul & if not exist \"" + Installed + "\" exit /b 0)");
         later.CreateNoWindow = true;
         later.UseShellExecute = false;
         Process.Start(later);
-        MessageBox.Show(Name + " è stato disinstallato.", "Mouse Macro", MessageBoxButtons.OK, MessageBoxIcon.Information);
         return 0;
     }
 }
