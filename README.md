@@ -118,7 +118,7 @@ La versione Linux ha una release separata, **[linux-v1.1.0](https://github.com/r
 **Doppio clic (consigliato).** Scarica [`MouseMacroStocazzSuperpower-Linux-v1.1.0-x86_64.AppImage`](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/linux-v1.1.0/MouseMacroStocazzSuperpower-Linux-v1.1.0-x86_64.AppImage): è un unico file che contiene tutto, come lo ZIP portable di Windows.
 1. La prima volta rendilo eseguibile: tasto destro → Proprietà → Permessi → *Eseguibile* (oppure `chmod +x` sul file). I browser tolgono questo permesso a ogni file scaricato, quindi serve una volta sola.
 2. Doppio clic. Parte in italiano se il sistema è in italiano, altrimenti in inglese, e da quel momento compare anche nel menu delle applicazioni con la sua icona.
-3. Se in alto compare **Concedi accesso**, premilo: il sistema chiede la password (la normale finestra di autorizzazione del desktop, niente terminale) e il mouse e i tasti F9/F10 funzionano subito.
+3. Se in alto compare **Concedi accesso**, premilo: il sistema chiede la password (la normale finestra di autorizzazione del desktop, niente terminale) e il mouse e i tasti F9/F10 funzionano subito. Nella modalità gioco di Steam (gamescope) la finestra della password non c'è: passa al Desktop e premilo lì.
 
 Dal pallino aggiornamenti l'AppImage si aggiorna da sola: scarica la nuova AppImage accanto a quella vecchia, ne verifica lo SHA-256 e la sostituisce. Se manca una libreria di sistema (per esempio `libsecret`), al doppio clic compare un messaggio con il pacchetto da installare invece di non succedere nulla.
 
