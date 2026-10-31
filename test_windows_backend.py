@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 if sys.platform == 'win32':
     from macro import windows_backend as backend
-from macro.events import (LEFT_DOWN,LEFT_UP,RIGHT_DOWN,RIGHT_UP,MIDDLE_DOWN,MIDDLE_UP,
+from macro.events import (KEY_DOWN,KEY_UP,LEFT_DOWN,LEFT_UP,RIGHT_DOWN,RIGHT_UP,MIDDLE_DOWN,MIDDLE_UP,
                           MOVE_ABS,WHEEL,MacroEvent)
 
 
@@ -34,6 +34,45 @@ class WindowsBackendTests(unittest.TestCase):
         self.assertEqual(backend.decode_snap(events[1].snap),pixels)
         self.assertTrue(all(events[i].snap for i in (1,3,5)))
         self.assertTrue(all(not events[i].snap for i in (0,2,4,6,7)))
+
+    def test_keyboard_recording_is_opt_in_and_skips_reserved_and_repeated_keys(self):
+        def key(vk):
+            return backend.keyboard.KeyCode.from_vk(vk)
+        with patch.object(backend.mouse,'Listener') as ml, patch.object(backend.keyboard,'Listener') as kl, \
+                patch.object(backend.time,'perf_counter',side_effect=[float(n) for n in range(100,140)]):
+            ml.return_value.is_alive.return_value=False
+            kl.return_value.is_alive.return_value=False
+            off=backend.WindowsRecorder()
+            off.start()
+            kl.assert_not_called()   # senza consenso la tastiera non viene nemmeno ascoltata
+            off.stop()
+            recorder=backend.WindowsRecorder(record_keyboard=True)
+            recorder.start()
+            kl.assert_called_once()
+            recorder._key_release(key(0x41))              # premuto prima di F9: ignorato
+            recorder._on_move(7,8)
+            for vk in (0x78,0x79,0x7A):                    # F9, F10, F11 non entrano mai nella macro
+                recorder._key_press(key(vk)); recorder._key_release(key(vk))
+            recorder._key_press(key(0x42)); recorder._key_press(key(0x42))   # ripetizione automatica
+            recorder._key_release(key(0x42))
+            recorder._key_press(key(0xA2))                 # Ctrl sinistro ancora premuto allo stop
+            recorder._key_press(key(0x43),injected=True)   # input iniettato: ignorato
+            events=recorder.stop()
+        keys=[(e.kind,e.key) for e in events if e.key]
+        self.assertEqual(keys,[(KEY_DOWN,'vk:66'),(KEY_UP,'vk:66'),(KEY_DOWN,'vk:162'),(KEY_UP,'vk:162')])
+        self.assertTrue(all((e.x,e.y)==(7,8) for e in events if e.key))
+
+    def test_player_sends_keys_with_extended_flag_and_releases_them(self):
+        player=self.player()
+        with patch.object(backend,'checked_input') as send:
+            player.apply_event(MacroEvent(0,KEY_DOWN,key='vk:37'))   # freccia sinistra
+            player.apply_event(MacroEvent(.1,KEY_UP,key='vk:37'))
+            player.apply_event(MacroEvent(.2,KEY_DOWN,key='vk:65'))
+            player.release_held({'key:vk:65'})
+        packets=[call.args[0].value.ki for call in send.call_args_list]
+        self.assertEqual([(p.wVk,p.dwFlags) for p in packets],
+                         [(37,1),(37,3),(65,0),(65,2)])
+        self.assertEqual(player._held_keys,set())
 
     def player(self):
         with patch.object(backend,'CheckedMouse'),patch.object(backend,'CheckedKeyboard'):

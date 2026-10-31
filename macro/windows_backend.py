@@ -81,6 +81,9 @@ class CheckedKeyboard(keyboard.Controller):
             ki=KEYBDINPUT(**key._parameters(is_press)))))
 
 from .events import (  # noqa: E402
+    KEY_DOWN,
+    KEY_PREFIX,
+    KEY_UP,
     LEFT_DOWN,
     LEFT_UP,
     MIDDLE_DOWN,
@@ -91,6 +94,7 @@ from .events import (  # noqa: E402
     WHEEL,
     MacroEvent,
 )
+from .keys import RESERVED_VKS, key_flags, key_name, vk_of_name, vk_of_pynput_key  # noqa: E402
 
 _CLICK_KIND = {
     (mouse.Button.left, True): LEFT_DOWN,
@@ -265,7 +269,8 @@ def decode_snap(snap: str) -> bytes:
 # ================= Registrazione =================
 
 class WindowsRecorder:
-    def __init__(self, excluded_window=None, capture_snapshots=True, browser_only=False):
+    def __init__(self, excluded_window=None, capture_snapshots=True, browser_only=False,
+                 record_keyboard=False):
         self._events: list[MacroEvent] = []
         self._raw_snaps: dict[int, bytes] = {}
         self._lock = threading.Lock()
@@ -281,6 +286,9 @@ class WindowsRecorder:
         self._held_buttons = set()
         self._keyboard_listener = None
         self._control_keys = set()
+        self.record_keyboard = record_keyboard
+        self._keys_down: set[str] = set()
+        self._last_xy = (0, 0)
 
     def _exclude(self, x, y) -> bool:
         if self.excluded_window is None:
@@ -304,20 +312,40 @@ class WindowsRecorder:
             on_move=self._on_move, on_click=self._on_click, on_scroll=self._on_scroll
         )
         self._listener.start()
-        if self.browser_only:
+        self._keys_down.clear()
+        self._last_xy = (0, 0)
+        if self.browser_only or self.record_keyboard:
             self._control_keys.clear()
             self._keyboard_listener = keyboard.Listener(on_press=self._key_press, on_release=self._key_release)
             self._keyboard_listener.start()
 
-    def _key_press(self, key):
-        if key in (keyboard.Key.ctrl, keyboard.Key.ctrl_l, keyboard.Key.ctrl_r):
-            self._control_keys.add(key)
-        if self._control_keys and (key in (keyboard.Key.tab, keyboard.Key.page_down, keyboard.Key.page_up)
-                or getattr(key, 'char', None) == 'w'):
-            self.error = "Non cambiare scheda mentre registri. Registra i task di un solo cavallo."
+    def _key_press(self, key, injected=False):
+        if self.browser_only:
+            if key in (keyboard.Key.ctrl, keyboard.Key.ctrl_l, keyboard.Key.ctrl_r):
+                self._control_keys.add(key)
+            if self._control_keys and (key in (keyboard.Key.tab, keyboard.Key.page_down, keyboard.Key.page_up)
+                    or getattr(key, 'char', None) == 'w'):
+                self.error = "Non cambiare scheda mentre registri. Registra i task di un solo cavallo."
+        if self.record_keyboard and not injected:
+            vk = vk_of_pynput_key(key)
+            if vk is None or vk in RESERVED_VKS:
+                return
+            name = key_name(vk)
+            if name in self._keys_down:
+                return  # ripetizione automatica del tasto tenuto premuto
+            self._keys_down.add(name)
+            self._append(MacroEvent(t=self._now(), kind=KEY_DOWN, x=self._last_xy[0],
+                                    y=self._last_xy[1], key=name))
 
-    def _key_release(self, key):
+    def _key_release(self, key, injected=False):
         self._control_keys.discard(key)
+        if self.record_keyboard and not injected:
+            vk = vk_of_pynput_key(key)
+            name = key_name(vk) if vk is not None else ""
+            if name in self._keys_down:  # il rilascio di un tasto premuto prima di F9 non conta
+                self._keys_down.discard(name)
+                self._append(MacroEvent(t=self._now(), kind=KEY_UP, x=self._last_xy[0],
+                                        y=self._last_xy[1], key=name))
 
     def _now(self) -> float:
         t = time.perf_counter()
@@ -332,11 +360,13 @@ class WindowsRecorder:
             self._events.append(evt)
 
     def _on_move(self, x, y, injected=False) -> None:
+        self._last_xy = (int(x), int(y))
         if not self._held_buttons and self._exclude(x, y):
             return
         self._append(MacroEvent(t=self._now(), kind=MOVE_ABS, x=int(x), y=int(y)))
 
     def _on_click(self, x, y, button, pressed, injected=False) -> None:
+        self._last_xy = (int(x), int(y))
         if pressed and self._exclude(x, y):
             self._ignored_buttons.add(button)
             return
@@ -365,6 +395,7 @@ class WindowsRecorder:
             self._held_buttons.discard(button)
 
     def _on_scroll(self, x, y, dx, dy, injected=False) -> None:
+        self._last_xy = (int(x), int(y))
         if self._exclude(x, y):
             return
         if self.browser_only and not self._check_record_target(x, y):
@@ -401,6 +432,12 @@ class WindowsRecorder:
             if self._listener.is_alive():
                 raise RuntimeError("Il registratore non si è arrestato.")
             self._listener = None
+        if self._keys_down:
+            # Tasto ancora premuto quando si ferma con F9: lo rilascia nella macro, così resta completa.
+            for name in sorted(self._keys_down):
+                self._append(MacroEvent(t=self._now(), kind=KEY_UP, x=self._last_xy[0],
+                                        y=self._last_xy[1], key=name))
+            self._keys_down.clear()
         with self._lock:
             for idx, raw in self._raw_snaps.items():
                 self._events[idx].snap = encode_snap(raw)
@@ -429,6 +466,7 @@ class WindowsPlayer:
         self._kbd = CheckedKeyboard()
         self._target_window = None
         self._held = set()
+        self._held_keys = set()
         self._layout = None
 
     def select_browser(self, evt: MacroEvent, layout: dict | None = None) -> str:
@@ -523,6 +561,18 @@ class WindowsPlayer:
         elif evt.kind == WHEEL:
             self._ctrl.position = (evt.x, evt.y)
             self._ctrl.scroll(0, evt.wheel)
+        elif evt.kind == KEY_DOWN:
+            self._held_keys.add(evt.key)
+            self._send_key(vk_of_name(evt.key), up=False)
+        elif evt.kind == KEY_UP:
+            self._send_key(vk_of_name(evt.key), up=True)
+            self._held_keys.discard(evt.key)
+
+    @staticmethod
+    def _send_key(vk: int, up: bool) -> None:
+        scan = _user32.MapVirtualKeyW(vk, 0)  # MAPVK_VK_TO_VSC
+        checked_input(INPUT(type=INPUT.KEYBOARD, value=INPUT_union(ki=KEYBDINPUT(
+            wVk=vk, wScan=scan, dwFlags=key_flags(vk, up), time=0, dwExtraInfo=0))))
 
     def wait_until_ready(
         self,
@@ -562,6 +612,14 @@ class WindowsPlayer:
         mapping = {"left": mouse.Button.left, "right": mouse.Button.right, "middle": mouse.Button.middle}
         error = None
         for name in held:
+            if name.startswith(KEY_PREFIX):
+                key = name[len(KEY_PREFIX):]
+                try:
+                    self._send_key(vk_of_name(key), up=True)
+                    self._held_keys.discard(key)
+                except Exception as caught:
+                    error = error or caught
+                continue
             btn = mapping.get(name)
             if btn:
                 try:
@@ -573,7 +631,7 @@ class WindowsPlayer:
             raise error
 
     def close(self) -> None:
-        self.release_held(set(self._held))
+        self.release_held(set(self._held) | {KEY_PREFIX + key for key in self._held_keys})
 
 
 # ================= Tasti rapidi globali =================
@@ -594,8 +652,9 @@ class GlobalHotkeys:
     """F9 / F10 / Ctrl+Alt+F11 funzionanti anche con il focus su un'altra finestra
     (es. il browser), tramite RegisterHotKey: nessun hook di tastiera."""
 
-    def __init__(self, on_hotkey: Callable[[int], None]):
+    def __init__(self, on_hotkey: Callable[[int], None], ids: tuple[int, ...] | None = None):
         self._on_hotkey = on_hotkey
+        self._ids = ids  # None = tutti; le macro avviabili registrano solo l'emergenza
         self._thread: threading.Thread | None = None
         self._thread_id: int | None = None
         self._ready = threading.Event()
@@ -617,6 +676,8 @@ class GlobalHotkeys:
         ]
         registered = []
         for hk_id, mods, vk, label in wanted:
+            if self._ids is not None and hk_id not in self._ids:
+                continue
             if user32.RegisterHotKey(None, hk_id, mods, vk):
                 registered.append(hk_id)
             else:

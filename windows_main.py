@@ -172,7 +172,8 @@ class Panel:
             f'Mouse Macro {VERSION} • hcok', self.style, x, y, w, h, None, None, self.instance, None)
         if not self.hwnd:
             raise C.WinError()
-        self.session = Session(lambda: WindowsRecorder(self.hwnd, capture_snapshots=False),
+        self.session = Session(lambda: WindowsRecorder(self.hwnd, capture_snapshots=False,
+                                                       record_keyboard=bool(self.settings.get('record_keyboard'))),
                                WindowsPlayer, lambda: self.post('render'), screen_geometry)
         # Status text children remain available to accessibility/QA without
         # overlaying the vector card. All actions are actual Win32 buttons.
@@ -638,10 +639,20 @@ class Panel:
     def skin_menu(self):
         items = [(100+i, info['label'], 8 if name == CURRENT['skin'] else 0)
                  for i, (name, info) in enumerate(SKINS.items())]
+        items += [(90, None, 0), (91, 'Registra anche la tastiera', 8 if self.settings.get('record_keyboard') else 0)]
         choice = self.popup(204, items)
-        if choice:
+        if choice == 91:
+            self.toggle_keyboard()
+        elif choice:
             self.set_skin(list(SKINS)[choice-100])
             self.render()
+
+    def toggle_keyboard(self):
+        on = not self.settings.get('record_keyboard', False)
+        self.settings['record_keyboard'] = on
+        self.write_settings()
+        self.session.message = ('Tastiera attiva: dalla prossima registrazione i tasti digitati finiscono nella macro, '
+                                'password comprese.' if on else 'Tastiera disattivata: si registra solo il mouse.')
 
     def update_menu(self):
         state, latest = self.update['state'], self.update['latest']
@@ -754,13 +765,19 @@ class Panel:
 
     def action(self, choice):
         if choice in (101,102):
-            from macro.win_dialogs import ask_save_path, ask_open_path
+            from macro.win_dialogs import ask_save_macro, ask_open_path
             self.dialog_open = True
             try:
-                path = ask_save_path('Salva macro', owner=self.hwnd) if choice == 101 else ask_open_path('Carica macro', owner=self.hwnd)
+                if choice == 101:
+                    picked = ask_save_macro('Salva macro', owner=self.hwnd)
+                    path, launcher = picked if picked else (None, False)
+                else:
+                    path, launcher = ask_open_path('Carica macro', owner=self.hwnd), False
             finally:
                 self.dialog_open = False
-            if path:
+            if path and launcher:
+                self.session.export(path, self.repeats, self.speed, self.slow, self.human, self.next_tab)
+            elif path:
                 self.session.save(path) if choice == 101 else self.session.load(path)
         elif choice == 42:
             self.human = not self.human
@@ -775,7 +792,7 @@ class Panel:
                 U.MessageBoxW(self.hwnd, '1. Registra i gesti del mouse in qualsiasi programma con F9.\n'
                     '2. Ferma la registrazione con F9.\n'
                     '3. Ripristina lo stato iniziale, scegli i giri e premi F10.\n'
-                    'Non registra i tasti della tastiera. Non chiude schede.\n\n'
+                    'Registra i tasti solo se lo attivi dal menu del pallino in alto (Registra anche la tastiera). Non chiude schede.\n\n'
                     'CAMBIA SCHEDA: tra un giro e l’altro invia Ctrl+Tab al programma attivo\n'
                     '(es. per passare alla scheda successiva del browser). Mai dopo l’ultimo giro.\n'
                     'Spento: la sequenza si ripete sempre nella stessa scheda.\n\n'
@@ -946,6 +963,9 @@ def show_running_panel():
 
 
 def main():
+    if '--run' in sys.argv:  # macro avviabile (.cmd): niente pannello, vedi macro/runner.py
+        from macro.runner import run_from_argv
+        sys.exit(run_from_argv(sys.argv[1:]))
     wait = '--wait-for-exit' in sys.argv  # relaunch after an update: let the old instance close first
     deadline = time.monotonic() + 20
     while True:
