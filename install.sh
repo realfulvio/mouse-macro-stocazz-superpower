@@ -136,6 +136,7 @@ Exec="$BINARY"
 Icon=$ROOT/current/icon.png
 Terminal=false
 Categories=Utility;
+StartupWMClass=com.appveyor.flet
 DESKTOP
 
 readable=0
