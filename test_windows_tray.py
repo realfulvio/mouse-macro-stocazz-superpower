@@ -12,7 +12,7 @@ class TrayLogicTests(unittest.TestCase):
         self.assertEqual(items[0][1], 'Nascondi pannello')
         self.assertEqual(t.menu_items(False, False)[0][1], 'Mostra pannello')
         ids = [i for i, _, _ in items if i]
-        self.assertEqual(ids, [t.SHOW, t.RECORD, t.PLAY, t.STOP_ALL, t.CLOSE_TO_TRAY, t.QUIT])
+        self.assertEqual(ids, [t.SHOW, t.RECORD, t.PLAY, t.STOP_ALL, t.SETTINGS, t.CLOSE_TO_TRAY, t.QUIT])
         self.assertEqual(len(set(ids)), len(ids))
         self.assertTrue(all(f == t.MF_SEPARATOR for i, _, f in items if i is None))
 
