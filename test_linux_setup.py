@@ -11,6 +11,7 @@ from macro import linux_setup
 ROOT = Path(__file__).resolve().parent
 
 
+@unittest.skipUnless(sys.platform == 'linux', 'Linux desktop integration')
 class LinuxSetupTests(unittest.TestCase):
     def test_rules_match_the_manual_script(self):
         script = (ROOT / 'scripts' / 'setup-linux-input.sh').read_text(encoding='utf-8')
@@ -18,7 +19,6 @@ class LinuxSetupTests(unittest.TestCase):
         self.assertIn(linux_setup.RULES, linux_setup.GRANT_SCRIPT)
         self.assertIn(f'mv -f {linux_setup.RULE_FILE}.tmp {linux_setup.RULE_FILE}', linux_setup.GRANT_SCRIPT)
 
-    @unittest.skipUnless(sys.platform == 'linux', 'POSIX shell')
     def test_grant_script_is_valid_shell(self):
         subprocess.run(['sh', '-n'], input=linux_setup.GRANT_SCRIPT, text=True, check=True)
 
