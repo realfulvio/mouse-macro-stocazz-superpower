@@ -244,6 +244,9 @@ class LinuxPanelTests(unittest.TestCase):
         with patch.object(linux_main.linux_setup, 'grant_access', return_value=(False, 'annullato')):
             asyncio.run(panel.grant_access())
         self.assertEqual(panel.session.message, 'Configurazione annullata.')
+        with patch.object(linux_main.linux_setup, 'grant_access', return_value=(False, 'senza_agente')):
+            asyncio.run(panel.grant_access())
+        self.assertEqual(panel.session.message, linux_main.ACCESS_NO_AGENT)
         panel.refresh_devices.assert_not_called()
         panel.devices, panel.access = [('/dev/input/event5', 'Mouse')], {'events': True, 'uinput': True}
         with patch.object(linux_main.linux_setup, 'grant_access', return_value=(True, '')), \

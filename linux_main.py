@@ -32,6 +32,8 @@ ACTIVE_OPACITY = 0.95     # like the Windows bar: slightly see-through
 ACCESS_TEXT = ('Il programma non può ancora leggere il mouse e i tasti F9/F10. Premi Concedi accesso: '
                'il sistema chiede la password una volta sola.')
 ACCESS_MANUAL = 'Il programma non può ancora leggere il mouse. Apri la Guida per configurare l’accesso una volta.'
+ACCESS_NO_AGENT = ('Il sistema non può mostrare la richiesta della password in questa sessione '
+                   '(per esempio la modalità gioco di Steam). Passa al Desktop e premi di nuovo Concedi accesso.')
 ACCESS_RELOGIN = ('Regola installata. Se il mouse non compare ancora, esci e rientra nella sessione, '
                   'poi premi Aggiorna elenco.')
 EN = {
@@ -85,6 +87,8 @@ EN = {
                  'the system asks for your password once.',
     ACCESS_MANUAL: 'The program cannot read the mouse yet. Open Help to configure access once.',
     'Accesso al mouse concesso.': 'Mouse access granted.',
+    ACCESS_NO_AGENT: 'This session cannot show the password prompt (for example Steam Game Mode). '
+                     'Switch to the Desktop and press Grant access again.',
     ACCESS_RELOGIN: 'Rule installed. If the mouse is still missing, log out and back in, then press Refresh devices.',
     'Configurazione annullata.': 'Setup cancelled.',
     UINPUT_DENIED: 'Cannot create the virtual mouse: /dev/uinput is missing or not accessible. '
@@ -629,7 +633,8 @@ class LinuxPanel:
         finally:
             self.dialog_open = False
         if not ok:
-            self.session.message = 'Configurazione annullata.' if detail == 'annullato' else detail
+            self.session.message = {'annullato': 'Configurazione annullata.',
+                                    'senza_agente': ACCESS_NO_AGENT}.get(detail, detail)
             self.render()
             return
         await asyncio.sleep(1)  # logind applies the seat ACLs right after the udev change event
