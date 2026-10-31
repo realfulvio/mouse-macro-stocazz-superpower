@@ -1,0 +1,72 @@
+# Publishes the exact files built and checked by an earlier run of
+# "Build Linux package" or "Build native Windows candidate": nothing is rebuilt.
+# Linux releases (tag linux-vX.Y.Z) are never marked latest, so /releases/latest
+# keeps pointing at the Windows release read by macro/updater.py.
+name: Publish release
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'linux or windows'
+        required: true
+        type: choice
+        options: [linux, windows]
+      run_id:
+        description: 'ID of the build run whose artifact is published'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version and tag from the sources of this commit
+        id: version
+        run: |
+          if [ '${{ inputs.platform }}' = linux ]; then
+            version=$(python3 -c 'import sys; sys.path.insert(0, "."); from macro.panel_model import LINUX_VERSION; print(LINUX_VERSION)')
+            echo "tag=linux-v$version" >> "$GITHUB_OUTPUT"
+            echo "artifact=linux-package" >> "$GITHUB_OUTPUT"
+            echo "latest=false" >> "$GITHUB_OUTPUT"
+            echo "title=Mouse Macro Stocazz Superpower Linux v$version" >> "$GITHUB_OUTPUT"
+          else
+            version=$(python3 -c 'import re; print(re.search(r"^VERSION = .(.+).$", open("macro/session.py").read(), re.M).group(1))')
+            echo "tag=v$version" >> "$GITHUB_OUTPUT"
+            echo "artifact=windows-portable-candidate" >> "$GITHUB_OUTPUT"
+            echo "latest=true" >> "$GITHUB_OUTPUT"
+            echo "title=Mouse Macro Stocazz Superpower v$version" >> "$GITHUB_OUTPUT"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ steps.version.outputs.artifact }}
+          path: release-files
+          run-id: ${{ inputs.run_id }}
+          github-token: ${{ github.token }}
+      - name: Check the files belong to this version
+        working-directory: release-files
+        run: |
+          ls -la
+          sums=$(ls SHA256SUMS-*${{ steps.version.outputs.version }}.txt)
+          sha256sum -c "$sums"
+          grep -q -- "v${{ steps.version.outputs.version }}" "$sums"
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          notes=".github/release-notes/$TAG.md"
+          test -f "$notes"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists: nothing is replaced." >&2
+            exit 1
+          fi
+          gh release create "$TAG" release-files/* --target "$GITHUB_SHA" \
+            --title "${{ steps.version.outputs.title }}" --notes-file "$notes" \
+            --latest=${{ steps.version.outputs.latest }}

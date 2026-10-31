@@ -57,17 +57,25 @@ def _linux_checks(checks, result, language):
     except Exception as error:  # evdev raises its own error types too
         environment['detected_mouse_count'] = f'{type(error).__name__}: {error}'
     environment['mouse_models'] = mouse_models()
-    player = LinuxPlayer()
+    player = None
     try:
-        player._ensure()
+        player = LinuxPlayer(settle=0)
         environment['uinput'] = 'ok'
     except Exception as error:  # e.g. evdev.UInputError when /dev/uinput is missing
-        environment['uinput'] = f'{type(error).__name__}: {error}'
+        cause = error.__cause__ or error  # the original evdev error, not the panel message
+        environment['uinput'] = f'{type(cause).__name__}: {cause}'
     finally:
         try:
-            player.close()
+            if player:
+                player.close()
         except Exception:
             pass
+    from macro import linux_setup
+    environment['input_access'] = linux_setup.input_access()
+    environment['can_grant_access'] = linux_setup.can_grant()
+    clients = linux_setup.flet_clients()
+    environment['flet_client'] = str(clients[0]) if clients else None
+    environment['missing_libraries'] = linux_setup.missing_libraries(clients[0]) if clients else []
     checks['backend_import'] = True
     with tempfile.TemporaryDirectory() as folder:
         page = PageProbe()

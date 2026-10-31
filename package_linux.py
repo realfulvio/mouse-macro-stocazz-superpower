@@ -57,6 +57,7 @@ Exec=AppRun
 Icon=mouse-macro-stocazz-superpower
 Terminal=false
 Categories=Utility;
+StartupWMClass=com.appveyor.flet
 """
 
 
