@@ -63,6 +63,7 @@ Version 1.1.3 added installing from the exe with Start menu and Desktop shortcut
 - Optional **Ctrl+Tab between cycles** to move through browser tabs (off by default; never after the last cycle).
 - **Human-like movement** (optional, off at startup): on every cycle the cursor follows a slightly different curve at a non-uniform speed, and pauses vary a little. Clicks always land on the same recorded points; drags and the wheel are unchanged. It does not make automation invisible: many sites forbid it in their terms.
 - Records the mouse. **On Windows it can also record the keyboard**, but only if you turn it on from the top dot's menu (*Registra anche la tastiera*; off at startup): typed keys are stored in the macro file in plain text, **passwords included**. F9, F10 and Ctrl+Alt+F11 are never recorded. No screenshots. The only network access is the update check, anonymous and optional.
+- **Infinite loops** (Windows and Linux): on Windows from the top dot's menu (*Ripeti all'infinito*, this session only), on Linux with the *Infinite* mode. Stop with F10 or Ctrl+Alt+F11.
 - **Launchable macro** (Windows): in *Save* choose "Macro avviabile con un doppio clic (*.cmd)". It writes a `.cmd` and a `.mmr` side by side, with the repeats and speed set in the panel. Double clicking the `.cmd` asks for confirmation and replays the macro; Ctrl+Alt+F11 stops. It is not an exe: it contains no program and uses the Mouse Macro installed on the PC (with this feature), so SmartScreen and antivirus see no new file to judge. The target PC needs Mouse Macro installed.
 
 
@@ -115,6 +116,8 @@ Stable. v1.1.1 fixes repeat-count keyboard entry and adds the mouse model. The e
 </p>
 
 Linux has a separate release, **[linux-v1.1.1](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.1.1)**, with the features of the Windows version: compact semi-transparent activity bar with counters and Stop, 1–999 repeats, Normal/Fast 2×, Ctrl+Tab between cycles, Slow pages, **Human-like movement**, Unicorn/Palio skins, mouse model, update dot with verified install, preferences and diagnostics. Italian or English interface; requires Linux x86_64 with X11 or Wayland.
+
+Coming in the next release on Linux too: **optional keyboard** (*Record the keyboard too* switch, off at launch: typed keys are stored in the file in plain text, passwords included; it uses the same permissions already given with *Grant access* for F9/F10), **Infinite** and **Save launchable (.sh)**, which writes a script and a `.mmr`: the script opens Mouse Macro with the macro loaded (`--open`), then press F10. The script looks for the `install.sh` install; with the AppImage use `./…AppImage --open file.mmr`.
 
 **Install and start** (no sudo, no autostart):
 

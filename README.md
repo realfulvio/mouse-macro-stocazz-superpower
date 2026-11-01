@@ -63,6 +63,7 @@ La v1.1.3 ha aggiunto l'installazione dall'exe con i collegamenti in Start e sul
 - **Ctrl+Tab tra un giro e l'altro** (facoltativo) per scorrere le schede del browser: spento all'avvio, mai dopo l'ultimo giro.
 - **Movimento umano** (facoltativo, spento all'avvio): a ogni giro il cursore segue una curva leggermente diversa, con velocità non uniforme, e le pause variano un poco. I clic cadono sempre negli stessi punti registrati; i trascinamenti e la rotella non cambiano. Non rende invisibile l'automazione: molti siti la vietano nei loro termini.
 - Registra il mouse. **Su Windows può registrare anche la tastiera**, ma solo se la attivi dal menu del pallino in alto (*Registra anche la tastiera*; spenta all'avvio): i tasti digitati finiscono nel file della macro in chiaro, **password comprese**. F9, F10 e Ctrl+Alt+F11 non vengono mai registrati. Niente schermate. L'unico accesso alla rete è il controllo aggiornamenti, anonimo e disattivabile.
+- **Giri infiniti** (Windows e Linux): su Windows dal menu del pallino in alto (*Ripeti all'infinito*, vale per la sessione), su Linux dalla modalità *Infinito*. Si ferma con F10 o Ctrl+Alt+F11.
 - **Macro avviabile** (Windows): in *Salva* scegli «Macro avviabile con un doppio clic (*.cmd)». Crea un `.cmd` e un `.mmr` accanto, con i giri e la velocità scelti nel pannello. Il doppio clic sul `.cmd` chiede conferma e riproduce la macro; Ctrl+Alt+F11 ferma. Non è un exe: non contiene programmi, usa Mouse Macro installato sul PC (con questa funzione), quindi SmartScreen e gli antivirus non vedono file nuovi da valutare. Sul PC di destinazione serve Mouse Macro installato.
 
 
@@ -115,6 +116,8 @@ Stabile. La v1.1.1 corregge l'inserimento delle ripetizioni e aggiunge il modell
 </p>
 
 La versione Linux ha una release separata, **[linux-v1.1.1](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.1.1)**, con le stesse funzioni della Windows: barra attiva compatta e semitrasparente con contatori e Stop, ripetizioni 1–999, Normale/Rapida 2×, Ctrl+Tab tra i giri, Pagine lente, **Movimento umano**, skin Unicorno/Palio, modello del mouse, pallino aggiornamenti con installazione verificata, preferenze e diagnostica. Interfaccia in italiano o inglese; serve Linux x86_64 con X11 o Wayland.
+
+Nella prossima release anche su Linux: **tastiera opzionale** (interruttore *Registra anche la tastiera*, spento all'avvio: i tasti digitati finiscono nel file in chiaro, password comprese; usa gli stessi permessi già dati con *Concedi accesso* per F9/F10), **Infinito** e **Salva avviabile (.sh)**, che crea uno script e un `.mmr`: lo script apre Mouse Macro con la macro caricata (`--open`), poi premi F10. Lo script cerca l'installazione fatta con `install.sh`; con l'AppImage usa `./…AppImage --open file.mmr`.
 
 **Doppio clic (consigliato).** Scarica [`MouseMacroStocazzSuperpower-Linux-v1.1.1-x86_64.AppImage`](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/linux-v1.1.1/MouseMacroStocazzSuperpower-Linux-v1.1.1-x86_64.AppImage): è un unico file che contiene tutto, come lo ZIP portable di Windows.
 1. La prima volta rendilo eseguibile: tasto destro → Proprietà → Permessi → *Eseguibile* (oppure `chmod +x` sul file). I browser tolgono questo permesso a ogni file scaricato, quindi serve una volta sola.
