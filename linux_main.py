@@ -19,7 +19,9 @@ from macro.updater import UpdateError
 from macro.linux_backend import (LinuxRecorder, LinuxPlayer, GlobalHotkeys, UINPUT_DENIED, list_mice, list_keyboards,
                                  mouse_models)
 from macro.mouse_devices import mouse_label
-from macro.panel_model import (LINUX_VERSION, BAMBOLA, SKINS, DEFAULT_SKIN, DARK_SKINS, UPDATE_DOT, parse_repeats, playback_options,
+from macro import mods, linux_tray
+from macro.panel_model import (LINUX_VERSION, BAMBOLA, SKINS, MOD_SKINS, DEFAULT_SKIN, skin_is_dark, skin_label,
+                               register_mod_skins, UPDATE_DOT, parse_repeats, playback_options,
                                settings_path, read_settings, write_settings, save_replay_trace,
                                save_error_log)
 from macro.session import Session, State, validate_gestures
@@ -143,7 +145,14 @@ class LinuxPanel:
         self.open_request = open_request  # macro avviabile: caricata all'avvio, mai avviata da sola
         self.path = Path(preferences) if preferences else settings_path()
         self.folder = self.path.parent  # diagnostics live next to the preferences
+        self.mods_dir = self.folder / 'mods'
+        try:
+            register_mod_skins(mods.installed(self.mods_dir))  # before read_settings: it validates the skin name
+        except Exception:
+            pass  # a damaged mod must never stop the panel from opening
         self.settings = read_settings(self.path)
+        self.tray = None
+        self.tray_actions = queue.Queue()
         self.skin = self.settings.get('skin', DEFAULT_SKIN)
         self.colors = SKINS[self.skin]
         self.commands = queue.Queue()
@@ -165,7 +174,7 @@ class LinuxPanel:
         self.page.title = f'Mouse Macro {LINUX_VERSION} · Linux · hcok'
         self.page.fonts = {'Outfit': 'fonts/Outfit.ttf'}
         self.page.theme = ft.Theme(font_family='Outfit', color_scheme_seed=self.colors['play'])
-        self.page.theme_mode = ft.ThemeMode.DARK if self.skin in DARK_SKINS else ft.ThemeMode.LIGHT
+        self.page.theme_mode = ft.ThemeMode.DARK if skin_is_dark(self.skin) else ft.ThemeMode.LIGHT
         self.page.padding = 16
         self.page.bgcolor = self.colors['background']
         window = self.settings.get('window', {})
@@ -203,9 +212,10 @@ class LinuxPanel:
                        color=self.colors['muted' if muted else 'text'], **kwargs)
 
     def button(self, label, handler, color=None, icon=None, **kwargs):
+        kwargs.setdefault('height', 52)
         return ft.Button(content=self.text(label, 18, True), icon=icon, on_click=handler,
                          bgcolor=color or self.colors['surface'], color=self.colors['text'],
-                         height=52, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=12)),
+                         style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=12)),
                          **kwargs)
 
     def card(self, control, **kwargs):
@@ -215,6 +225,8 @@ class LinuxPanel:
     def horse(self, state='pronto', size=72, bar=False):
         if self.skin == 'bambola':
             return self.bambola_horse(state, bar)
+        if self.skin in MOD_SKINS:
+            return self.mod_horse(state, size)
         prefix = 'palio' if self.skin == 'palio' else 'unicorn'
         if prefix == 'palio':
             return ft.Image(src=f'horses/{prefix}_{state}.png', width=size, height=size,
@@ -228,6 +240,24 @@ class LinuxPanel:
                                  height=512*scale, left=-x*scale+(size-w*scale)/2,
                                  top=-y*scale+(size-h*scale)/2, exclude_from_semantics=True)],
                         width=size, height=size, clip_behavior=ft.ClipBehavior.HARD_EDGE)
+
+    def mod_horse(self, state, size):
+        mod = MOD_SKINS[self.skin]
+        src = str(mod['folder'] / f'{state}.png')
+        if not mod['regions']:
+            return ft.Image(src=src, width=size, height=size, fit=ft.BoxFit.CONTAIN, exclude_from_semantics=True)
+        x, y, w, h = mod['regions'][state]
+        scale = min(size / w, size / h)
+        full = self.mod_image_size(src)
+        return ft.Stack([ft.Image(src=src, width=full[0] * scale, height=full[1] * scale,
+                                  left=-x * scale + (size - w * scale) / 2, top=-y * scale + (size - h * scale) / 2,
+                                  exclude_from_semantics=True)],
+                        width=size, height=size, clip_behavior=ft.ClipBehavior.HARD_EDGE)
+
+    @staticmethod
+    def mod_image_size(path):
+        width, height = mods.png_size(Path(path).read_bytes()[:64])
+        return width, height
 
     # Bambola clips are cropped animated WebP (assets/horses, data in assets/skins/bambola.json).
     BAMBOLA_SIZE = tuple(BAMBOLA['images']['frame'])
@@ -316,9 +346,9 @@ class LinuxPanel:
                                          value=str(self.settings.get('double_click_ms','400')), text_size=18,
                                          on_blur=self.preference_changed)
         self.skin_choice = ft.Dropdown(label=self.tr('Skin'),value=self.skin,text_size=16,
-                                       options=[ft.DropdownOption(key=k,text=self.tr(v)) for k,v in
-                                                [('bambola','Bambola'),('unicorno','Unicorno'),('palio','Palio')]],
+                                       options=self.skin_options(),
                                        on_select=self.skin_changed)
+        self.settings_button = self.button('Impostazioni e mod', self.settings_menu, icon=ft.Icons.SETTINGS)
         self.update_dot = ft.Container(width=14, height=14, border_radius=7)
         self.update_button = ft.Button(
             content=ft.Row([self.update_dot, self.text('Aggiornamenti', 18, True)], tight=True, spacing=10),
@@ -338,7 +368,7 @@ class LinuxPanel:
                     self.keyboard_switch),
             ft.Divider(color=self.colors['border']), self.mode,self.minutes,self.double_click,
             self.export_button,
-            self.skin_choice,self.update_button,
+            self.skin_choice,self.settings_button,self.update_button,
         ],spacing=16,scroll=ft.ScrollMode.AUTO),expand=True,visible=False)
         self.main_column = ft.Column([
             ft.Row([ft.Column([self.text('Mouse Macro',24,True),self.text('Stocazz Superpower',18,muted=True)],
@@ -530,6 +560,7 @@ class LinuxPanel:
         return LinuxRecorder(self.mouse.value, keyboards)
 
     async def start(self):
+        self.start_tray()
         await self.refresh_devices()
         if self.open_request:
             await self.apply_open_request()
@@ -541,6 +572,8 @@ class LinuxPanel:
     async def pump(self):
         while not self.closed:
             try:
+                while not self.tray_actions.empty():
+                    await self.tray_action(self.tray_actions.get())
                 while not self.commands.empty():
                     command = self.commands.get()
                     if not self.dialog_open or command=='emergency':
@@ -725,7 +758,7 @@ class LinuxPanel:
         device=self.mouse.value
         self.colors=SKINS[self.skin]
         self.page.bgcolor=self.colors['background']
-        self.page.theme_mode=ft.ThemeMode.DARK if self.skin in DARK_SKINS else ft.ThemeMode.LIGHT
+        self.page.theme_mode=ft.ThemeMode.DARK if skin_is_dark(self.skin) else ft.ThemeMode.LIGHT
         self.page.theme=ft.Theme(font_family='Outfit',color_scheme_seed=self.colors['play'])
         self.build()
         self.repeat.value,self.mode.value,self.minutes.value=repeats,mode,minutes
@@ -844,6 +877,183 @@ class LinuxPanel:
         if not self.closed:
             self.render()
 
+    def skin_options(self):
+        return [ft.DropdownOption(key=k, text=self.tr(skin_label(k))) for k in SKINS]
+
+    def reload_mod_skins(self):
+        register_mod_skins(mods.installed(self.mods_dir))
+        self.skin_choice.options = self.skin_options()
+        if self.skin not in SKINS:
+            self.skin_choice.value = DEFAULT_SKIN
+            self.skin_changed()
+        self.page.update()
+
+    def settings_menu(self, e=None):
+        if self.session.state in ACTIVE or self.dialog_open:
+            return
+        self.page.show_dialog(self.settings_dialog())
+
+    def reopen_settings(self):
+        self.page.pop_dialog()
+        self.page.show_dialog(self.settings_dialog())
+
+    def settings_dialog(self):
+        close_switch = ft.Switch(value=bool(self.settings.get('close_to_tray')), on_change=self.close_to_tray_changed,
+                                 disabled=not (self.tray and self.tray.registered))
+        tray_hint = ('La X nasconde il pannello nell’area di notifica' if self.tray and self.tray.registered
+                     else 'Non disponibile: questo desktop non ha un’area di notifica')
+        rows = []
+        for info in mods.installed(self.mods_dir):
+            name = 'mod:' + info.id
+            actions = []
+            if info.kind == 'theme':
+                actions.append(self.button('In uso' if self.skin == name else 'Usa tema',
+                                           lambda e, n=name: self.use_mod_theme(n), height=44,
+                                           color=self.colors['play'] if self.skin == name else None))
+            actions.append(self.button('Rimuovi', lambda e, i=info: self.remove_mod(i), height=44))
+            kind = 'Tema' if info.kind == 'theme' else 'Raccolta di macro'
+            rows.append(self.card(ft.Column([
+                self.text(info.name, 18, True),
+                self.text(f'{kind} · v{info.version} · di {info.author}', 14, muted=True),
+                ft.Row(actions, wrap=True)], spacing=8)))
+        if not rows:
+            rows.append(self.text('Nessuna mod installata.', 16, muted=True))
+        return ft.AlertDialog(
+            title=self.text('Impostazioni e mod', 22, True),
+            content=ft.Container(ft.Column([
+                ft.Row([ft.Column([self.text('Chiudi nel tray', 18, True), self.text(tray_hint, 14, muted=True)],
+                                  expand=True), close_switch]),
+                ft.Divider(color=self.colors['border']),
+                self.text('Mod: pacchetti .mmmod di soli dati (temi e macro), senza codice.', 14, muted=True),
+                *rows,
+                ft.Row([self.button('Installa da file…', self.install_mod, icon=ft.Icons.ADD, height=44),
+                        self.button('Apri cartella mod', self.open_mods_folder, icon=ft.Icons.FOLDER_OPEN, height=44)],
+                       wrap=True),
+            ], tight=True, spacing=12, scroll=ft.ScrollMode.AUTO), width=520),
+            actions=[self.button('Chiudi', lambda e: self.page.pop_dialog())])
+
+    def close_to_tray_changed(self, e=None):
+        self.settings['close_to_tray'] = bool(e.control.value)
+        write_settings(self.path, self.settings)
+        if self.tray:
+            self.tray.refresh()
+
+    def use_mod_theme(self, name):
+        self.skin_choice.value = name
+        self.skin_changed()
+        self.reopen_settings()
+
+    def open_mods_folder(self, e=None):
+        self.mods_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            subprocess.Popen(['xdg-open', str(self.mods_dir)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except OSError as error:
+            self.session.error(error)
+
+    def remove_mod(self, info):
+        def confirmed(e=None):
+            try:
+                if self.skin == 'mod:' + info.id:
+                    self.skin_choice.value = DEFAULT_SKIN
+                    self.skin_changed()
+                mods.remove(self.mods_dir, info.id)
+                self.reload_mod_skins()
+            except mods.ModError as error:
+                self.session.error(error)
+            self.reopen_settings()
+        self.page.pop_dialog()
+        self.page.show_dialog(ft.AlertDialog(
+            title=self.text(f'Rimuovere «{info.name}»?', 20, True),
+            actions=[self.button('Annulla', lambda e: self.reopen_settings()),
+                     self.button('Rimuovi', confirmed, self.colors['record'])]))
+
+    async def install_mod(self, e=None):
+        self.dialog_open = True
+        try:
+            files = await self.picker.pick_files(dialog_title=self.tr('Installa mod'), allow_multiple=False,
+                                                 file_type=ft.FilePickerFileType.CUSTOM,
+                                                 allowed_extensions=['mmmod'])
+            if not (files and files[0].path):
+                return
+            path = files[0].path
+            info = await asyncio.to_thread(mods.inspect, path)
+        except mods.ModError as error:
+            self.page.pop_dialog()
+            self.page.show_dialog(ft.AlertDialog(
+                title=self.text('Mod non installabile', 20, True), content=self.text(str(error), 16),
+                actions=[self.button('OK', lambda e: self.reopen_settings())]))
+            return
+        except Exception as error:
+            self.session.error(error)
+            return
+        finally:
+            self.dialog_open = False
+        async def go(e=None):
+            try:
+                if self.skin == 'mod:' + info.id:
+                    self.skin_choice.value = DEFAULT_SKIN
+                    self.skin_changed()
+                await asyncio.to_thread(mods.install, path, self.mods_dir)
+                self.reload_mod_skins()
+            except (mods.ModError, OSError) as error:
+                self.session.error(error)
+            self.reopen_settings()
+        lines = [self.text('• ' + line, 15) for line in info.summary()]
+        self.page.pop_dialog()
+        self.page.show_dialog(ft.AlertDialog(
+            title=self.text(f'Installare «{info.name}» {info.version}?', 20, True),
+            content=ft.Container(ft.Column([self.text(f'di {info.author}', 15, muted=True), *lines,
+                                            self.text(f'SHA-256: {info.sha256[:16]}…', 14, muted=True),
+                                            self.text('Installa solo mod di cui ti fidi.', 14, muted=True)],
+                                           tight=True, spacing=6), width=480),
+            actions=[self.button('Annulla', lambda e: self.reopen_settings()),
+                     self.button('Installa', go, self.colors['play'])]))
+
+    # System tray (StatusNotifierItem): present on KDE and on GNOME with AppIndicator, absent in game mode.
+    def tray_items(self):
+        Item = linux_tray.Item
+        visible = self.page.window.visible is not False
+        return [Item(1, self.tr('Nascondi pannello' if visible else 'Mostra pannello'), 'toggle'), Item(2, None),
+                Item(3, self.tr('Registra · F9'), 'record'), Item(4, self.tr('Riproduci · F10'), 'play'),
+                Item(5, self.tr('Ferma tutto · Ctrl+Alt+F11'), 'emergency'), Item(6, None),
+                Item(7, self.tr('Impostazioni e mod…'), 'settings'),
+                Item(8, self.tr('Chiudi nel tray'), 'close_to_tray', checked=bool(self.settings.get('close_to_tray'))),
+                Item(9, None), Item(10, self.tr('Esci'), 'quit')]
+
+    def start_tray(self):
+        if self.preview or os.environ.get('MOUSE_MACRO_NO_TRAY'):
+            return
+        assets = Path(__file__).resolve().parent / 'assets'
+        tray = linux_tray.LinuxTray('Mouse Macro Stocazz Superpower', assets, 'icon', self.tray_items,
+                                    self.tray_actions.put)
+        if tray.start():
+            self.tray = tray
+
+    async def tray_action(self, name):
+        if name == 'toggle':
+            await self.toggle_window()
+        elif name in ('record', 'play', 'emergency'):
+            if name != 'record' and self.session.state in ACTIVE:
+                self.session.request_stop()
+            await self.dispatch(name)
+        elif name == 'settings':
+            self.page.window.visible = True
+            self.page.update()
+            self.settings_menu()
+        elif name == 'close_to_tray':
+            self.settings['close_to_tray'] = not self.settings.get('close_to_tray')
+            write_settings(self.path, self.settings)
+        elif name == 'quit':
+            await self.close_window()
+
+    async def toggle_window(self):
+        show = self.page.window.visible is False
+        self.page.window.visible = show
+        if show:
+            self.page.window.minimized = False
+            await self.page.window.to_front()
+        self.page.update()
+
     def update_menu(self, e=None):
         if self.session.state in ACTIVE or self.dialog_open:
             return
@@ -959,6 +1169,12 @@ class LinuxPanel:
 
     async def window_event(self,e):
         if e.type==ft.WindowEventType.CLOSE:
+            if self.settings.get('close_to_tray') and self.tray and self.tray.registered:
+                self.remember_window()
+                write_settings(self.path, self.settings)
+                self.page.window.visible = False  # hotkeys and tray icon stay active
+                self.page.update()
+                return
             await self.close_window()
         elif e.type in (ft.WindowEventType.MOVED, ft.WindowEventType.RESIZED) and not self.active_view:
             self.remember_window()
@@ -978,6 +1194,8 @@ class LinuxPanel:
         try:
             await asyncio.to_thread(self.session.close)
         finally:
+            if self.tray:
+                self.tray.stop()
             if self.hotkeys:
                 await asyncio.to_thread(self.hotkeys.stop)
 
