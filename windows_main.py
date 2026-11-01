@@ -12,7 +12,7 @@ import sys
 import threading
 import traceback
 import time
-from windows_visual import Theme, Canvas, COLORS, Paint, DrawItem, SKINS, CURRENT, apply_skin, register_mod_skins, DEFAULT_SKIN
+from windows_visual import Theme, Canvas, COLORS, Paint, DrawItem, SKINS, CURRENT, apply_skin, register_mod_skins, DEFAULT_SKIN, frame_index
 
 from macro.windows_backend import (WindowsRecorder, WindowsPlayer, GlobalHotkeys,
     HOTKEY_RECORD, HOTKEY_PLAY, HOTKEY_EMERGENCY, screen_geometry, window_rect)
@@ -139,6 +139,15 @@ def parse_repeats(text):
     return int(text)
 
 
+def migrate_default_skin(settings):
+    """One-time reset to the default skin: earlier versions saved the old default,
+    which would hide the new one. Afterwards the user's own choice sticks."""
+    if settings.get('skin_default') == DEFAULT_SKIN:
+        return False
+    settings['skin'] = settings['skin_default'] = DEFAULT_SKIN
+    return True
+
+
 class Panel:
     def __init__(self):
         self.hwnd = None
@@ -166,6 +175,7 @@ class Panel:
         self.repeat_font = None
         self.record_started = None
         self.hover = None
+        self.last_frame = 0
         self.last_view = None
         self.update = {'state': 'unknown', 'latest': None, 'release': None}
         self.edit_brush = None
@@ -181,6 +191,8 @@ class Panel:
             register_mod_skins(mods.installed(MODS_DIR))
         except Exception:
             pass  # una mod rovinata non deve impedire l'avvio
+        if migrate_default_skin(self.settings):
+            self.write_settings()
         apply_skin(self.settings.get('skin'))
         self.theme = Theme()
         self.proc = WNDPROC(self.wndproc)
@@ -629,6 +641,10 @@ class Panel:
         U.EnableWindow(self.controls[101], not active and valid)
         view=(state,self.session.message,self.metrics(),self.repeats,self.infinite,self.speed,self.next_tab,self.slow,self.human,
               int(time.monotonic()-(self.play_started or time.monotonic())),CURRENT['skin'],self.update['state'])
+        frame=frame_index(time.monotonic())
+        if frame != self.last_frame:
+            self.last_frame=frame
+            U.InvalidateRect(self.hwnd,None,False)  # next animation frame of the mascot
         if view != self.last_view:
             self.last_view=view
             U.InvalidateRect(self.hwnd,None,False)
