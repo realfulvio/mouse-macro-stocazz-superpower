@@ -4,7 +4,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 from macro.panel_model import LINUX_VERSION
-from macro.events import LEFT_DOWN, LEFT_UP, MIDDLE_DOWN, MIDDLE_UP, MOVE_REL, RIGHT_DOWN, RIGHT_UP, WHEEL, MacroEvent
+from macro.events import KEY_DOWN, KEY_UP, LEFT_DOWN, LEFT_UP, MIDDLE_DOWN, MIDDLE_UP, MOVE_REL, RIGHT_DOWN, RIGHT_UP, WHEEL, MacroEvent
 
 if sys.platform == 'linux':
     from macro import linux_backend as backend
@@ -177,6 +177,62 @@ class LinuxBackendTests(unittest.TestCase):
                     backend.LinuxPlayer()
                 self.assertEqual(str(caught.exception), backend.UINPUT_DENIED)
                 self.assertIs(caught.exception.__cause__, error)
+
+
+@unittest.skipUnless(sys.platform == 'linux', 'Linux evdev/uinput backend')
+class LinuxKeyboardTests(unittest.TestCase):
+    def event(self, type, code, value, timestamp):
+        return SimpleNamespace(type=type, code=code, value=value, timestamp=lambda: timestamp)
+
+    def test_keys_are_recorded_by_code_and_merged_with_the_mouse_in_time_order(self):
+        e = backend.ecodes
+        recorder = backend.LinuxRecorder('/dev/input/mouse', ['/dev/input/kbd'])
+        recorder._handle(self.event(e.EV_KEY, e.BTN_LEFT, 1, 10.0))
+        recorder._handle_key(self.event(e.EV_KEY, e.KEY_A, 1, 10.3))
+        recorder._handle_key(self.event(e.EV_KEY, e.KEY_A, 2, 10.31))        # ripetizione: ignorata
+        recorder._handle_key(self.event(e.EV_KEY, e.KEY_A, 1, 10.32))        # doppia pressione: ignorata
+        recorder._handle_key(self.event(e.EV_KEY, e.KEY_A, 0, 10.4))
+        recorder._handle(self.event(e.EV_KEY, e.BTN_LEFT, 0, 10.2))          # thread del mouse in ritardo
+        recorder._handle_key(self.event(e.EV_KEY, e.KEY_F9, 1, 10.5))        # tasti del programma: mai
+        recorder._handle_key(self.event(e.EV_KEY, e.KEY_F9, 0, 10.51))
+        recorder._handle_key(self.event(e.EV_KEY, e.KEY_B, 0, 10.52))        # premuto prima di F9: ignorato
+        recorder._handle_key(self.event(e.EV_KEY, e.KEY_LEFTCTRL, 1, 10.6))  # ancora premuto allo stop
+        events = recorder.stop()
+        self.assertEqual([(v.kind, v.key) for v in events],
+                         [(LEFT_DOWN, ''), (LEFT_UP, ''), (KEY_DOWN, 'kc:30'), (KEY_UP, 'kc:30'),
+                          (KEY_DOWN, 'kc:29'), (KEY_UP, 'kc:29')])
+        self.assertEqual([round(v.t, 2) for v in events[:4]], [0, .2, .3, .4])
+
+    def test_mouse_only_recording_never_touches_keyboards(self):
+        with patch.object(backend, 'InputDevice') as device, patch.object(backend.threading, 'Thread') as thread:
+            backend.LinuxRecorder('/dev/input/test').start()
+        device.assert_called_once_with('/dev/input/test')
+        self.assertEqual(thread.call_count, 1)
+
+    def test_unreadable_keyboard_stops_the_recording_with_a_clear_message(self):
+        def open_device(path):
+            if path == '/dev/input/kbd':
+                raise PermissionError('denied')
+            return MagicMock()
+        with patch.object(backend, 'InputDevice', side_effect=open_device):
+            with self.assertRaisesRegex(PermissionError, 'Concedi accesso'):
+                backend.LinuxRecorder('/dev/input/mouse', ['/dev/input/kbd']).start()
+
+    def test_player_presses_releases_and_cleans_up_keys(self):
+        e = backend.ecodes
+        with patch.object(backend, 'UInput') as virtual:
+            player = backend.LinuxPlayer()
+            player.apply_event(MacroEvent(0, KEY_DOWN, key='kc:30'))
+            player.apply_event(MacroEvent(.1, KEY_UP, key='kc:30'))
+            player.apply_event(MacroEvent(.2, KEY_DOWN, key='kc:29'))
+            player.close()    # Ctrl ancora premuto: viene rilasciato
+            writes = [c.args for c in virtual.return_value.write.call_args_list]
+        self.assertEqual(writes, [(e.EV_KEY, 30, 1), (e.EV_KEY, 30, 0), (e.EV_KEY, 29, 1), (e.EV_KEY, 29, 0)])
+
+    def test_virtual_device_can_type_every_key(self):
+        keys = backend._CAPABILITIES[backend.ecodes.EV_KEY]
+        self.assertTrue(set(range(1, 249)) <= set(keys))
+        self.assertIn(backend.ecodes.BTN_LEFT, keys)
 
 
 if __name__ == '__main__':
