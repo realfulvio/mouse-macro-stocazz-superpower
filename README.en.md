@@ -8,7 +8,7 @@ A small always-on-top panel for Windows and Linux: Python is bundled, nothing to
 </p>
 
 <p align="center">
-<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.2.0"><b>⬇ Download for Windows</b></a>
+<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.2.1"><b>⬇ Download for Windows</b></a>
 · <a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.2.0"><b>⬇ Download for Linux</b></a>
 · <a href="GUIDA-ITALIANA.md">Italian guide</a>
 · <a href="docs/ESITO-COLLAUDO-v1.1.1.md">Test report</a>
@@ -40,19 +40,19 @@ The script downloads the official release from GitHub, verifies its SHA-256, ext
 
 ## Other ways to install
 
-1. Download `MouseMacroStocazzSuperpower-Windows-v1.2.0.zip` from the [release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.2.0).
+1. Download `MouseMacroStocazzSuperpower-Windows-v1.2.1.zip` from the [release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.2.1).
 2. Extract the **whole** ZIP into a folder.
-3. Run `Mouse Macro v1.2.0.exe` and answer **Yes** (*Sì*) to install it: it is copied to your user folder (`%LOCALAPPDATA%\MouseMacroStocazzSuperpower`, no administrator rights), with **Start menu** and **Desktop** shortcuts and an entry in *Settings → Installed apps* to uninstall it. **No** runs it from the ZIP without installing. If Windows blocks the exe, run `Mouse Macro v1.2.0 (senza exe).cmd` instead (runs without installing).
+3. Run `Mouse Macro v1.2.1.exe` and answer **Yes** (*Sì*) to install it: it is copied to your user folder (`%LOCALAPPDATA%\MouseMacroStocazzSuperpower`, no administrator rights), with **Start menu** and **Desktop** shortcuts and an entry in *Settings → Installed apps* to uninstall it. **No** runs it from the ZIP without installing. If Windows blocks the exe, run `Mouse Macro v1.2.1 (senza exe).cmd` instead (runs without installing).
 
 Requires x64 Windows; the exe also needs .NET Framework 4 (included in Windows 10/11), the `.cmd` does not. Python is bundled. The interface is in Italian. The SHA-256 of the ZIP is published with each release.
 
 ### Windows blocks the exe?
 
-The `.exe` launcher is not code-signed, so SmartScreen or Windows 11 *Smart App Control* may block it (*"An application control policy has blocked this file"*). The two exe-free ways, the PowerShell command above and the **`Mouse Macro v1.2.0 (senza exe).cmd`** file in the ZIP, were tested with Smart App Control in v1.1.0 (Windows 11 build 26300, [previous report](docs/ESITO-COLLAUDO-v1.1.0.md)); SAC acceptance was not repeated from v1.1.1 on. The `.cmd` starts the PSF-signed `pythonw.exe` directly with the same files. If SmartScreen warns, choose *More info → Run anyway*; if it still blocks, right-click the ZIP → *Properties* → **Unblock** before extracting.
+The `.exe` launcher is not code-signed, so SmartScreen or Windows 11 *Smart App Control* may block it (*"An application control policy has blocked this file"*). The two exe-free ways, the PowerShell command above and the **`Mouse Macro v1.2.1 (senza exe).cmd`** file in the ZIP, were tested with Smart App Control in v1.1.0 (Windows 11 build 26300, [previous report](docs/ESITO-COLLAUDO-v1.1.0.md)); SAC acceptance was not repeated from v1.1.1 on. The `.cmd` starts the PSF-signed `pythonw.exe` directly with the same files. If SmartScreen warns, choose *More info → Run anyway*; if it still blocks, right-click the ZIP → *Properties* → **Unblock** before extracting.
 
 If these are blocked on your PC too, please open an [issue](https://github.com/realfulvio/mouse-macro-stocazz-superpower/issues).
 
-Version 1.2.0 is a single release for Windows and Linux: Bambola skin by default, tray icon, Settings window, data-only `.mmmod` mods, optional keyboard recording (off at every start), double-click launchable macros (`.cmd` on Windows, `.sh` on Linux) and infinite loops on Windows. Exe installation and the startup update prompt work as in 1.1.4; the mouse engine is unchanged. [Portable download](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.0/MouseMacroStocazzSuperpower-Windows-Portable.zip).
+Version 1.2.1 (Windows only) animates the Bambola horse and fixes the Settings window. Version 1.2.0 was a single release for Windows and Linux: Bambola skin by default, tray icon, Settings window, data-only `.mmmod` mods, optional keyboard recording (off at every start), double-click launchable macros (`.cmd` on Windows, `.sh` on Linux) and infinite loops on Windows. Exe installation and the startup update prompt work as in 1.1.4; the mouse engine is unchanged. [Portable download](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.1/MouseMacroStocazzSuperpower-Windows-Portable.zip).
 
 ## What it does
 
