@@ -23,19 +23,20 @@ def safe_stem(name: str) -> str:
     return stem[:80]
 
 
-def _flags(repeats, speed, slow, human, next_tab) -> str:
-    if type(repeats) is not int or not 1 <= repeats <= 999:
+def _flags(repeats, speed, slow, human, next_tab, infinite=False) -> str:
+    if not infinite and (type(repeats) is not int or not 1 <= repeats <= 999):
         raise ValueError("Imposta da 1 a 999 ripetizioni.")
     if speed not in (1, 2, 1.0, 2.0):
         raise ValueError("Velocità non valida.")
-    parts = [f"--repeat {repeats}", f"--speed {int(speed)}"]
+    parts = ["--infinite" if infinite else f"--repeat {repeats}", f"--speed {int(speed)}"]
     parts += [flag for flag, on in (("--slow", slow), ("--human", human), ("--next-tab", next_tab)) if on]
     return " ".join(parts)
 
 
-def launcher_text(stem: str, repeats: int = 1, speed: float = 1, slow=False, human=False, next_tab=False) -> str:
+def launcher_text(stem: str, repeats: int = 1, speed: float = 1, slow=False, human=False, next_tab=False,
+                  infinite=False) -> str:
     stem = safe_stem(stem)
-    flags = _flags(repeats, speed, slow, human, next_tab)
+    flags = _flags(repeats, speed, slow, human, next_tab, infinite)
     lines = [
         "@echo off",
         "rem Macro avviabile creata da Mouse Macro Stocazz Superpower.",
@@ -59,14 +60,50 @@ def launcher_text(stem: str, repeats: int = 1, speed: float = 1, slow=False, hum
     return "\r\n".join(lines)
 
 
+def linux_script_text(stem: str, repeats: int = 1, speed: float = 1, slow=False, human=False, next_tab=False,
+                      infinite=False) -> str:
+    """Script .sh: apre Mouse Macro (installato con install.sh) con la macro già caricata.
+    Su Linux non parte da solo: mouse e tastiera vanno consegnati a un programma che gira
+    senza finestra, quindi l'ultimo passo (F10) resta tuo."""
+    stem = safe_stem(stem)
+    flags = _flags(repeats, speed, slow, human, next_tab, infinite)
+    lines = [
+        "#!/usr/bin/env bash",
+        "# Macro avviabile creata da Mouse Macro Stocazz Superpower.",
+        "# Apre Mouse Macro con la macro caricata: premi F10 (o Riproduci) per avviarla.",
+        'DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"',
+        'ROOT="${XDG_DATA_HOME:-$HOME/.local/share}/MouseMacroStocazzSuperpower/current"',
+        'for BIN in "$ROOT/MouseMacroStocazzSuperpower-Linux-IT" "$ROOT/MouseMacroStocazzSuperpower-Linux-EN"; do',
+        f'    if [[ -x "$BIN" ]]; then exec "$BIN" --open "$DIR/{stem}.mmr" {flags}; fi',
+        "done",
+        'MESSAGE="Mouse Macro Stocazz Superpower non e'"'"' installato con install.sh su questo PC."',
+        'if command -v notify-send >/dev/null 2>&1; then notify-send "Mouse Macro" "$MESSAGE"; fi',
+        'echo "$MESSAGE" >&2',
+        "echo \"Con l'AppImage: ./MouseMacroStocazzSuperpower-Linux.AppImage --open '$DIR/" + stem + ".mmr' " + flags + "\" >&2",
+        "exit 1",
+        "",
+    ]
+    return "\n".join(lines)
+
+
 def export_launcher(macro: Macro, chosen_path, repeats: int = 1, speed: float = 1,
-                    slow=False, human=False, next_tab=False) -> tuple[Path, Path]:
-    """Scrive `<nome>.mmr` e `<nome>.cmd` nella cartella scelta. Ritorna (cmd, mmr)."""
+                    slow=False, human=False, next_tab=False, infinite=False,
+                    platform: str = "windows") -> tuple[Path, Path]:
+    """Scrive `<nome>.mmr` più `<nome>.cmd` (Windows) o `<nome>.sh` (Linux) nella cartella scelta.
+    Ritorna (script, mmr)."""
     chosen = Path(chosen_path)
     stem = safe_stem(chosen.name)
-    text = launcher_text(stem, repeats, speed, slow, human, next_tab)  # valida prima di scrivere
+    if platform == "linux":
+        text = linux_script_text(stem, repeats, speed, slow, human, next_tab, infinite)
+        script = chosen.with_name(stem + ".sh")
+        payload = text.encode("ascii")
+    else:
+        text = launcher_text(stem, repeats, speed, slow, human, next_tab, infinite)
+        script = chosen.with_name(stem + ".cmd")
+        payload = text.encode("ascii")
     mmr = chosen.with_name(stem + ".mmr")
-    cmd = chosen.with_name(stem + ".cmd")
     macro.save(str(mmr))
-    cmd.write_bytes(text.encode("ascii"))
-    return cmd, mmr
+    script.write_bytes(payload)
+    if platform == "linux":
+        script.chmod(0o755)
+    return script, mmr

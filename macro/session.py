@@ -237,15 +237,16 @@ class Session:
         self.notify()
         return True
 
-    def export(self, path, repeats=1, speed=1, slow=False, human=False, next_tab=False):
-        """Salva la macro come coppia .mmr + .cmd avviabile con un doppio clic (vedi macro.export)."""
+    def export(self, path, repeats=1, speed=1, slow=False, human=False, next_tab=False, infinite=False):
+        """Salva la macro come coppia .mmr + .cmd (Windows) o .sh (Linux) avviabile (vedi macro.export)."""
         from .export import export_launcher
         with self.lock:
             if self.state not in (State.READY, State.ERROR):
                 return False
             try:
                 validate_gestures(self.macro.events)
-                cmd, _mmr = export_launcher(self.macro, path, repeats, speed, slow, human, next_tab)
+                cmd, _mmr = export_launcher(self.macro, path, repeats, speed, slow, human, next_tab, infinite,
+                                            self.platform)
             except Exception as error:
                 self.error(error)
                 return False

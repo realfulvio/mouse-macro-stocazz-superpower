@@ -14,6 +14,14 @@ class WindowsTimingTests(unittest.TestCase):
         self.panel.speed, self.panel.slow = speed, slow
         return self.panel.options()
 
+    def test_infinite_mode_is_off_at_startup_and_reaches_the_engine(self):
+        from macro.engine import LoopMode
+        self.assertFalse(self.panel.infinite)
+        self.assertEqual(self.panel.options().mode, LoopMode.REPEAT_COUNT)
+        self.panel.infinite = True
+        options = self.panel.options()
+        self.assertEqual((options.mode, options.repeat_count), (LoopMode.INFINITE, None))
+
     def test_initial_settings_and_tab_changes(self):
         self.assertFalse(self.panel.next_tab)
         self.assertEqual(self.panel.repeats, 1)

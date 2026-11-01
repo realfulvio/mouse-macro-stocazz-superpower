@@ -228,6 +228,85 @@ class LinuxPanelTests(unittest.TestCase):
         self.assertEqual(options.timing_variation_seconds, 0.0)
         self.assertIs(panel.last_options, options)
 
+    # Keyboard, launchable macros, infinite loops ---------------------------
+    def test_keyboard_recording_is_off_by_default_and_never_remembered(self):
+        panel = self.panel()
+        self.assertFalse(panel.keyboard_switch.value)
+        with patch.object(linux_main, 'LinuxRecorder') as recorder, patch.object(linux_main, 'list_keyboards') as boards:
+            panel.mouse.value = '/dev/input/mouse'
+            panel.make_recorder()
+            boards.assert_not_called()   # senza consenso nessuna tastiera viene aperta
+            recorder.assert_called_with('/dev/input/mouse', [])
+        panel.keyboard_switch.value = True
+        panel.keyboard_changed()
+        self.assertIn('password comprese', panel.session.message)
+        with patch.object(linux_main, 'LinuxRecorder') as recorder, \
+                patch.object(linux_main, 'list_keyboards', return_value=[('/dev/input/kbd', 'Tastiera')]):
+            panel.make_recorder()
+            recorder.assert_called_with('/dev/input/mouse', ['/dev/input/kbd'])
+        self.assertFalse(self.panel().keyboard_switch.value)   # sempre spento al prossimo avvio
+        self.assertNotIn('record_keyboard', json.dumps(self.saved() if self.prefs.exists() else {}))
+        panel.keyboard_switch.value = False
+        panel.keyboard_changed()
+        self.assertIn('solo il mouse', panel.session.message)
+
+    def test_keyboard_recording_without_an_accessible_keyboard_explains_what_to_do(self):
+        panel = self.panel()
+        panel.keyboard_switch.value = True
+        panel.mouse.value = '/dev/input/mouse'
+        with patch.object(linux_main, 'list_keyboards', return_value=[]):
+            with self.assertRaisesRegex(ValueError, 'Concedi accesso'):
+                panel.make_recorder()
+
+    def test_launchable_macro_is_loaded_with_its_options_but_never_started(self):
+        from macro.events import Macro
+        from macro.runner import parse_run_args
+        macro_file = self.folder / 'mia.mmr'
+        Macro('linux', [MacroEvent(0, MOVE_REL, dx=4, dy=2), MacroEvent(.1, LEFT_DOWN), MacroEvent(.2, LEFT_UP)]).save(str(macro_file))
+        request = parse_run_args(['--open', str(macro_file), '--infinite', '--speed', '2', '--slow', '--next-tab'], '--open')
+        panel = self.panel()
+        panel.open_request = request
+        with patch.object(panel.session, 'toggle_play') as play:
+            asyncio.run(panel.apply_open_request())
+        play.assert_not_called()
+        self.assertEqual(panel.session.state, State.READY)
+        self.assertEqual(len(panel.session.macro.events), 3)
+        self.assertEqual((panel.mode.value, panel.speed, panel.slow.value, panel.next_tab.value),
+                         ('infinite', 2.0, True, True))
+        self.assertIsNone(panel.open_request)
+
+    def test_export_writes_script_and_macro_and_refuses_duration_mode(self):
+        panel = self.panel()
+        self.macro(panel)
+        target = self.folder / 'Mia macro.sh'
+        panel.mode.value, panel.repeat.value = 'infinite', '1'
+        with patch.object(panel.picker, 'save_file', AsyncMock(return_value=str(target))):
+            asyncio.run(panel.export_file())
+        script = target.read_text()
+        self.assertIn('--open "$DIR/Mia macro.mmr" --infinite --speed 1', script)
+        self.assertTrue(target.stat().st_mode & 0o100)    # eseguibile
+        self.assertTrue((self.folder / 'Mia macro.mmr').exists())
+        panel.mode.value = 'duration'
+        with patch.object(panel.picker, 'save_file', AsyncMock(return_value=str(target))) as picker:
+            asyncio.run(panel.export_file())
+        picker.assert_not_called()
+        self.assertEqual(panel.session.state, State.ERROR)
+
+    def test_infinite_mode_reaches_playback_options(self):
+        panel = self.panel()
+        self.macro(panel)
+        panel.mode.value = 'infinite'
+        with patch.object(panel.session, 'toggle_play') as play:
+            asyncio.run(panel.dispatch('play'))
+        self.assertEqual(play.call_args.args[0].mode.value, 'infinite')
+
+    def test_run_passes_the_launchable_macro_to_the_panel(self):
+        with patch.object(linux_main.linux_setup, 'has_display', return_value=True), \
+                patch.object(linux_main, 'main', AsyncMock()) as main, \
+                patch.object(linux_main.ft, 'run', side_effect=lambda start, **kw: asyncio.run(start(MagicMock()))):
+            linux_main.run('it', ['--open', 'x.mmr', '--repeat', '3'])
+        self.assertEqual(main.call_args.args[2].repeats, 3)
+
     # Mouse model ---------------------------------------------------------
     def test_mouse_model_is_visible_with_and_without_device_access(self):
         panel = self.panel()

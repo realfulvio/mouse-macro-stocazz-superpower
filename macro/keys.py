@@ -51,3 +51,21 @@ def vk_of_pynput_key(key) -> int | None:
 def key_flags(vk: int, up: bool) -> int:
     flags = KEYEVENTF_EXTENDEDKEY if vk in EXTENDED_VKS else 0
     return flags | (KEYEVENTF_KEYUP if up else 0)
+
+
+# ---- Linux (evdev) ----
+LINUX_KEY_MAX = 248            # KEY_* utili; BTN_* (mouse, gamepad) restano fuori
+LINUX_RESERVED_CODES = frozenset({67, 68, 87})   # KEY_F9, KEY_F10, KEY_F11
+
+
+def linux_key_name(code: int) -> str:
+    return f"kc:{int(code)}"
+
+
+def linux_code_of_name(name: str) -> int:
+    if not isinstance(name, str) or not name.startswith("kc:") or not name[3:].isdigit():
+        raise ValueError("Tasto della macro non valido.")
+    code = int(name[3:])
+    if not 1 <= code <= LINUX_KEY_MAX:
+        raise ValueError("Tasto della macro non valido.")
+    return code
