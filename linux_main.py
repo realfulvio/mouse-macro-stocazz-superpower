@@ -1238,6 +1238,9 @@ def run(language='it', argv=None):
         save_error_log(config_dir(), ''.join(traceback.format_exception(args.exc_type, args.exc_value,
                                                                           args.exc_traceback)))
     threading.excepthook = log_thread_error
+    # The binary is built on Ubuntu: on other distributions its OpenSSL cannot find
+    # the CA certificates, and Flet's first-run download of its window would fail.
+    linux_updater.use_system_certificates()
     if not linux_setup.has_display():
         # Without a graphical session Flet falls back to a web server and tries to
         # pip-install flet-web, which crashes inside the frozen binary: stop here.
