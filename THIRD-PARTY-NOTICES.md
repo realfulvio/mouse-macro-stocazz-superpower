@@ -13,3 +13,4 @@ Licensed separately under the SIL Open Font License 1.1:
 
 - Python 3.13 embeddable package (PSF License), unmodified.
 - `pynput` (LGPLv3) and `six` (MIT), installed unmodified from PyPI.
+- `jeepney` (MIT, Linux only), installed unmodified from PyPI: D-Bus client for the tray icon.

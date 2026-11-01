@@ -14,6 +14,7 @@ finish-args:
   - --share=network       # anonymous update check only
   - --persist=.flet       # Flet desktop client cache
   - --filesystem=home     # Save/Load .mmr macros
+  - --talk-name=org.kde.StatusNotifierWatcher  # tray icon (the item name is under the app id, which a sandbox may own)
 modules:
   - name: mouse-macro
     buildsystem: simple
