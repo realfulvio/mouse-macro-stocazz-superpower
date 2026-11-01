@@ -52,7 +52,7 @@ def _file_filter(pairs: list[tuple[str, str]]) -> str:
 
 
 def _run_dialog(save: bool, title: str, file_name: str, pairs: list[tuple[str, str]],
-                default_ext: str, owner=None) -> str | None:
+                default_ext: str, owner=None, with_filter: bool = False):
     ctypes.windll.ole32.CoInitializeEx(None, _COINIT_APARTMENTTHREADED)
     file_buf = ctypes.create_unicode_buffer(file_name, _MAX_PATH_BUFFER)
     filter_buf = ctypes.create_unicode_buffer(_file_filter(pairs))
@@ -77,7 +77,7 @@ def _run_dialog(save: bool, title: str, file_name: str, pairs: list[tuple[str, s
     fn.argtypes = [ctypes.POINTER(_OPENFILENAMEW)]
     fn.restype = wintypes.BOOL
     if fn(ctypes.byref(ofn)):
-        return file_buf.value
+        return (file_buf.value, int(ofn.nFilterIndex)) if with_filter else file_buf.value
     error = comdlg32.CommDlgExtendedError()
     if error:
         raise OSError(f"Windows file dialog error {error:#x}")
@@ -86,6 +86,14 @@ def _run_dialog(save: bool, title: str, file_name: str, pairs: list[tuple[str, s
 
 def ask_save_path(title: str, file_name: str = "macro.mmr", owner=None) -> str | None:
     return _run_dialog(True, title, file_name, [("Mouse macro (*.mmr)", "*.mmr")], "mmr", owner)
+
+
+def ask_save_macro(title: str, file_name: str = "macro.mmr", owner=None):
+    """Come ask_save_path, con in più la scelta "Macro avviabile". Ritorna (percorso, avviabile) o None."""
+    result = _run_dialog(True, title, file_name, [("Mouse macro (*.mmr)", "*.mmr"),
+                                                  ("Macro avviabile con un doppio clic (*.cmd)", "*.cmd")],
+                         "mmr", owner, with_filter=True)
+    return None if result is None else (result[0], result[1] == 2)
 
 
 def ask_open_path(title: str, owner=None) -> str | None:

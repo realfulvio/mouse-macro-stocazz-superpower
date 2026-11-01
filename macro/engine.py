@@ -12,7 +12,8 @@ from dataclasses import dataclass, replace
 from enum import Enum
 from typing import Callable, Iterable
 
-from .events import BUTTON_OF_DOWN, BUTTON_OF_UP, MOVE_ABS, MOVE_REL, WHEEL, MacroEvent
+from .events import (BUTTON_OF_DOWN, BUTTON_OF_UP, KEY_DOWN, KEY_PREFIX, KEY_UP, MOVE_ABS,
+                     MOVE_REL, WHEEL, MacroEvent)
 
 
 class LoopMode(Enum):
@@ -373,6 +374,7 @@ def play(
 
     start = time.perf_counter()
     held: set[str] = set()
+    held_keys: set[str] = set()   # tasti della tastiera premuti e non ancora rilasciati
     actual_down: dict[str, float] = {}
     actual_last_up: float | None = None
     minimum = max(0.0, options.min_click_hold_seconds)
@@ -446,7 +448,13 @@ def play(
                     # Include a possibly partially injected press in cleanup even
                     # if the backend raises after sending it.
                     held.add(BUTTON_OF_DOWN[evt.kind])
+                if evt.kind == KEY_DOWN:
+                    held_keys.add(evt.key)   # anche se l'invio fallisce a metà, va rilasciato
                 apply_event(evt)
+                if evt.kind == KEY_UP:
+                    held_keys.discard(evt.key)
+                elif evt.kind == KEY_DOWN:
+                    report("input_sent", click=click, kind=evt.kind)
                 if evt.kind in BUTTON_OF_DOWN:
                     actual_down[BUTTON_OF_DOWN[evt.kind]] = time.perf_counter()
                     report("input_sent", click=click, kind=evt.kind,
@@ -495,8 +503,9 @@ def play(
                     between_cycles()
                     extra_delay += time.perf_counter() - before
     finally:
-        if held:
-            release_held(held)
-            report("safety_release", buttons=sorted(held))
+        if held or held_keys:
+            names = set(held) | {KEY_PREFIX + key for key in held_keys}
+            release_held(names)
+            report("safety_release", buttons=sorted(names))
     report("playback_end", cycle=loop, outcome=end.value, completed_cycles=loop)
     return end
