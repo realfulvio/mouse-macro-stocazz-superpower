@@ -107,7 +107,9 @@ for name,args in {
  'GdipCreateFromHDC':[W.HDC,C.POINTER(P)],'GdipDeleteGraphics':[P],
  'GdipSetSmoothingMode':[P,C.c_int],'GdipSetInterpolationMode':[P,C.c_int],
  'GdipSetTextRenderingHint':[P,C.c_int],'GdipScaleWorldTransform':[P,F,F,C.c_int],
- 'GdipSetPageUnit':[P,C.c_int],'GdipSetClipRectI':[P,C.c_int,C.c_int,C.c_int,C.c_int,C.c_int],
+ 'GdipSetPageUnit':[P,C.c_int],'GdipTranslateWorldTransform':[P,F,F,C.c_int],'GdipResetWorldTransform':[P],
+ 'GdipCreateBitmapFromScan0':[C.c_int,C.c_int,C.c_int,C.c_int,P,C.POINTER(P)],
+ 'GdipGetImageGraphicsContext':[P,C.POINTER(P)],'GdipDrawImageRectI':[P,P,C.c_int,C.c_int,C.c_int,C.c_int],
  'GdipCreateSolidFill':[W.DWORD,C.POINTER(P)],'GdipDeleteBrush':[P],
  'GdipCreateLineBrushFromRect':[C.POINTER(RectF),W.DWORD,W.DWORD,C.c_int,C.c_int,C.POINTER(P)],
  'GdipCreatePen1':[W.DWORD,F,C.c_int,C.POINTER(P)],'GdipDeletePen':[P],
@@ -151,7 +153,7 @@ class Theme:
                 raise RuntimeError('Font Outfit non disponibile')
         self.family=ptrcall(D.GdipCreateFontFamilyFromName,'Outfit',self.collection)
         self.body_family=ptrcall(D.GdipCreateFontFamilyFromName,'Segoe UI',None)
-        self.fonts={};self.images={};self.sizes={};self.icons={};self.sheets={};self.animated=[]
+        self.fonts={};self.images={};self.sizes={};self.icons={};self.sheets={};self.animated=[];self.frames={}
         self.load_images()
         for path in (ROOT/'icons').glob('*.svg'): self.icons[path.stem]=ET.parse(path).getroot()
     def load_images(self):
@@ -174,9 +176,28 @@ class Theme:
             except Exception:
                 for p in sheets.values():D.GdipDisposeImage(p)
                 sheets={}  # without sheets the still image is shown
+        self.drop_frames()
         for p in self.sheets.values():D.GdipDisposeImage(p)
         self.sheets=sheets
+    def frame(self,state,i,bw,bh,src):
+        """Animation frame already scaled to its on-screen size (premultiplied ARGB bitmap), cached:
+        every later repaint is a 1:1 copy, with no interpolation."""
+        key=(state,i,bw,bh,tuple(round(v,2) for v in src))
+        bitmap=self.frames.get(key)
+        if bitmap is None:
+            if len(self.frames)>=600:self.drop_frames()
+            bitmap=ptrcall(D.GdipCreateBitmapFromScan0,bw,bh,0,0xE200B,None)  # 32bppPARGB
+            g=ptrcall(D.GdipGetImageGraphicsContext,bitmap)
+            D.GdipSetInterpolationMode(g,7)  # best quality, paid once per cached frame
+            D.GdipDrawImageRectRect(g,self.sheets[state],0,0,bw,bh,*src,2,None,None,None)
+            D.GdipDeleteGraphics(g)
+            self.frames[key]=bitmap
+        return bitmap
+    def drop_frames(self):
+        for p in self.frames.values():D.GdipDisposeImage(p)
+        self.frames={}
     def close(self):
+        self.drop_frames()
         for p in self.fonts.values():D.GdipDeleteFont(p)
         for p in self.images.values():D.GdipDisposeImage(p)
         for p in self.sheets.values():D.GdipDisposeImage(p)
@@ -190,28 +211,45 @@ class Theme:
         return self.fonts[key]
 
 class Canvas:
+    view=clip=None;scale=1  # full repaint unless a clip is given
     def __init__(self,theme,hdc,width,height,scale,text_hint=5,clip=None):
-        # clip=(x,y,w,h) in device pixels: only that part is drawn and copied to the window
-        # (the mascot animation repaints just its own rectangle).
-        self.theme=theme;self.hdc=hdc;self.width=width;self.height=height;self.clip=clip
-        self.dc=G.CreateCompatibleDC(hdc);self.bmp=G.CreateCompatibleBitmap(hdc,width,height)
+        # clip=(x,y,w,h) in device pixels: only that part is drawn (into a bitmap of that size)
+        # and copied to the window; the mascot animation repaints just its own rectangle.
+        self.theme=theme;self.hdc=hdc;self.width=width;self.height=height;self.clip=clip;self.scale=scale
+        bw,bh=(clip[2],clip[3]) if clip else (width,height)
+        self.view=(clip[0]/scale-4,clip[1]/scale-4,(clip[0]+clip[2])/scale+4,(clip[1]+clip[3])/scale+4) if clip else None
+        self.dc=G.CreateCompatibleDC(hdc);self.bmp=G.CreateCompatibleBitmap(hdc,bw,bh)
         self.old=G.SelectObject(self.dc,self.bmp);self.g=ptrcall(D.GdipCreateFromHDC,self.dc)
         D.GdipSetSmoothingMode(self.g,4);D.GdipSetInterpolationMode(self.g,7)
         # Work in physical bitmap pixels and apply logical DPI scaling once.
         D.GdipSetPageUnit(self.g,2)  # UnitPixel
-        if clip:D.GdipSetClipRectI(self.g,*clip,0)  # before the scale: the clip is in device pixels
         # ClearType on opaque panels; grayscale antialiasing on the layered bar
         # avoids colored fringes when Windows composites the translucent window.
         D.GdipSetTextRenderingHint(self.g,text_hint)
-        D.GdipScaleWorldTransform(self.g,scale,scale,0)
+        self.logical()
+    def logical(self):
+        """Logical (DPI-scaled) coordinates; a clipped canvas starts at its own corner."""
+        D.GdipResetWorldTransform(self.g)
+        if self.clip:D.GdipTranslateWorldTransform(self.g,-self.clip[0],-self.clip[1],0)
+        D.GdipScaleWorldTransform(self.g,self.scale,self.scale,0)
+    def device(self):
+        """Device pixels (1:1 copies of cached bitmaps)."""
+        D.GdipResetWorldTransform(self.g)
+        if self.clip:D.GdipTranslateWorldTransform(self.g,-self.clip[0],-self.clip[1],0)
+    def hidden(self,x,y,w,h):
+        """True when a logical rectangle is entirely outside the repainted area."""
+        v=self.view
+        return bool(v) and (x>v[2] or y>v[3] or x+w<v[0] or y+h<v[1])
     def close(self):
         D.GdipDeleteGraphics(self.g)
-        x,y,w,h=self.clip or (0,0,self.width,self.height)
-        G.BitBlt(self.hdc,x,y,w,h,self.dc,x,y,0xcc0020)
+        if self.clip:
+            x,y,w,h=self.clip;G.BitBlt(self.hdc,x,y,w,h,self.dc,0,0,0xcc0020)
+        else:G.BitBlt(self.hdc,0,0,self.width,self.height,self.dc,0,0,0xcc0020)
         G.SelectObject(self.dc,self.old);G.DeleteObject(self.bmp);G.DeleteDC(self.dc)
     def clear(self,color):D.GdipGraphicsClear(self.g,argb(color))
     def brush(self,color):return ptrcall(D.GdipCreateSolidFill,argb(color))
     def rect(self,x,y,w,h,color):
+        if self.hidden(x,y,w,h):return
         b=self.brush(color);D.GdipFillRectangle(self.g,b,x,y,w,h);D.GdipDeleteBrush(b)
     def path(self,x,y,w,h,r):
         p=ptrcall(D.GdipCreatePath,0)
@@ -219,6 +257,7 @@ class Canvas:
             D.GdipAddPathArc(p,xx,yy,2*r,2*r,a,90)
         D.GdipClosePathFigure(p);return p
     def rounded(self,x,y,w,h,r,color,border=None,bottom=None):
+        if self.hidden(x,y,w,h):return
         p=self.path(x,y,w,h,r)
         b=ptrcall(D.GdipCreateLineBrushFromRect,C.byref(RectF(x,y,w,h)),argb(color),argb(bottom),1,0) if bottom else self.brush(color)
         D.GdipFillPath(self.g,b,p);D.GdipDeleteBrush(b)
@@ -226,13 +265,16 @@ class Canvas:
             pen=ptrcall(D.GdipCreatePen1,argb(border),1,2);D.GdipDrawPath(self.g,pen,p);D.GdipDeletePen(pen)
         D.GdipDeletePath(p)
     def line(self,x,y,xx,yy,color,width=1):
+        if self.hidden(min(x,xx),min(y,yy),abs(xx-x),abs(yy-y)):return
         p=ptrcall(D.GdipCreatePen1,argb(color),width,2);D.GdipDrawLine(self.g,p,x,y,xx,yy);D.GdipDeletePen(p)
     def ellipse(self,x,y,w,h,color,outline=False):
+        if self.hidden(x,y,w,h):return
         if outline:
             p=ptrcall(D.GdipCreatePen1,argb(color),2,2);D.GdipDrawEllipse(self.g,p,x,y,w,h);D.GdipDeletePen(p)
         else:
             b=self.brush(color);D.GdipFillEllipse(self.g,b,x,y,w,h);D.GdipDeleteBrush(b)
     def text(self,text,x,y,w,h,size=14,color=None,bold=False,align=0,wrap=False,display=False):
+        if self.hidden(x,y,w,h):return
         size=size+2 if size<=15 else size+1 if size<20 else size  # larger text, easier to read on the dark UI
         b=self.brush(color or COLORS['text']);fmt=ptrcall(D.GdipCreateStringFormat,0 if wrap else 0x1000,0)
         D.GdipSetStringFormatAlign(fmt,align);D.GdipSetStringFormatLineAlign(fmt,1)
@@ -249,20 +291,25 @@ class Canvas:
         ratio=min(w/sw,h/sh);dw,dh=sw*ratio,sh*ratio
         image=self.theme.images[state]
         sheet=SKINS[CURRENT['skin']].get('sheet')
-        smooth=7
+        dx,dy=x+(w-dw)/2,y+(h-dh)/2
         if sheet and state in self.theme.sheets:
             # Animated skin: same crop, taken from the current frame of the sprite sheet
             # (frame 0 when the mascot is only decoration, e.g. next to the title).
+            if animate:self.theme.animated.append((dx,dy,dw,dh))
+            if self.hidden(dx,dy,dw,dh):return
             k=sheet['scale'];fw,fh=sheet['frame'];i=frame_index(time.monotonic()) if animate else 0
-            image=self.theme.sheets[state]
-            sx,sy,sw,sh=sx*k+(i%sheet['cols'])*fw,sy*k+(i//sheet['cols'])*fh,sw*k,sh*k
-            smooth=6  # bilinear: cheaper than bicubic and enough for a 24 fps animation
-            if animate:self.theme.animated.append((x+(w-dw)/2,y+(h-dh)/2,dw,dh))
-        D.GdipSetInterpolationMode(self.g,smooth)
-        D.GdipDrawImageRectRect(self.g,image,x+(w-dw)/2,y+(h-dh)/2,dw,dh,sx,sy,sw,sh,2,None,None,None)
-        D.GdipSetInterpolationMode(self.g,7)
+            src=(sx*k+(i%sheet['cols'])*fw,sy*k+(i//sheet['cols'])*fh,sw*k,sh*k)
+            bw,bh=max(1,round(dw*self.scale)),max(1,round(dh*self.scale))
+            bitmap=self.theme.frame(state,i,bw,bh,src)
+            self.device()  # cached frame: 1:1 copy at whole device pixels
+            D.GdipDrawImageRectI(self.g,bitmap,round(dx*self.scale),round(dy*self.scale),bw,bh)
+            self.logical()
+            return
+        if self.hidden(dx,dy,dw,dh):return
+        D.GdipDrawImageRectRect(self.g,image,dx,dy,dw,dh,sx,sy,sw,sh,2,None,None,None)
     def icon(self,name,x,y,size,color):
         # Render the supplied SVG primitives as vectors at the actual DPI.
+        if self.hidden(x,y,size,size):return
         scale=size/24
         for e in self.theme.icons[name]:
             tag=e.tag.split('}')[-1];a=e.attrib
