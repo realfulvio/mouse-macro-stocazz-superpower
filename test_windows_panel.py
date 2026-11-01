@@ -137,6 +137,20 @@ class PanelTests(unittest.TestCase):
         self.assertFalse(ui.migrate_default_skin(settings))
         self.assertEqual(settings['skin'], 'palio')
 
+    def test_animation_repaints_only_the_horse_rectangle(self):
+        p = self.panel()
+        p.dpi = 120
+        p.theme = SimpleNamespace(animated=[(10, 20, 100, 50)])
+        with patch.object(ui.U, 'InvalidateRect') as invalidate:
+            p.invalidate_mascot()
+            hwnd, ref, erase = invalidate.call_args[0]
+            self.assertEqual((hwnd, erase), (123, False))
+            box = ref._obj
+            self.assertEqual((box.left, box.top, box.right, box.bottom), (10, 23, 140, 90))
+            p.theme.animated = []  # nothing drawn yet: repaint everything
+            p.invalidate_mascot()
+            self.assertIsNone(invalidate.call_args[0][1])
+
     def test_bambola_animates_other_skins_do_not(self):
         ui.apply_skin('bambola')
         self.addCleanup(ui.apply_skin, ui.DEFAULT_SKIN)
