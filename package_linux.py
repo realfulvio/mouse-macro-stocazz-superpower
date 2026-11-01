@@ -141,7 +141,7 @@ def flatpak_finish_args():
     """Permissions, kept identical to flatpak/<id>.yml (checked by the tests)."""
     import re
     manifest = (ROOT / 'flatpak' / f'{FLATPAK_ID}.yml').read_text(encoding='utf-8')
-    return re.findall(r'^  - (--[a-z-]+=[a-z0-9.-]+)', manifest, re.M)
+    return re.findall(r'^  - (--[a-z-]+=[A-Za-z0-9._-]+)', manifest, re.M)
 
 
 def build_flatpak(dist, version):
