@@ -151,6 +151,27 @@ class PanelTests(unittest.TestCase):
             p.invalidate_mascot()
             self.assertIsNone(invalidate.call_args[0][1])
 
+    def test_animation_timer_runs_only_while_an_animated_skin_is_visible(self):
+        p = self.panel()
+        p.shown = p.minimized = p.animating = False
+        with patch.object(ui.U, 'SetTimer') as start, patch.object(ui.U, 'KillTimer') as stop:
+            ui.apply_skin('bambola')
+            self.addCleanup(ui.apply_skin, ui.DEFAULT_SKIN)
+            p.sync_animation_timer()  # not shown yet
+            start.assert_not_called()
+            p.shown = True
+            p.sync_animation_timer()
+            p.sync_animation_timer()  # idempotent
+            start.assert_called_once_with(123, 2, 16, None)
+            p.minimized = True  # minimized or hidden in the tray: no ticks
+            p.sync_animation_timer()
+            stop.assert_called_once_with(123, 2)
+            p.minimized = False
+            ui.apply_skin('palio')  # a static skin needs no timer
+            p.sync_animation_timer()
+            self.assertEqual(start.call_count, 1)
+            self.assertFalse(p.animating)
+
     def test_bambola_animates_other_skins_do_not(self):
         ui.apply_skin('bambola')
         self.addCleanup(ui.apply_skin, ui.DEFAULT_SKIN)

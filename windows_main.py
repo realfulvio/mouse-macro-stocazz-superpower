@@ -12,7 +12,7 @@ import sys
 import threading
 import traceback
 import time
-from windows_visual import Theme, Canvas, COLORS, Paint, DrawItem, SKINS, CURRENT, apply_skin, register_mod_skins, DEFAULT_SKIN, frame_index
+from windows_visual import Theme, Canvas, COLORS, Paint, DrawItem, SKINS, CURRENT, apply_skin, register_mod_skins, DEFAULT_SKIN, frame_index, animated_skin
 
 from macro.windows_backend import (WindowsRecorder, WindowsPlayer, GlobalHotkeys,
     HOTKEY_RECORD, HOTKEY_PLAY, HOTKEY_EMERGENCY, screen_geometry, window_rect)
@@ -176,6 +176,7 @@ class Panel:
         self.record_started = None
         self.hover = None
         self.last_frame = 0
+        self.shown = self.minimized = self.animating = False  # drive the animation timer
         self.last_view = None
         self.update = {'state': 'unknown', 'latest': None, 'release': None}
         self.edit_brush = None
@@ -252,9 +253,9 @@ class Panel:
         if self.hotkeys.failed:
             self.session.error('Tasti occupati: '+ ', '.join(self.hotkeys.failed)+ '. Chiudi l’altra app.')
         U.SetTimer(self.hwnd, 1, 100, None)  # drains queue, never changes focus/Z order
-        U.SetTimer(self.hwnd, 2, 16, None)  # mascot animation (24 frames/s), redraws only on a new frame
         self.render()
         U.ShowWindow(self.hwnd, 4)  # SW_SHOWNOACTIVATE
+        self.sync_animation_timer()
         U.SetWindowPos(self.hwnd, W.HWND(-1), 0, 0, 0, 0, 0x13)  # no move/size/activate
         if self.settings.get('check_updates', True):
             self.check_updates()
@@ -685,6 +686,17 @@ class Panel:
                 self.session.toggle_record()
         self.render()
 
+    def sync_animation_timer(self):
+        """The 24 fps timer runs only while an animated skin is on screen: hidden in the
+        tray or minimized, the panel does no animation work at all."""
+        want = animated_skin() and self.shown and not self.minimized
+        if want != self.animating:
+            self.animating = want
+            if want:
+                U.SetTimer(self.hwnd, 2, 16, None)  # redraws only when the frame changes
+            else:
+                U.KillTimer(self.hwnd, 2)
+
     def invalidate_mascot(self):
         """Repaint only the animated horse(s); the whole window if none was drawn yet."""
         rects = self.theme.animated
@@ -705,6 +717,7 @@ class Panel:
         self.settings['skin'] = name
         self.write_settings()
         self.last_view = None
+        self.sync_animation_timer()
         self.layout(self.dpi)  # window size and control boxes depend on the skin
         U.InvalidateRect(self.hwnd,None,True)
         for hwnd in self.controls.values():U.InvalidateRect(hwnd,None,True)
@@ -1022,12 +1035,15 @@ class Panel:
                         U.SetFocus(self.controls[22])
                         return 3  # activation handled here; preserve the click
                 return 3  # MA_NOACTIVATE
+            if msg in (0x18, 0x5) and hasattr(self, 'session'):  # WM_SHOWWINDOW, WM_SIZE
+                if msg == 0x18:self.shown = bool(wp)
+                else:self.minimized = wp == 1  # SIZE_MINIMIZED
+                self.sync_animation_timer()
             if msg == 0x113 and wp == 2 and self.hwnd and hasattr(self, 'session'):
                 frame = frame_index(time.monotonic())  # mascot animation tick, cheaper than drain()
                 if frame != self.last_frame:
                     self.last_frame = frame
-                    if U.IsWindowVisible(self.hwnd) and not U.IsIconic(self.hwnd):
-                        self.invalidate_mascot()
+                    self.invalidate_mascot()
                 return 0
             if msg == 0x113 and hasattr(self,'boxes'):
                 point=W.POINT();U.GetCursorPos(C.byref(point))
