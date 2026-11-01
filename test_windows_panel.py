@@ -129,6 +129,22 @@ class PanelTests(unittest.TestCase):
         self.assertEqual((ui.hero_extra(), ui.active_size()), (0, ui.ACTIVE_SIZE))
         self.assertEqual(ui.window_size(False, True), (640, 608))
 
+    def test_old_saved_skin_is_reset_once_to_bambola(self):
+        settings = {'skin': 'unicorno'}
+        self.assertTrue(ui.migrate_default_skin(settings))
+        self.assertEqual(settings, {'skin': 'bambola', 'skin_default': 'bambola'})
+        settings['skin'] = 'palio'  # the user's later choice is kept
+        self.assertFalse(ui.migrate_default_skin(settings))
+        self.assertEqual(settings['skin'], 'palio')
+
+    def test_bambola_animates_other_skins_do_not(self):
+        ui.apply_skin('bambola')
+        self.addCleanup(ui.apply_skin, ui.DEFAULT_SKIN)
+        frames = {ui.frame_index(t / 10) for t in range(0, 60)}
+        self.assertEqual(len(frames), 30)
+        ui.apply_skin('unicorno')
+        self.assertEqual({ui.frame_index(t / 10) for t in range(0, 60)}, {0})
+
     def test_bambola_bar_is_centered_with_its_own_size(self):
         p = self.panel()
         ui.apply_skin('bambola')
