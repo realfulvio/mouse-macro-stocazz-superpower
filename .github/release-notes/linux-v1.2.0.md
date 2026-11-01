@@ -27,6 +27,7 @@ Chi ha già la v1.0.0, v1.1.0 o v1.1.1 la aggiorna dal pallino in alto.
 
 ### Limiti
 
+- Correzione: al primo avvio senza la cartella `~/.flet` il download della finestra Flet falliva su alcune distribuzioni per i certificati; ora viene usato il bundle di sistema (o quello incluso).
 - Tray e finestra Impostazioni non sono stati provati su GNOME né nel Flatpak. Su Wayland nascondere e mostrare il pannello dipende dal compositor.
 - I movimenti su Linux sono relativi: riporta il cursore al punto di partenza prima di ogni replay.
 - I touchpad non sono supportati per la registrazione: serve un mouse.
