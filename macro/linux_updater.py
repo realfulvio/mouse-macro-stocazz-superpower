@@ -54,6 +54,23 @@ def ssl_context(candidates=CA_BUNDLES):
         return ssl.create_default_context()
 
 
+def use_system_certificates(environ=os.environ, candidates=CA_BUNDLES):
+    """Point every HTTPS client in this process (Flet's first-run download included)
+    at a CA bundle that really exists; returns the file used, or None."""
+    if environ.get('SSL_CERT_FILE') and os.path.isfile(environ['SSL_CERT_FILE']):
+        return environ['SSL_CERT_FILE']
+    path = next((p for p in candidates if os.path.isfile(p)), None)
+    if path is None:
+        try:
+            import certifi
+            path = certifi.where()
+        except (ImportError, OSError):
+            return None
+    environ['SSL_CERT_FILE'] = path
+    environ.setdefault('REQUESTS_CA_BUNDLE', path)
+    return path
+
+
 def default_opener():
     return functools.partial(urllib.request.urlopen, context=ssl_context())
 

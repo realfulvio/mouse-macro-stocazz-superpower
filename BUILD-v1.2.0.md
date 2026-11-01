@@ -1,4 +1,4 @@
-# Build Windows v1.1.4
+# Build Windows v1.2.0
 
 Su Windows x64 con Python 3.13.x e .NET Framework 4:
 
@@ -13,6 +13,6 @@ Il runtime distribuito è l'embeddable ufficiale Python 3.13.16. Il pacchetto co
 
 Per compilare offline, conserva in `vendor/` il runtime `python-3.13.16-embed-amd64.zip` e le due wheel, quindi usa `python build_native_windows.py --offline`.
 
-Gli output sono lo ZIP versionato, l'alias `MouseMacroStocazzSuperpower-Windows-Portable.zip` e `SHA256SUMS-v1.1.4.txt`. Il manifest elenca tutti i file e i relativi hash. Il launcher `.cmd` usa lo stesso runtime e gli stessi sorgenti del launcher `.exe`.
+Gli output sono lo ZIP versionato, l'alias `MouseMacroStocazzSuperpower-Windows-Portable.zip` e `SHA256SUMS-v1.2.0.txt`. Il manifest elenca tutti i file e i relativi hash. Il launcher `.cmd` usa lo stesso runtime e gli stessi sorgenti del launcher `.exe`.
 
-Prima di pubblicare, verifica l'esatto ZIP sul desktop interattivo. Non ricompilarlo dopo il collaudo senza ripetere le prove. Rispetto alla v1.1.3 cambia solo il pannello: all’avvio propone subito l’aggiornamento quando ne esce uno; [risultati e limiti della v1.1.1](docs/ESITO-COLLAUDO-v1.1.1.md).
+Prima di pubblicare, verifica l'esatto ZIP sul desktop interattivo. Non ricompilarlo dopo il collaudo senza ripetere le prove. Rispetto alla v1.1.4 cambiano skin Bambola, tray, Impostazioni e mod, tastiera opzionale, macro avviabili e giri infiniti; [risultati e limiti della v1.1.1](docs/ESITO-COLLAUDO-v1.1.1.md).

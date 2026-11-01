@@ -71,6 +71,8 @@ def _linux_checks(checks, result, language):
         except Exception:
             pass
     from macro import linux_setup
+    from macro import linux_tray
+    environment['tray_library'] = bool(linux_tray.HAVE_JEEPNEY)  # False = jeepney missing from the binary
     environment['input_access'] = linux_setup.input_access()
     environment['can_grant_access'] = linux_setup.can_grant()
     clients = linux_setup.flet_clients()
