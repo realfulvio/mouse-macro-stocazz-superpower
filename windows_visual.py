@@ -107,7 +107,7 @@ for name,args in {
  'GdipCreateFromHDC':[W.HDC,C.POINTER(P)],'GdipDeleteGraphics':[P],
  'GdipSetSmoothingMode':[P,C.c_int],'GdipSetInterpolationMode':[P,C.c_int],
  'GdipSetTextRenderingHint':[P,C.c_int],'GdipScaleWorldTransform':[P,F,F,C.c_int],
- 'GdipSetPageUnit':[P,C.c_int],
+ 'GdipSetPageUnit':[P,C.c_int],'GdipSetClipRectI':[P,C.c_int,C.c_int,C.c_int,C.c_int,C.c_int],
  'GdipCreateSolidFill':[W.DWORD,C.POINTER(P)],'GdipDeleteBrush':[P],
  'GdipCreateLineBrushFromRect':[C.POINTER(RectF),W.DWORD,W.DWORD,C.c_int,C.c_int,C.POINTER(P)],
  'GdipCreatePen1':[W.DWORD,F,C.c_int,C.POINTER(P)],'GdipDeletePen':[P],
@@ -151,7 +151,7 @@ class Theme:
                 raise RuntimeError('Font Outfit non disponibile')
         self.family=ptrcall(D.GdipCreateFontFamilyFromName,'Outfit',self.collection)
         self.body_family=ptrcall(D.GdipCreateFontFamilyFromName,'Segoe UI',None)
-        self.fonts={};self.images={};self.sizes={};self.icons={};self.sheets={}
+        self.fonts={};self.images={};self.sizes={};self.icons={};self.sheets={};self.animated=[]
         self.load_images()
         for path in (ROOT/'icons').glob('*.svg'): self.icons[path.stem]=ET.parse(path).getroot()
     def load_images(self):
@@ -190,20 +190,24 @@ class Theme:
         return self.fonts[key]
 
 class Canvas:
-    def __init__(self,theme,hdc,width,height,scale,text_hint=5):
-        self.theme=theme;self.hdc=hdc;self.width=width;self.height=height
+    def __init__(self,theme,hdc,width,height,scale,text_hint=5,clip=None):
+        # clip=(x,y,w,h) in device pixels: only that part is drawn and copied to the window
+        # (the mascot animation repaints just its own rectangle).
+        self.theme=theme;self.hdc=hdc;self.width=width;self.height=height;self.clip=clip
         self.dc=G.CreateCompatibleDC(hdc);self.bmp=G.CreateCompatibleBitmap(hdc,width,height)
         self.old=G.SelectObject(self.dc,self.bmp);self.g=ptrcall(D.GdipCreateFromHDC,self.dc)
         D.GdipSetSmoothingMode(self.g,4);D.GdipSetInterpolationMode(self.g,7)
         # Work in physical bitmap pixels and apply logical DPI scaling once.
         D.GdipSetPageUnit(self.g,2)  # UnitPixel
+        if clip:D.GdipSetClipRectI(self.g,*clip,0)  # before the scale: the clip is in device pixels
         # ClearType on opaque panels; grayscale antialiasing on the layered bar
         # avoids colored fringes when Windows composites the translucent window.
         D.GdipSetTextRenderingHint(self.g,text_hint)
         D.GdipScaleWorldTransform(self.g,scale,scale,0)
     def close(self):
         D.GdipDeleteGraphics(self.g)
-        G.BitBlt(self.hdc,0,0,self.width,self.height,self.dc,0,0,0xcc0020)
+        x,y,w,h=self.clip or (0,0,self.width,self.height)
+        G.BitBlt(self.hdc,x,y,w,h,self.dc,x,y,0xcc0020)
         G.SelectObject(self.dc,self.old);G.DeleteObject(self.bmp);G.DeleteDC(self.dc)
     def clear(self,color):D.GdipGraphicsClear(self.g,argb(color))
     def brush(self,color):return ptrcall(D.GdipCreateSolidFill,argb(color))
@@ -235,7 +239,7 @@ class Canvas:
         D.GdipSetStringFormatTrimming(fmt,3)
         D.GdipDrawString(self.g,str(text),-1,self.theme.font(size,bold,display),C.byref(RectF(x,y,w,h)),fmt,b)
         D.GdipDeleteStringFormat(fmt);D.GdipDeleteBrush(b)
-    def horse(self,state,x,y,w,h,full=False,region=None):
+    def horse(self,state,x,y,w,h,full=False,region=None,animate=True):
         # Supplied PNGs include catalog captions. Display the illustration region
         # only; original files are preserved byte for byte in assets/horses.
         # full=True shows the whole image (the large horse of the Bambola cover);
@@ -245,12 +249,18 @@ class Canvas:
         ratio=min(w/sw,h/sh);dw,dh=sw*ratio,sh*ratio
         image=self.theme.images[state]
         sheet=SKINS[CURRENT['skin']].get('sheet')
+        smooth=7
         if sheet and state in self.theme.sheets:
-            # Animated skin: same crop, taken from the current frame of the sprite sheet.
-            k=sheet['scale'];fw,fh=sheet['frame'];i=frame_index(time.monotonic())
+            # Animated skin: same crop, taken from the current frame of the sprite sheet
+            # (frame 0 when the mascot is only decoration, e.g. next to the title).
+            k=sheet['scale'];fw,fh=sheet['frame'];i=frame_index(time.monotonic()) if animate else 0
             image=self.theme.sheets[state]
             sx,sy,sw,sh=sx*k+(i%sheet['cols'])*fw,sy*k+(i//sheet['cols'])*fh,sw*k,sh*k
+            smooth=6  # bilinear: cheaper than bicubic and enough for a 24 fps animation
+            if animate:self.theme.animated.append((x+(w-dw)/2,y+(h-dh)/2,dw,dh))
+        D.GdipSetInterpolationMode(self.g,smooth)
         D.GdipDrawImageRectRect(self.g,image,x+(w-dw)/2,y+(h-dh)/2,dw,dh,sx,sy,sw,sh,2,None,None,None)
+        D.GdipSetInterpolationMode(self.g,7)
     def icon(self,name,x,y,size,color):
         # Render the supplied SVG primitives as vectors at the actual DPI.
         scale=size/24
