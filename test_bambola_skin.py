@@ -49,5 +49,20 @@ class BambolaSkinTests(unittest.TestCase):
         self.assertTrue(0 < self.data['windows']['hero_extra'] <= 80)
 
 
+    def test_sprite_sheets_match_the_windows_crops(self):
+        import struct
+        sheet = self.data['images']['sheet']
+        fw, fh = sheet['frame']
+        rows = -(-sheet['frames'] // sheet['cols'])
+        full_w, full_h = 560, 400  # coordinate space of the Windows crops
+        self.assertAlmostEqual(fw / full_w, sheet['scale'], places=3)
+        self.assertAlmostEqual(fh / full_h, sheet['scale'], places=3)
+        for state in STATES:
+            data = (ROOT / 'assets' / sheet['file'].format(state=state)).read_bytes()[:32]
+            self.assertEqual(data[:8], b'\x89PNG\r\n\x1a\n')
+            width, height = struct.unpack('>II', data[16:24])
+            self.assertEqual((width, height), (fw * sheet['cols'], fh * rows), state)
+
+
 if __name__ == '__main__':
     unittest.main()

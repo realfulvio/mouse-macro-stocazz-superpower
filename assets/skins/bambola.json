@@ -15,7 +15,18 @@
   "frame": [
    480,
    343
-  ]
+  ],
+  "sheet": {
+   "file": "horses/bambola_{state}_sheet.png",
+   "frame": [
+    336,
+    240
+   ],
+   "cols": 6,
+   "frames": 30,
+   "fps": 5,
+   "scale": 0.6
+  }
  },
  "palette": {
   "linux": {
