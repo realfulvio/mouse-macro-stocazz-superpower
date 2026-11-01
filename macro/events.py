@@ -18,10 +18,24 @@ RIGHT_UP = "right_up"
 MIDDLE_DOWN = "middle_down"
 MIDDLE_UP = "middle_up"
 WHEEL = "wheel"
+# Tastiera (solo Windows). Il tasto è il codice virtuale, es. "vk:65" per la A: vale
+# per qualsiasi layout e permette di riprodurre anche Ctrl, frecce, F1..F24.
+KEY_DOWN = "key_down"
+KEY_UP = "key_up"
+KEY_KINDS = (KEY_DOWN, KEY_UP)
+KEY_PREFIX = "key:"   # prefisso dei nomi passati a release_held per i tasti premuti
 
 # Associazione tra evento di rilascio e nome del tasto (usata per il rilascio di sicurezza)
 BUTTON_OF_DOWN = {LEFT_DOWN: "left", RIGHT_DOWN: "right", MIDDLE_DOWN: "middle"}
 BUTTON_OF_UP = {LEFT_UP: "left", RIGHT_UP: "right", MIDDLE_UP: "middle"}
+
+
+def valid_key_name(name) -> bool:
+    """Un tasto valido è "vk:" seguito da un codice virtuale Windows da 1 a 254."""
+    if not isinstance(name, str) or not name.startswith("vk:"):
+        return False
+    digits = name[3:]
+    return digits.isdigit() and len(digits) <= 3 and 1 <= int(digits) <= 254
 
 
 @dataclass
@@ -36,6 +50,8 @@ class MacroEvent:
     # Ritaglio di schermo attorno al click (solo Windows, zlib+base64): in riproduzione
     # si aspetta che quel punto torni uguale prima di cliccare.
     snap: str = ""
+    # Tasto della tastiera ("vk:NN") per KEY_DOWN / KEY_UP, altrimenti vuoto.
+    key: str = ""
 
 
 @dataclass
@@ -90,6 +106,8 @@ class Macro:
             raise ValueError("La macro contiene eventi incompleti o con campi sconosciuti.") from error
         kinds = set(BUTTON_OF_DOWN) | set(BUTTON_OF_UP) | {WHEEL}
         kinds.add(MOVE_ABS if data["platform"] == "windows" else MOVE_REL)
+        if data["platform"] == "windows":
+            kinds.update(KEY_KINDS)
         previous = 0.0
         for event in events:
             values = (event.t, event.dx, event.dy, event.x, event.y, event.wheel)
@@ -100,6 +118,11 @@ class Macro:
                 raise ValueError("Gli eventi della macro devono avere tempi crescenti o uguali.")
             if event.kind not in kinds or not isinstance(event.snap, str):
                 raise ValueError("La macro contiene un tipo di evento non valido.")
+            if event.kind in KEY_KINDS:
+                if not valid_key_name(event.key):
+                    raise ValueError("La macro contiene un tasto della tastiera non valido.")
+            elif event.key:
+                raise ValueError("La macro contiene un tasto dove non dovrebbe esserci.")
             previous = event.t
         layout = data.get("layout", {})
         if not isinstance(layout, dict):
