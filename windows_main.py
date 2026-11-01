@@ -378,7 +378,10 @@ class Panel:
     def paint(self, hwnd):
         ps=Paint();hdc=U.BeginPaint(hwnd,C.byref(ps))
         rect=W.RECT();U.GetClientRect(hwnd,C.byref(rect))
-        c=Canvas(self.theme,hdc,rect.right,rect.bottom,self.dpi/96,text_hint=4 if self.active_view else 5)
+        dirty=ps.rect;clip=(dirty.left,dirty.top,dirty.right-dirty.left,dirty.bottom-dirty.top)
+        if clip[2]<=0 or clip[3]<=0 or (clip[2]>=rect.right and clip[3]>=rect.bottom):clip=None
+        c=Canvas(self.theme,hdc,rect.right,rect.bottom,self.dpi/96,text_hint=4 if self.active_view else 5,clip=clip)
+        self.theme.animated=[]  # filled again by the mascot drawings below
         try:
             w,h=self.width,self.height
             c.clear(COLORS['background'])
@@ -387,7 +390,7 @@ class Panel:
                 self.paint_active(c)
                 return
             c.rounded(3,3,w-6,86,16,COLORS['header_top'],bottom=COLORS['header_bottom'])
-            c.horse('pronto',10,30,58,54)
+            c.horse('pronto',10,30,58,54,animate=False)
             tx=76
             c.text('Mouse Macro',tx,32,w-tx-12,26,22,COLORS['header_text'],bold=True,display=True)
             c.text('Stocazz',tx,57,85,24,20,COLORS['header_a'],True,display=True)
@@ -642,10 +645,6 @@ class Panel:
         U.EnableWindow(self.controls[101], not active and valid)
         view=(state,self.session.message,self.metrics(),self.repeats,self.infinite,self.speed,self.next_tab,self.slow,self.human,
               int(time.monotonic()-(self.play_started or time.monotonic())),CURRENT['skin'],self.update['state'])
-        frame=frame_index(time.monotonic())
-        if frame != self.last_frame:
-            self.last_frame=frame
-            U.InvalidateRect(self.hwnd,None,False)  # next animation frame of the mascot
         if view != self.last_view:
             self.last_view=view
             U.InvalidateRect(self.hwnd,None,False)
@@ -685,6 +684,17 @@ class Panel:
             elif action == 'emergency' and self.session.state == State.RECORDING:
                 self.session.toggle_record()
         self.render()
+
+    def invalidate_mascot(self):
+        """Repaint only the animated horse(s); the whole window if none was drawn yet."""
+        rects = self.theme.animated
+        if not rects:
+            U.InvalidateRect(self.hwnd, None, False)
+            return
+        scale = self.dpi / 96
+        for x, y, w, h in rects:
+            box = W.RECT(int(x * scale) - 2, int(y * scale) - 2, int((x + w) * scale) + 3, int((y + h) * scale) + 3)
+            U.InvalidateRect(self.hwnd, C.byref(box), False)
 
     def set_skin(self, name):
         name = apply_skin(name)
@@ -1016,7 +1026,8 @@ class Panel:
                 frame = frame_index(time.monotonic())  # mascot animation tick, cheaper than drain()
                 if frame != self.last_frame:
                     self.last_frame = frame
-                    U.InvalidateRect(self.hwnd, None, False)
+                    if U.IsWindowVisible(self.hwnd) and not U.IsIconic(self.hwnd):
+                        self.invalidate_mascot()
                 return 0
             if msg == 0x113 and hasattr(self,'boxes'):
                 point=W.POINT();U.GetCursorPos(C.byref(point))
