@@ -17,7 +17,7 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from macro import engine
-from macro.engine import PlaybackOptions
+from macro.engine import LoopMode, PlaybackOptions
 from macro.events import LEFT_DOWN, LEFT_UP, MOVE_ABS, MacroEvent
 
 
@@ -30,7 +30,7 @@ def panel_settings():
         if isinstance(n, ast.Assign) and isinstance(n.value, ast.Call)
         and isinstance(n.value.func, ast.Name) and n.value.func.id == 'Theme')]
     panel.body = [init, next(n for n in panel.body if isinstance(n, ast.FunctionDef) and n.name == 'options')]
-    namespace = {'queue': queue, 'PlaybackOptions': PlaybackOptions, 'json': json,
+    namespace = {'queue': queue, 'PlaybackOptions': PlaybackOptions, 'LoopMode': LoopMode, 'json': json,
                  'FOLDER': Path(tempfile.gettempdir())/'mmss-timing-test', 'apply_skin': lambda name: name,
                  'U': SimpleNamespace(GetDoubleClickTime=lambda: 500)}
     exec(compile(ast.Module(body=[panel], type_ignores=[]), str(ROOT/'windows_main.py'), 'exec'), namespace)

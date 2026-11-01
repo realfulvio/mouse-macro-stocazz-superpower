@@ -17,7 +17,7 @@ from windows_visual import Theme, Canvas, COLORS, Paint, DrawItem, SKINS, CURREN
 from macro.windows_backend import (WindowsRecorder, WindowsPlayer, GlobalHotkeys,
     HOTKEY_RECORD, HOTKEY_PLAY, HOTKEY_EMERGENCY, screen_geometry, window_rect)
 from macro.session import Session, State, VERSION, validate_gestures
-from macro.engine import PlaybackOptions
+from macro.engine import LoopMode, PlaybackOptions
 from macro import updater, win_tray, mods
 from macro.mouse_devices import mouse_names, mouse_label
 from macro.events import BUTTON_OF_DOWN, BUTTON_OF_UP, WHEEL
@@ -147,6 +147,8 @@ class Panel:
         self.controls = {}
         self.queue = queue.SimpleQueue()
         self.repeats = 1
+        self.infinite = False  # solo per questa sessione: non resta acceso al prossimo avvio
+        self.record_keyboard = False  # idem: la tastiera è sempre spenta all'avvio
         self.mouse_description = 'Mouse: rilevamento…'
         self.speed = 1.0
         self.next_tab = False
@@ -206,7 +208,7 @@ class Panel:
         if not self.hwnd:
             raise C.WinError()
         self.session = Session(lambda: WindowsRecorder(self.hwnd, capture_snapshots=False,
-                                                       record_keyboard=bool(self.settings.get('record_keyboard'))),
+                                                       record_keyboard=self.record_keyboard),
                                WindowsPlayer, lambda: self.post('render'), screen_geometry)
         # Status text children remain available to accessibility/QA without
         # overlaying the vector card. All actions are actual Win32 buttons.
@@ -355,7 +357,8 @@ class Panel:
             detail = f'{count} eventi · {duration.split(".")[0]}'
         else:
             seconds = max(0,int(time.monotonic()-(self.play_started or time.monotonic())))
-            detail = f'{self.session.completed}/{self.repeats} giri · {seconds//60:02d}:{seconds%60:02d}'
+            total = '' if self.infinite else f'/{self.repeats}'
+            detail = f'{self.session.completed}{total} giri · {seconds//60:02d}:{seconds%60:02d}'
         c.text(detail,tx,ty[1],tw,19,14 if not tiny else 12,COLORS['text'])
         c.text('F9 stop' if recording else 'F10 stop · Ctrl+Alt+F11',tx,ty[2],tw,16,11,COLORS['muted'])
 
@@ -536,7 +539,8 @@ class Panel:
             self.post('record')
 
     def options(self):
-        return PlaybackOptions(repeat_count=self.repeats, speed=self.speed,
+        return PlaybackOptions(mode=LoopMode.INFINITE if self.infinite else LoopMode.REPEAT_COUNT,
+            repeat_count=None if self.infinite else self.repeats, speed=self.speed,
             # Ordinary interaction scales at 2x; only genuine long waits stay at 1x.
             # Slow pages retain the previous conservative timing policy.
             pause_threshold_seconds=.35 if self.slow else 2.0,
@@ -623,7 +627,7 @@ class Panel:
         U.SetWindowTextW(self.controls[41], 'Pagine lente: '+('attivo' if self.slow else 'disattivato'))
         U.SetWindowTextW(self.controls[42], 'Movimento umano: '+('attivo' if self.human else 'disattivato'))
         U.EnableWindow(self.controls[101], not active and valid)
-        view=(state,self.session.message,self.metrics(),self.repeats,self.speed,self.next_tab,self.slow,self.human,
+        view=(state,self.session.message,self.metrics(),self.repeats,self.infinite,self.speed,self.next_tab,self.slow,self.human,
               int(time.monotonic()-(self.play_started or time.monotonic())),CURRENT['skin'],self.update['state'])
         if view != self.last_view:
             self.last_view=view
@@ -633,7 +637,7 @@ class Panel:
             self.trace_saved = self.session.last_trace
             try:
                 (FOLDER/'ultimo-replay.json').write_text(json.dumps({'version':VERSION,
-                    'options':self.options().__dict__ | {'mode':'repeat_count'},
+                    'options':self.options().__dict__ | {'mode':'infinite' if self.infinite else 'repeat_count'},
                     'outcome':state.value,'records':self.session.last_trace}, indent=2), 'utf-8')
             except OSError:
                 pass
@@ -701,18 +705,24 @@ class Panel:
     def skin_menu(self):
         items = [(100+i, info['label'], 8 if name == CURRENT['skin'] else 0)
                  for i, (name, info) in enumerate(SKINS.items())]
-        items += [(90, None, 0), (91, 'Registra anche la tastiera', 8 if self.settings.get('record_keyboard') else 0)]
+        items += [(90, None, 0), (91, 'Registra anche la tastiera', 8 if self.record_keyboard else 0),
+                  (92, 'Ripeti all’infinito (fino a Stop)', 8 if self.infinite else 0)]
         choice = self.popup(204, items)
         if choice == 91:
             self.toggle_keyboard()
+        elif choice == 92:
+            self.toggle_infinite()
         elif choice:
             self.set_skin(list(SKINS)[choice-100])
             self.render()
 
+    def toggle_infinite(self):
+        self.infinite = not self.infinite
+        self.session.message = ('Giri infiniti: la macro riparte finché non premi Stop (F10) o Ctrl+Alt+F11.'
+                                if self.infinite else f'Giri infiniti disattivati: {self.repeats} giri.')
+
     def toggle_keyboard(self):
-        on = not self.settings.get('record_keyboard', False)
-        self.settings['record_keyboard'] = on
-        self.write_settings()
+        on = self.record_keyboard = not self.record_keyboard
         self.session.message = ('Tastiera attiva: dalla prossima registrazione i tasti digitati finiscono nella macro, '
                                 'password comprese.' if on else 'Tastiera disattivata: si registra solo il mouse.')
 
@@ -905,7 +915,7 @@ class Panel:
             finally:
                 self.dialog_open = False
             if path and launcher:
-                self.session.export(path, self.repeats, self.speed, self.slow, self.human, self.next_tab)
+                self.session.export(path, self.repeats, self.speed, self.slow, self.human, self.next_tab, self.infinite)
             elif path:
                 self.session.save(path) if choice == 101 else self.session.load(path)
         elif choice == 42:
