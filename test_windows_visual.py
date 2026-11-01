@@ -56,7 +56,7 @@ class VisualTests(unittest.TestCase):
 
     def test_cleanup_releases_both_font_families(self):
         theme = visual.Theme.__new__(visual.Theme)
-        theme.fonts, theme.images, theme.sheets = {}, {}, {}
+        theme.fonts, theme.images, theme.sheets, theme.frames = {}, {}, {}, {}
         theme.family, theme.body_family = 1, 2
         theme.collection = visual.P(3)
         theme.token = 4
@@ -64,3 +64,26 @@ class VisualTests(unittest.TestCase):
             theme.close()
             self.assertEqual(d.GdipDeleteFontFamily.call_args_list,
                              [unittest.mock.call(2), unittest.mock.call(1)])
+
+    def test_scaled_animation_frames_are_cached_and_dropped(self):
+        theme = visual.Theme.__new__(visual.Theme)
+        theme.frames, theme.sheets = {}, {'pronto': 5}
+        with patch.object(visual, 'D') as d, patch.object(visual, 'ptrcall', side_effect=lambda f, *a: object()) as make:
+            first = theme.frame('pronto', 3, 210, 150, (0, 0, 280, 200))
+            self.assertIs(theme.frame('pronto', 3, 210, 150, (0, 0, 280, 200)), first)  # cached
+            self.assertEqual(make.call_count, 2)  # bitmap + its graphics, once
+            self.assertEqual(d.GdipDrawImageRectRect.call_count, 1)
+            self.assertIsNot(theme.frame('pronto', 4, 210, 150, (280, 0, 280, 200)), first)
+            theme.drop_frames()
+            self.assertEqual(theme.frames, {})
+            self.assertEqual(d.GdipDisposeImage.call_count, 2)
+
+    def test_clipped_canvas_skips_what_is_outside_the_repainted_area(self):
+        canvas = visual.Canvas.__new__(visual.Canvas)
+        canvas.scale, canvas.view = 1.25, (10, 20, 140, 90)
+        self.assertFalse(canvas.hidden(12, 22, 50, 20))
+        self.assertTrue(canvas.hidden(200, 22, 50, 20))
+        self.assertTrue(canvas.hidden(12, 300, 50, 20))
+        canvas.view = None  # full repaint: nothing is skipped
+        self.assertFalse(canvas.hidden(5000, 5000, 1, 1))
+
