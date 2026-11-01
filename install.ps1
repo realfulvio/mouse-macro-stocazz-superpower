@@ -10,7 +10,7 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-$Version = '1.1.4'
+$Version = '1.2.0'
 $Repo    = 'realfulvio/mouse-macro-stocazz-superpower'
 $Base    = "https://github.com/$Repo/releases/download/v$Version"
 $Zip     = "MouseMacroStocazzSuperpower-Windows-v$Version.zip"

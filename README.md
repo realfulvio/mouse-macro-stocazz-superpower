@@ -8,8 +8,8 @@ Un piccolo pannello sempre in primo piano per Windows e Linux: Python è incluso
 </p>
 
 <p align="center">
-<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.1.4"><b>⬇ Scarica per Windows</b></a>
-· <a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.1.1"><b>⬇ Scarica per Linux</b></a>
+<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.2.0"><b>⬇ Scarica per Windows</b></a>
+· <a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.2.0"><b>⬇ Scarica per Linux</b></a>
 · <a href="GUIDA-ITALIANA.md">Guida italiana</a>
 · <a href="docs/ESITO-COLLAUDO-v1.1.1.md">Esito dei controlli</a>
 </p>
@@ -40,19 +40,19 @@ Lo script scarica la release ufficiale da GitHub, ne verifica lo SHA-256, la est
 
 ## Altri modi di installare
 
-1. Scarica `MouseMacroStocazzSuperpower-Windows-v1.1.4.zip` dalla [release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.1.4).
+1. Scarica `MouseMacroStocazzSuperpower-Windows-v1.2.0.zip` dalla [release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.2.0).
 2. Estrai **tutto** lo ZIP in una cartella.
-3. Apri `Mouse Macro v1.1.4.exe` e rispondi **Sì** alla domanda *Installare Mouse Macro Stocazz Superpower sul computer?*: lo copia nella tua cartella utente (`%LOCALAPPDATA%\MouseMacroStocazzSuperpower`, senza permessi da amministratore), crea i collegamenti nel **menu Start** e sul **desktop** e la voce in *Impostazioni → App installate*, da cui si disinstalla. Con **No** lo avvia dallo ZIP senza installare. Se Windows blocca l'exe, apri invece `Mouse Macro v1.1.4 (senza exe).cmd` (avvia senza installare).
+3. Apri `Mouse Macro v1.2.0.exe` e rispondi **Sì** alla domanda *Installare Mouse Macro Stocazz Superpower sul computer?*: lo copia nella tua cartella utente (`%LOCALAPPDATA%\MouseMacroStocazzSuperpower`, senza permessi da amministratore), crea i collegamenti nel **menu Start** e sul **desktop** e la voce in *Impostazioni → App installate*, da cui si disinstalla. Con **No** lo avvia dallo ZIP senza installare. Se Windows blocca l'exe, apri invece `Mouse Macro v1.2.0 (senza exe).cmd` (avvia senza installare).
 
 Serve Windows x64; l'exe richiede anche .NET Framework 4 (già presente in Windows 10/11), il `.cmd` no. Python è incluso. L'interfaccia è in italiano. Lo SHA-256 dello ZIP è pubblicato con ogni release.
 
 ### Windows blocca l'exe?
 
-Il launcher `.exe` non è firmato: SmartScreen o il *Controllo intelligente delle app* (Smart App Control) di Windows 11 possono bloccarlo (*"Un criterio di controllo dell'applicazione ha bloccato il file"*). Le due vie senza exe, cioè il comando PowerShell qui sopra e il file **`Mouse Macro v1.1.4 (senza exe).cmd`** nello ZIP, sono state provate con Smart App Control nella v1.1.0 (Windows 11 build 26300, [rapporto precedente](docs/ESITO-COLLAUDO-v1.1.0.md)); la verifica SAC non è stata ripetuta dalla v1.1.1 in poi. Il `.cmd` avvia direttamente il `pythonw.exe` firmato PSF con gli stessi file. Se SmartScreen avvisa, usa *Ulteriori informazioni → Esegui comunque*; se blocca ancora, tasto destro sullo ZIP → *Proprietà* → **Sblocca** prima di estrarlo.
+Il launcher `.exe` non è firmato: SmartScreen o il *Controllo intelligente delle app* (Smart App Control) di Windows 11 possono bloccarlo (*"Un criterio di controllo dell'applicazione ha bloccato il file"*). Le due vie senza exe, cioè il comando PowerShell qui sopra e il file **`Mouse Macro v1.2.0 (senza exe).cmd`** nello ZIP, sono state provate con Smart App Control nella v1.1.0 (Windows 11 build 26300, [rapporto precedente](docs/ESITO-COLLAUDO-v1.1.0.md)); la verifica SAC non è stata ripetuta dalla v1.1.1 in poi. Il `.cmd` avvia direttamente il `pythonw.exe` firmato PSF con gli stessi file. Se SmartScreen avvisa, usa *Ulteriori informazioni → Esegui comunque*; se blocca ancora, tasto destro sullo ZIP → *Proprietà* → **Sblocca** prima di estrarlo.
 
 Se anche queste vie vengono bloccate sul tuo PC, scrivilo nelle [Issues](https://github.com/realfulvio/mouse-macro-stocazz-superpower/issues).
 
-La v1.1.3 ha aggiunto l'installazione dall'exe con i collegamenti in Start e sul desktop; la v1.1.4 all'avvio propone subito l'aggiornamento quando ne esce uno. Motore invariato rispetto alla v1.1.2. [Download Portable](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.1.4/MouseMacroStocazzSuperpower-Windows-Portable.zip).
+La v1.1.3 ha aggiunto l'installazione dall'exe con i collegamenti in Start e sul desktop; la v1.2.0 all'avvio propone subito l'aggiornamento quando ne esce uno. Motore invariato rispetto alla v1.1.2. [Download Portable](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.0/MouseMacroStocazzSuperpower-Windows-Portable.zip).
 
 ## Cosa fa
 
@@ -115,11 +115,11 @@ Stabile. La v1.1.1 corregge l'inserimento delle ripetizioni e aggiunge il modell
 <img src="docs/screenshots/linux-v100-barra.png" alt="Barra attiva durante la riproduzione" width="330">
 </p>
 
-La versione Linux ha una release separata, **[linux-v1.1.1](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.1.1)**, con le stesse funzioni della Windows: barra attiva compatta e semitrasparente con contatori e Stop, ripetizioni 1–999, Normale/Rapida 2×, Ctrl+Tab tra i giri, Pagine lente, **Movimento umano**, skin Unicorno/Palio, modello del mouse, pallino aggiornamenti con installazione verificata, preferenze e diagnostica. Interfaccia in italiano o inglese; serve Linux x86_64 con X11 o Wayland.
+La versione Linux ha una release separata, **[linux-v1.2.0](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.2.0)**, con le stesse funzioni della Windows: barra attiva compatta e semitrasparente con contatori e Stop, ripetizioni 1–999, Normale/Rapida 2×, Ctrl+Tab tra i giri, Pagine lente, **Movimento umano**, skin Unicorno/Palio, modello del mouse, pallino aggiornamenti con installazione verificata, preferenze e diagnostica. Interfaccia in italiano o inglese; serve Linux x86_64 con X11 o Wayland.
 
 Nella prossima release anche su Linux: **tastiera opzionale** (interruttore *Registra anche la tastiera*, spento all'avvio: i tasti digitati finiscono nel file in chiaro, password comprese; usa gli stessi permessi già dati con *Concedi accesso* per F9/F10), **Infinito** e **Salva avviabile (.sh)**, che crea uno script e un `.mmr`: lo script apre Mouse Macro con la macro caricata (`--open`), poi premi F10. Lo script cerca l'installazione fatta con `install.sh`; con l'AppImage usa `./…AppImage --open file.mmr`.
 
-**Doppio clic (consigliato).** Scarica [`MouseMacroStocazzSuperpower-Linux-v1.1.1-x86_64.AppImage`](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/linux-v1.1.1/MouseMacroStocazzSuperpower-Linux-v1.1.1-x86_64.AppImage): è un unico file che contiene tutto, come lo ZIP portable di Windows.
+**Doppio clic (consigliato).** Scarica [`MouseMacroStocazzSuperpower-Linux-v1.2.0-x86_64.AppImage`](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/linux-v1.2.0/MouseMacroStocazzSuperpower-Linux-v1.2.0-x86_64.AppImage): è un unico file che contiene tutto, come lo ZIP portable di Windows.
 1. La prima volta rendilo eseguibile: tasto destro → Proprietà → Permessi → *Eseguibile* (oppure `chmod +x` sul file). I browser tolgono questo permesso a ogni file scaricato, quindi serve una volta sola.
 2. Doppio clic. Parte in italiano se il sistema è in italiano, altrimenti in inglese, e da quel momento compare anche nel menu delle applicazioni con la sua icona.
 3. Se in alto compare **Concedi accesso**, premilo: il sistema chiede la password (la normale finestra di autorizzazione del desktop, niente terminale) e il mouse e i tasti F9/F10 funzionano subito. Nella modalità gioco di Steam (gamescope) la finestra della password non c'è: passa al Desktop e premilo lì.
@@ -132,9 +132,9 @@ Dal pallino aggiornamenti l'AppImage si aggiorna da sola: scarica la nuova AppIm
 curl -fsSL https://raw.githubusercontent.com/realfulvio/mouse-macro-stocazz-superpower/main/install.sh | bash
 ```
 
-Lo script cerca l'ultima release `linux-v*`, scarica il pacchetto, ne verifica lo SHA-256, lo estrae in `~/.local/share/MouseMacroStocazzSuperpower`, aggiunge l'icona nel menu delle applicazioni e avvia il programma. Le volte successive avvia la versione installata senza riscaricare. Opzioni: `--en` (inglese), `--permessi` (configura subito i permessi), `--no-start`. In alternativa scarica `MouseMacroStocazzSuperpower-Linux-v1.1.1.tar.gz` e `SHA256SUMS-linux-v1.1.1.txt`, controlla con `sha256sum -c --ignore-missing SHA256SUMS-linux-v1.1.1.txt`, estrai e apri `MouseMacroStocazzSuperpower-Linux-IT`.
+Lo script cerca l'ultima release `linux-v*`, scarica il pacchetto, ne verifica lo SHA-256, lo estrae in `~/.local/share/MouseMacroStocazzSuperpower`, aggiunge l'icona nel menu delle applicazioni e avvia il programma. Le volte successive avvia la versione installata senza riscaricare. Opzioni: `--en` (inglese), `--permessi` (configura subito i permessi), `--no-start`. In alternativa scarica `MouseMacroStocazzSuperpower-Linux-v1.2.0.tar.gz` e `SHA256SUMS-linux-v1.2.0.txt`, controlla con `sha256sum -c --ignore-missing SHA256SUMS-linux-v1.2.0.txt`, estrai e apri `MouseMacroStocazzSuperpower-Linux-IT`.
 
-**Flatpak.** Scarica [`MouseMacroStocazzSuperpower-Linux-v1.1.1.flatpak`](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/linux-v1.1.1/MouseMacroStocazzSuperpower-Linux-v1.1.1.flatpak) e aprilo con il gestore software, oppure `flatpak install --user MouseMacroStocazzSuperpower-Linux-v1.1.1.flatpak`. Usa il runtime GNOME 51 di Flathub, che viene scaricato in automatico. Nel Flatpak l'app non si aggiorna da sola: per una nuova versione installa il nuovo `.flatpak`. Il sandbox concede l'accesso ai dispositivi (`--device=all`, necessario per leggere il mouse e usare uinput), la rete solo per il controllo aggiornamenti e la cartella home per Salva/Carica. Dentro il Flatpak il pulsante *Concedi accesso* non è disponibile: i permessi si configurano una volta con lo script qui sotto.
+**Flatpak.** Scarica [`MouseMacroStocazzSuperpower-Linux-v1.2.0.flatpak`](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/linux-v1.2.0/MouseMacroStocazzSuperpower-Linux-v1.2.0.flatpak) e aprilo con il gestore software, oppure `flatpak install --user MouseMacroStocazzSuperpower-Linux-v1.2.0.flatpak`. Usa il runtime GNOME 51 di Flathub, che viene scaricato in automatico. Nel Flatpak l'app non si aggiorna da sola: per una nuova versione installa il nuovo `.flatpak`. Il sandbox concede l'accesso ai dispositivi (`--device=all`, necessario per leggere il mouse e usare uinput), la rete solo per il controllo aggiornamenti e la cartella home per Salva/Carica. Dentro il Flatpak il pulsante *Concedi accesso* non è disponibile: i permessi si configurano una volta con lo script qui sotto.
 
 **Permessi.** Su Linux il programma legge il mouse e i tasti F9/F10 direttamente dai dispositivi (`/dev/input/event*`) e riproduce con un mouse virtuale (`/dev/uinput`). Il pulsante **Concedi accesso** del pannello installa, con la finestra di autorizzazione del sistema (`pkexec`), una regola udev con `TAG+="uaccess"` per mouse, tastiere e uinput. In alternativa, da terminale: `bash ~/.local/share/MouseMacroStocazzSuperpower/current/setup-linux-input.sh` (oppure lo script [`scripts/setup-linux-input.sh`](scripts/setup-linux-input.sh)), poi esci e rientra. L'accesso vale solo per l'utente seduto alla sessione locale attiva e viene tolto quando cambia utente o sessione; finché la regola è attiva, anche altri programmi della tua sessione possono leggere quei dispositivi. Non avviare l'app come root. Senza permessi il pannello mostra comunque il modello del mouse con la nota *senza permessi*. I touchpad non sono supportati per la registrazione: usa un mouse.
 
@@ -152,6 +152,6 @@ python -m unittest discover -v
 python build_native_windows.py
 ```
 
-Dettagli in [BUILD-v1.1.1.md](BUILD-v1.1.1.md). Su Linux: `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt 'pyinstaller==6.22.3'`, poi `.venv/bin/python build_release.py && .venv/bin/python package_linux.py` (pacchetto, `install.sh` e SHA256SUMS in `dist/linux`). La vecchia versione Linux v0.14 resta nella [release v0.14](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.14-beta); quella attuale è [linux-v1.1.1](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.1.1).
+Dettagli in [BUILD-v1.2.0.md](BUILD-v1.2.0.md). Su Linux: `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt 'pyinstaller==6.22.3'`, poi `.venv/bin/python build_release.py && .venv/bin/python package_linux.py` (pacchetto, `install.sh` e SHA256SUMS in `dist/linux`). La vecchia versione Linux v0.14 resta nella [release v0.14](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.14-beta); quella attuale è [linux-v1.2.0](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.2.0).
 
 [Tutte le release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases) · [Materiale promozionale](docs/promo/PRESENTAZIONE.md) · [Note di design](docs/design/README.md) · [Licenza PolyForm Noncommercial](LICENSE): uso libero personale e non commerciale, vietata la rivendita · [Licenze di terze parti](THIRD-PARTY-NOTICES.md) · Progetto e design: **hcok**
