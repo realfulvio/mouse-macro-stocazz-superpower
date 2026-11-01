@@ -22,6 +22,12 @@ class SettingsWindowTests(unittest.TestCase):
         self.assertTrue(ws.is_dark('#1A1024'))
         self.assertFalse(ws.is_dark('#FFF6DF'))
 
+    def test_window_is_kept_inside_the_work_area(self):
+        work = (0, 0, 1024, 728)
+        self.assertEqual(ws.fit_to_work_area(200, 150, 725, 700, work), (200, 28, 725, 700))  # moved up
+        self.assertEqual(ws.fit_to_work_area(900, 10, 725, 900, work), (299, 0, 725, 728))  # moved left, shrunk
+        self.assertEqual(ws.fit_to_work_area(160, 120, 580, 560, (0, 0, 1920, 1040)), (160, 120, 580, 560))
+
     def test_texts(self):
         info = SimpleNamespace(id='x', name='Viola', kind='theme', version='1.0', author='Luca', sha256='ab' * 32,
                                summary=lambda: ['Colori', 'Nessun codice'])
