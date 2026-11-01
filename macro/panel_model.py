@@ -16,7 +16,7 @@ def load_skin(name):
 
 # The Linux package has its own release line (tags linux-v*); the Windows
 # VERSION in macro/session.py is unrelated.
-LINUX_VERSION = '1.1.1'
+LINUX_VERSION = '1.2.0'
 
 BAMBOLA = load_skin('bambola')  # theme data lives in assets/skins/bambola.json
 SKINS = {

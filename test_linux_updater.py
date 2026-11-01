@@ -209,6 +209,18 @@ class CertificateTests(unittest.TestCase):
             linux_updater.ssl_context(['/nonexistent/a.pem'])
         create.assert_called_once_with(cafile=certifi.where())
 
+    def test_process_wide_bundle_for_other_https_clients(self):
+        env = {}
+        self.assertEqual(linux_updater.use_system_certificates(env, ['/nonexistent/a.pem', __file__]), __file__)
+        self.assertEqual(env['SSL_CERT_FILE'], __file__)
+        env = {}
+        import certifi
+        self.assertEqual(linux_updater.use_system_certificates(env, ['/nonexistent/a.pem']), certifi.where())
+        env = {'SSL_CERT_FILE': __file__}
+        self.assertEqual(linux_updater.use_system_certificates(env, ['/nonexistent/a.pem']), __file__)
+        env = {'SSL_CERT_FILE': '/nonexistent/broken.pem'}
+        self.assertEqual(linux_updater.use_system_certificates(env, [__file__]), __file__)
+
     def test_network_calls_use_the_verified_context_by_default(self):
         calls = []
         def fake_urlopen(request, timeout=None, context=None):
