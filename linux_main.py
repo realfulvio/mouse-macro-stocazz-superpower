@@ -16,7 +16,7 @@ import flet as ft
 
 from macro import linux_setup, linux_updater
 from macro.updater import UpdateError
-from macro.linux_backend import (LinuxRecorder, LinuxPlayer, GlobalHotkeys, UINPUT_DENIED, list_mice,
+from macro.linux_backend import (LinuxRecorder, LinuxPlayer, GlobalHotkeys, UINPUT_DENIED, list_mice, list_keyboards,
                                  mouse_models)
 from macro.mouse_devices import mouse_label
 from macro.panel_model import (LINUX_VERSION, BAMBOLA, SKINS, DEFAULT_SKIN, DARK_SKINS, UPDATE_DOT, parse_repeats, playback_options,
@@ -50,6 +50,10 @@ EN = {
     'Ctrl+Tab tra un giro e l’altro': 'Ctrl+Tab between cycles',
     'Pagine lente': 'Slow pages', 'Aggiunge pause tra i clic': 'Adds pauses between clicks',
     'Movimento umano': 'Human-like movement',
+    'Registra anche la tastiera': 'Record the keyboard too',
+    'I tasti digitati finiscono nel file in chiaro, password comprese':
+        'Typed keys are stored in the file in plain text, passwords included',
+    'Salva avviabile (.sh)': 'Save launchable (.sh)',
     'Percorsi e pause cambiano a ogni giro; i clic restano negli stessi punti':
         'Paths and pauses change every cycle; clicks stay on the same spots',
     'Skin': 'Skin', 'Unicorno': 'Unicorn', 'Palio': 'Palio',
@@ -85,6 +89,18 @@ EN = {
     'Registrazione fermata con un pulsante premuto. Registra di nuovo il gesto completo.':
         'Recording stopped with a button held. Record the complete gesture again.',
     'Imposta da 1 a 999 ripetizioni.': 'Set 1 to 999 repeats.',
+    'Tastiera attiva: dalla prossima registrazione i tasti digitati finiscono nella macro, password comprese.':
+        'Keyboard on: from the next recording typed keys are stored in the macro, passwords included.',
+    'Tastiera disattivata: si registra solo il mouse.': 'Keyboard off: only the mouse is recorded.',
+    'Nessuna tastiera accessibile. Premi Concedi accesso o spegni «Registra anche la tastiera».':
+        'No keyboard accessible. Press Grant access or turn off “Record the keyboard too”.',
+    'Tastiera non accessibile: premi "Concedi accesso" nel pannello oppure spegni la registrazione dei tasti.':
+        'Keyboard not accessible: press "Grant access" in the panel or turn off key recording.',
+    'La macro contiene un tasto rilasciato senza pressione. Registra di nuovo.':
+        'The macro contains a key release without a press. Record again.',
+    'Registrazione fermata con un tasto premuto. Registra di nuovo.': 'Recording stopped with a key held. Record again.',
+    'La modalità Durata non si può esportare: scegli N volte o Infinito.':
+        'Duration mode cannot be exported: choose N times or Infinite.',
     'Concedi accesso': 'Grant access',
     ACCESS_TEXT: 'The program cannot read the mouse and the F9/F10 keys yet. Press Grant access: '
                  'the system asks for your password once.',
@@ -111,6 +127,8 @@ EN_TEMPLATES = [
     (r'Scarico la versione (.+)…', r'Downloading version \1…'),
     (r'Flatpak: aggiorna dal gestore software o scarica il nuovo \.flatpak', r'Flatpak: update from the software centre or download the new .flatpak'),
     (r'Mouse rilevati: (.+)', r'Mice detected: \1'),
+    (r'Macro avviabile creata: (.+)\. Serve Mouse Macro installato sul PC dove la apri\.',
+     r'Launchable macro created: \1. Mouse Macro must be installed on the PC where you open it.'),
     (r'Mouse: modello non disponibile', r'Mouse: model unavailable'),
 ]
 
@@ -120,8 +138,9 @@ def duration_text(seconds):
 
 
 class LinuxPanel:
-    def __init__(self, page, language='it', preferences=None, preview=False):
+    def __init__(self, page, language='it', preferences=None, preview=False, open_request=None):
         self.page, self.language, self.preview = page, language, preview
+        self.open_request = open_request  # macro avviabile: caricata all'avvio, mai avviata da sola
         self.path = Path(preferences) if preferences else settings_path()
         self.folder = self.path.parent  # diagnostics live next to the preferences
         self.settings = read_settings(self.path)
@@ -284,6 +303,8 @@ class LinuxPanel:
         self.next_tab = ft.Switch(value=False, on_change=self.option_changed)
         self.slow = ft.Switch(value=False, on_change=self.option_changed)
         self.human = ft.Switch(value=False, on_change=self.human_changed)
+        self.keyboard_switch = ft.Switch(value=False, on_change=self.keyboard_changed)  # sempre spento all'avvio
+        self.export_button = self.button('Salva avviabile (.sh)', self.export_file, icon=ft.Icons.ROCKET_LAUNCH_OUTLINED)
         def setting(label, hint, switch):
             return ft.Row([ft.Column([self.text(label,18,True), self.text(hint,16,muted=True)], expand=True), switch])
         self.mode = ft.Dropdown(label=self.tr('Modalità'), value='count', text_size=16,
@@ -313,7 +334,10 @@ class LinuxPanel:
             setting('Pagine lente','Aggiunge pause tra i clic',self.slow),
             setting('Movimento umano','Percorsi e pause cambiano a ogni giro; i clic restano negli stessi punti',
                     self.human),
+            setting('Registra anche la tastiera','I tasti digitati finiscono nel file in chiaro, password comprese',
+                    self.keyboard_switch),
             ft.Divider(color=self.colors['border']), self.mode,self.minutes,self.double_click,
+            self.export_button,
             self.skin_choice,self.update_button,
         ],spacing=16,scroll=ft.ScrollMode.AUTO),expand=True,visible=False)
         self.main_column = ft.Column([
@@ -498,10 +522,17 @@ class LinuxPanel:
     def make_recorder(self):
         if not self.mouse.value:
             raise ValueError(self.tr('Permessi mouse insufficienti. Vedi la Guida e aggiorna l’elenco.'))
-        return LinuxRecorder(self.mouse.value)
+        keyboards = []
+        if self.keyboard_switch.value:
+            keyboards = [path for path, name in list_keyboards()]
+            if not keyboards:
+                raise ValueError(self.tr('Nessuna tastiera accessibile. Premi Concedi accesso o spegni «Registra anche la tastiera».'))
+        return LinuxRecorder(self.mouse.value, keyboards)
 
     async def start(self):
         await self.refresh_devices()
+        if self.open_request:
+            await self.apply_open_request()
         self.page.run_task(self.pump)
         if self.settings.get('check_updates', True):
             self.page.run_task(self.check_updates)
@@ -605,6 +636,43 @@ class LinuxPanel:
         self.session.message = ('Movimento umano attivo: percorsi e pause cambiano a ogni giro, i clic restano sugli stessi punti.'
                                 if self.human.value else 'Movimento umano disattivato: replay identico alla registrazione.')
         self.render()
+
+    def keyboard_changed(self,e=None):
+        self.session.message = ('Tastiera attiva: dalla prossima registrazione i tasti digitati finiscono nella macro, password comprese.'
+                                if self.keyboard_switch.value else 'Tastiera disattivata: si registra solo il mouse.')
+        self.render()
+
+    async def apply_open_request(self):
+        """Macro avviabile (.sh): carica il file e imposta giri e opzioni. La riproduzione resta a F10."""
+        request, self.open_request = self.open_request, None
+        if not await asyncio.to_thread(self.session.load, request.path):
+            return
+        self.repeat.value = str(request.repeats)
+        self.mode.value = 'infinite' if request.infinite else 'count'
+        self.speed = float(request.speed)
+        self.next_tab.value, self.slow.value, self.human.value = request.next_tab, request.slow, request.human
+        self.render()
+
+    async def export_file(self,e=None):
+        if self.session.state in ACTIVE or self.dialog_open:
+            return
+        self.dialog_open=True
+        self.render()
+        try:
+            if self.mode.value == 'duration':
+                raise ValueError('La modalità Durata non si può esportare: scegli N volte o Infinito.')
+            infinite = self.mode.value == 'infinite'
+            repeats = 1 if infinite else parse_repeats(self.repeat.value)
+            path=await self.picker.save_file(dialog_title=self.tr('Salva avviabile (.sh)'),file_name='macro.sh',
+                file_type=ft.FilePickerFileType.CUSTOM,allowed_extensions=['sh'])
+            if path:
+                await asyncio.to_thread(self.session.export,path,repeats,int(self.speed),self.slow.value,
+                                        self.human.value,self.next_tab.value,infinite)
+        except Exception as error:
+            self.session.error(error)
+        finally:
+            self.dialog_open=False
+            self.render()
 
     def mode_changed(self,e=None):
         self.minutes.visible=self.mode.value=='duration'
@@ -853,6 +921,11 @@ class LinuxPanel:
                  'e le pause variano; la somma degli spostamenti fra due clic resta identica, quindi i '
                  'clic cadono negli stessi punti se l’accelerazione del mouse è disattivata (profilo '
                  '“piatto”). Non rende invisibile l’automazione: controlla i termini del sito che usi.\n\n'
+                 'Tastiera (spenta all’avvio): con «Registra anche la tastiera» i tasti digitati finiscono '
+                 'nel file della macro in chiaro, password comprese; F9, F10 e F11 non vengono registrati. '
+                 'Il permesso di lettura della tastiera è lo stesso già usato per F9/F10. '
+                 'Salva avviabile crea uno script .sh e un .mmr: lo script apre Mouse Macro con la macro '
+                 'caricata, poi premi F10.\n\n'
                  'Su molti desktop Ctrl+Alt+F11 passa anche a una console di testo: la macro si ferma '
                  'comunque; torna al desktop con Ctrl+Alt+F1, F2 o F7. Ctrl+Maiusc+F11 ferma tutto '
                  'senza cambiare console.\n\n'
@@ -869,6 +942,10 @@ class LinuxPanel:
                      'every cycle; the sum of the movements between two clicks stays identical, so clicks '
                      'land on the same spots when mouse acceleration is off (flat profile). It does not '
                      'hide automation: check the terms of the site you use.\n\n'
+                     'Keyboard (off at launch): with “Record the keyboard too” typed keys are stored in the macro '
+                     'file in plain text, passwords included; F9, F10 and F11 are not recorded. Reading the '
+                     'keyboard uses the same permission already needed for F9/F10. Save launchable writes a .sh '
+                     'script and a .mmr: the script opens Mouse Macro with the macro loaded, then press F10.\n\n'
                      'On many desktops Ctrl+Alt+F11 also switches to a text console: playback stops anyway; '
                      'return with Ctrl+Alt+F1, F2 or F7. Ctrl+Shift+F11 stops without switching console.\n\n'
                      'Mouse access and keyboard access for global shortcuts are required. If Grant access '
@@ -905,8 +982,8 @@ class LinuxPanel:
                 await asyncio.to_thread(self.hotkeys.stop)
 
 
-async def main(page,language='it'):
-    panel=LinuxPanel(page,language)
+async def main(page,language='it',open_request=None):
+    panel=LinuxPanel(page,language,open_request=open_request)
     await panel.start()
 
 
@@ -932,6 +1009,13 @@ def run(language='it', argv=None):
         raise SystemExit(linux_self_test(argv[1], language))
     if len(argv) == 2 and argv[0] == '--wait-for-exit' and argv[1].isdecimal():
         wait_for_exit(int(argv[1]))
+    open_request = None
+    if '--open' in argv:
+        from macro.runner import parse_run_args
+        try:
+            open_request = parse_run_args(argv, '--open')
+        except ValueError as error:
+            save_error_log(config_dir(), f'Macro avviabile non valida: {error}', 'errore-avvio.log')
     def log_thread_error(args):
         save_error_log(config_dir(), ''.join(traceback.format_exception(args.exc_type, args.exc_value,
                                                                           args.exc_traceback)))
@@ -953,7 +1037,7 @@ def run(language='it', argv=None):
     async def start(page):
         opened.set()
         try:
-            await main(page,language)
+            await main(page,language,open_request)
         except Exception:
             save_error_log(config_dir(), traceback.format_exc(), 'errore-avvio.log')
             raise

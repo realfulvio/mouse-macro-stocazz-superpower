@@ -15,6 +15,9 @@ from typing import Callable
 from evdev import InputDevice, UInput, UInputError, ecodes, list_devices
 
 from .events import (
+    KEY_DOWN,
+    KEY_PREFIX,
+    KEY_UP,
     LEFT_DOWN,
     LEFT_UP,
     MIDDLE_DOWN,
@@ -25,6 +28,8 @@ from .events import (
     WHEEL,
     MacroEvent,
 )
+from .keys import (LINUX_KEY_MAX, LINUX_RESERVED_CODES, linux_code_of_name,
+                   linux_key_name)
 
 VIRTUAL_DEVICE_NAME = "MouseMacroStudio Virtual Mouse"
 # A new uinput device is not used until the compositor (libinput) has opened it:
@@ -82,9 +87,29 @@ def mouse_models(devices_file: str = "/proc/bus/input/devices") -> list[str]:
     return names
 
 
+def list_keyboards() -> list[tuple[str, str]]:
+    """Dispositivi che sembrano una tastiera vera (lettere ed Invio), escluso il nostro mouse virtuale."""
+    boards: list[tuple[str, str]] = []
+    for path in list_devices():
+        try:
+            dev = InputDevice(path)
+        except OSError:
+            continue
+        keys = dev.capabilities().get(ecodes.EV_KEY, [])
+        if ecodes.KEY_A in keys and ecodes.KEY_ENTER in keys and dev.name != VIRTUAL_DEVICE_NAME:
+            boards.append((path, dev.name))
+        dev.close()
+    return boards
+
+
 class LinuxRecorder:
-    def __init__(self, device_path: str):
+    def __init__(self, device_path: str, keyboard_paths=()):
         self.device_path = device_path
+        self.keyboard_paths = tuple(keyboard_paths)   # vuoto = la tastiera non viene ascoltata
+        self._keyboards: list[InputDevice] = []
+        self._key_threads: list[threading.Thread] = []
+        self._keys_down: set[int] = set()
+        self._ts_lock = threading.Lock()
         self._thread: threading.Thread | None = None
         self._events: list[MacroEvent] = []
         self._lock = threading.Lock()
@@ -98,6 +123,17 @@ class LinuxRecorder:
     def start(self) -> None:
         # Open synchronously so permission/missing-device errors reach the UI.
         self._device = InputDevice(self.device_path)
+        try:
+            self._keyboards = [InputDevice(path) for path in self.keyboard_paths]
+        except OSError as error:
+            self._device.close()
+            self._device = None
+            for board in self._keyboards:
+                board.close()
+            self._keyboards = []
+            raise PermissionError('Tastiera non accessibile: premi "Concedi accesso" nel pannello '
+                                  'oppure spegni la registrazione dei tasti.') from error
+        self._keys_down = set()
         self._events = []
         self._base_ts = None
         self._pending_dx = 0
@@ -105,12 +141,57 @@ class LinuxRecorder:
         self._stop.clear()
         self.error = ''
         self._thread = threading.Thread(target=self._run, daemon=True)
+        self._key_threads = [threading.Thread(target=self._run_keyboard, args=(board,), daemon=True)
+                             for board in self._keyboards]
         try:
             self._thread.start()
+            for thread in self._key_threads:
+                thread.start()
         except Exception:
+            self._stop.set()
             self._device.close()
             self._device = None
+            for board in self._keyboards:
+                board.close()
+            self._keyboards = []
             raise
+
+    def _run_keyboard(self, dev) -> None:
+        try:
+            while not self._stop.is_set():
+                r, _, _ = select.select([dev.fd], [], [], 0.2)
+                if not r:
+                    continue
+                for event in dev.read():
+                    self._handle_key(event)
+        except OSError as error:
+            if not self._stop.is_set():
+                self.error = f'Tastiera scollegata o non disponibile: {error}'
+        finally:
+            dev.close()
+
+    def _time_of(self, event) -> float:
+        with self._ts_lock:
+            if self._base_ts is None:
+                self._base_ts = event.timestamp()
+            return event.timestamp() - self._base_ts
+
+    def _handle_key(self, event) -> None:
+        if event.type != ecodes.EV_KEY or event.value not in (0, 1):   # 2 = ripetizione automatica
+            return
+        code = event.code
+        if not 1 <= code <= LINUX_KEY_MAX or code in LINUX_RESERVED_CODES:
+            return
+        t = self._time_of(event)
+        with self._lock:
+            if event.value == 1:
+                if code in self._keys_down:
+                    return
+                self._keys_down.add(code)
+                self._events.append(MacroEvent(t=t, kind=KEY_DOWN, key=linux_key_name(code)))
+            elif code in self._keys_down:   # tasto premuto prima di F9: il suo rilascio non conta
+                self._keys_down.discard(code)
+                self._events.append(MacroEvent(t=t, kind=KEY_UP, key=linux_key_name(code)))
 
     def _run(self) -> None:
         dev = self._device
@@ -129,9 +210,7 @@ class LinuxRecorder:
             self._device = None
 
     def _handle(self, event) -> None:
-        if self._base_ts is None:
-            self._base_ts = event.timestamp()
-        t = event.timestamp() - self._base_ts
+        t = self._time_of(event)
 
         if event.type == ecodes.EV_REL:
             if event.code == ecodes.REL_X:
@@ -167,7 +246,19 @@ class LinuxRecorder:
         self._stop.set()
         if self._thread:
             self._thread.join(timeout=1.0)
+        for thread in self._key_threads:
+            thread.join(timeout=1.0)
+        self._key_threads = []
         with self._lock:
+            if self._keys_down and self._base_ts is not None:
+                # Tasto ancora premuto allo stop: lo rilascia nella macro, così resta completa.
+                end = max([e.t for e in self._events] + [time.time() - self._base_ts])
+                for code in sorted(self._keys_down):
+                    self._events.append(MacroEvent(t=end, kind=KEY_UP, key=linux_key_name(code)))
+                self._keys_down = set()
+            # Mouse e tastiera arrivano da thread diversi: ordine per tempo (stabile a parità).
+            if self.keyboard_paths:
+                self._events.sort(key=lambda e: e.t)
             return list(self._events)
 
     @property
@@ -177,10 +268,9 @@ class LinuxRecorder:
 
 
 _CAPABILITIES = {
-    ecodes.EV_KEY: [
-        ecodes.BTN_LEFT, ecodes.BTN_RIGHT, ecodes.BTN_MIDDLE,
-        ecodes.KEY_LEFTCTRL, ecodes.KEY_W, ecodes.KEY_TAB,
-    ],
+    # Mouse, più tutti i tasti della tastiera (1..LINUX_KEY_MAX) per le macro con la tastiera.
+    ecodes.EV_KEY: sorted({ecodes.BTN_LEFT, ecodes.BTN_RIGHT, ecodes.BTN_MIDDLE,
+                           *range(1, LINUX_KEY_MAX + 1)}),
     ecodes.EV_REL: [ecodes.REL_X, ecodes.REL_Y, ecodes.REL_WHEEL],
 }
 
@@ -189,6 +279,7 @@ class LinuxPlayer:
     def __init__(self, settle: float = UINPUT_SETTLE_SECONDS):
         self._ui: UInput | None = None
         self._held: set[str] = set()
+        self._held_keys: set[str] = set()
         self._settle = settle
         # Create the device now: permission errors reach the panel before playback
         # starts, and the settle pause is spent before the first event.
@@ -261,6 +352,12 @@ class LinuxPlayer:
         elif evt.kind == WHEEL:
             ui.write(ecodes.EV_REL, ecodes.REL_WHEEL, int(evt.wheel))
             ui.syn()
+        elif evt.kind == KEY_DOWN:
+            self._held_keys.add(evt.key)
+            self._button(linux_code_of_name(evt.key), 1)
+        elif evt.kind == KEY_UP:
+            self._button(linux_code_of_name(evt.key), 0)
+            self._held_keys.discard(evt.key)
         if evt.kind in (LEFT_UP, RIGHT_UP, MIDDLE_UP):
             self._held.discard({LEFT_UP:'left', RIGHT_UP:'right', MIDDLE_UP:'middle'}[evt.kind])
 
@@ -273,6 +370,14 @@ class LinuxPlayer:
         mapping = {"left": ecodes.BTN_LEFT, "right": ecodes.BTN_RIGHT, "middle": ecodes.BTN_MIDDLE}
         error = None
         for name in held:
+            if name.startswith(KEY_PREFIX):
+                key = name[len(KEY_PREFIX):]
+                try:
+                    self._button(linux_code_of_name(key), 0)
+                    self._held_keys.discard(key)
+                except Exception as caught:
+                    error = error or caught
+                continue
             code = mapping.get(name)
             if code is not None:
                 try:
@@ -286,7 +391,7 @@ class LinuxPlayer:
     def close(self) -> None:
         if self._ui is not None:
             try:
-                self.release_held(set(self._held))
+                self.release_held(set(self._held) | {KEY_PREFIX + key for key in self._held_keys})
             finally:
                 if self._settle:
                     time.sleep(UINPUT_DRAIN_SECONDS)

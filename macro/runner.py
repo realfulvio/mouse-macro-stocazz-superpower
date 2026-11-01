@@ -21,15 +21,16 @@ class RunRequest:
     slow: bool = False
     human: bool = False
     next_tab: bool = False
+    infinite: bool = False
 
 
-def parse_run_args(argv: list[str]) -> RunRequest:
-    """Legge gli argomenti dopo `--run`. Solleva ValueError se qualcosa non torna."""
+def parse_run_args(argv: list[str], flag: str = "--run") -> RunRequest:
+    """Legge gli argomenti dopo `--run` (Windows) o `--open` (Linux). Solleva ValueError se qualcosa non torna."""
     args = list(argv)
     try:
-        path = args[args.index("--run") + 1]
+        path = args[args.index(flag) + 1]
     except (ValueError, IndexError):
-        raise ValueError("Manca il file della macro dopo --run.") from None
+        raise ValueError(f"Manca il file della macro dopo {flag}.") from None
     if not path.lower().endswith(".mmr"):
         raise ValueError("Il file della macro deve essere un .mmr.")
 
@@ -46,13 +47,14 @@ def parse_run_args(argv: list[str]) -> RunRequest:
         raise ValueError("Le ripetizioni vanno da 1 a 999.")
     if speed not in (1, 2):
         raise ValueError("La velocità può essere 1 o 2.")
-    return RunRequest(path, repeats, speed, "--slow" in args, "--human" in args, "--next-tab" in args)
+    return RunRequest(path, repeats, speed, "--slow" in args, "--human" in args, "--next-tab" in args,
+                      "--infinite" in args)
 
 
 def run_from_argv(argv: list[str]) -> int:
     import ctypes
 
-    from .engine import PlaybackOptions
+    from .engine import LoopMode, PlaybackOptions
     from .session import Session, State
     from .windows_backend import (HOTKEY_EMERGENCY, GlobalHotkeys, WindowsPlayer,
                                   screen_geometry)
@@ -69,7 +71,8 @@ def run_from_argv(argv: list[str]) -> int:
         session = Session(None, WindowsPlayer, done.set, screen_geometry)
         if not session.load(request.path):
             raise ValueError(session.message)
-        if box(f"Riprodurre la macro «{name}» {request.repeats} volte?\n\n"
+        times = "all’infinito (finché non la fermi)" if request.infinite else f"{request.repeats} volte"
+        if box(f"Riprodurre la macro «{name}» {times}?\n\n"
                "Le finestre devono essere come quando l’hai registrata.\n"
                "Per fermare in qualsiasi momento: Ctrl+Alt+F11.", 0x21) != 1:  # OK/Annulla
             return 0
@@ -81,7 +84,8 @@ def run_from_argv(argv: list[str]) -> int:
                              "Chiudilo e riprova: senza lo stop di emergenza non parto.")
         try:
             options = PlaybackOptions(
-                repeat_count=request.repeats, speed=request.speed,
+                mode=LoopMode.INFINITE if request.infinite else LoopMode.REPEAT_COUNT,
+                repeat_count=None if request.infinite else request.repeats, speed=request.speed,
                 pause_threshold_seconds=.35 if request.slow else 2.0,
                 max_pause_speedup=1.0, min_click_hold_seconds=.12,
                 min_action_gap_seconds=1.2 if request.slow else .65 / request.speed,
