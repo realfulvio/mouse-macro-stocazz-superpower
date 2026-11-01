@@ -23,7 +23,7 @@ Con il cambio scheda attivo imposta al massimo il numero di schede da lavorare: 
 
 La registrazione e il replay non sono limitati a Chrome/Firefox o a una singola finestra. Le finestre devono avere posizione, dimensione e scala compatibili con la registrazione. Non cambiare risoluzione, disposizione monitor, scala Windows o zoom del browser. Se cambi la disposizione, registra di nuovo.
 
-Per pagine lente registra pause sufficienti e abilita **Pagine lente** nelle Opzioni. Non esiste un rilevamento garantito del caricamento: la pausa standard è prudente, non una conferma del sito. Il confronto dei pixel è stato rimosso dal flusso Windows perché non prova che un pulsante sia pronto. La macro non registra tasti della tastiera, non cerca i pulsanti per nome e non ritenta i clic automaticamente.
+Per pagine lente registra pause sufficienti e abilita **Pagine lente** nelle Opzioni. Non esiste un rilevamento garantito del caricamento: la pausa standard è prudente, non una conferma del sito. Il confronto dei pixel è stato rimosso dal flusso Windows perché non prova che un pulsante sia pronto. Su Windows la tastiera si registra solo se la attivi dal menu del pallino in alto (*Registra anche la tastiera*): le password digitate finiscono nel file in chiaro. La macro non cerca i pulsanti per nome e non ritenta i clic automaticamente.
 
 Dopo uno stop controlla lo stato dei programmi prima di riavviare: il programma ricomincia il giro. Il replay usa coordinate assolute, segue anche i cambi finestra e non controlla il programma destinatario. Prima dell’avvio controlla che ogni bersaglio sia nella posizione registrata; il pannello non deve coprire i gesti.
 

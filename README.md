@@ -62,7 +62,8 @@ La v1.1.3 ha aggiunto l'installazione dall'exe con i collegamenti in Start e sul
 - Salva e carica le macro in file `.mmr`.
 - **Ctrl+Tab tra un giro e l'altro** (facoltativo) per scorrere le schede del browser: spento all'avvio, mai dopo l'ultimo giro.
 - **Movimento umano** (facoltativo, spento all'avvio): a ogni giro il cursore segue una curva leggermente diversa, con velocità non uniforme, e le pause variano un poco. I clic cadono sempre negli stessi punti registrati; i trascinamenti e la rotella non cambiano. Non rende invisibile l'automazione: molti siti la vietano nei loro termini.
-- Registra solo il mouse: niente tastiera, niente schermate. L'unico accesso alla rete è il controllo aggiornamenti, anonimo e disattivabile.
+- Registra il mouse. **Su Windows può registrare anche la tastiera**, ma solo se la attivi dal menu del pallino in alto (*Registra anche la tastiera*; spenta all'avvio): i tasti digitati finiscono nel file della macro in chiaro, **password comprese**. F9, F10 e Ctrl+Alt+F11 non vengono mai registrati. Niente schermate. L'unico accesso alla rete è il controllo aggiornamenti, anonimo e disattivabile.
+- **Macro avviabile** (Windows): in *Salva* scegli «Macro avviabile con un doppio clic (*.cmd)». Crea un `.cmd` e un `.mmr` accanto, con i giri e la velocità scelti nel pannello. Il doppio clic sul `.cmd` chiede conferma e riproduce la macro; Ctrl+Alt+F11 ferma. Non è un exe: non contiene programmi, usa Mouse Macro installato sul PC (con questa funzione), quindi SmartScreen e gli antivirus non vedono file nuovi da valutare. Sul PC di destinazione serve Mouse Macro installato.
 
 
 ## Skin e aggiornamenti

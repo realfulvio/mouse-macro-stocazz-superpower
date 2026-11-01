@@ -50,7 +50,7 @@ def main():
     shutil.copy2(ROOT/'assets'/'icon.ico',app/'assets'/'icon.ico')
     macro = app/'macro'
     macro.mkdir()
-    for name in ('__init__.py','events.py','engine.py','session.py','windows_backend.py','win_dialogs.py','updater.py','mouse_devices.py','win_tray.py','mods.py'):
+    for name in ('__init__.py','events.py','engine.py','session.py','windows_backend.py','win_dialogs.py','updater.py','mouse_devices.py','win_tray.py','mods.py','keys.py','export.py','runner.py'):
         shutil.copy2(ROOT/'macro'/name,macro/name)
     for name in ('LICENSE','THIRD-PARTY-NOTICES.md','GUIDA-ITALIANA.md'):
         if (ROOT/name).exists():
