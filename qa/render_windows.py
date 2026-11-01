@@ -39,6 +39,7 @@ ui.api(g, 'CreateDIBSection', W.HBITMAP,
        [W.HDC, C.POINTER(BitmapInfo), W.UINT, C.POINTER(C.c_void_p), W.HANDLE, W.DWORD])
 ui.api(g, 'SetViewportOrgEx', W.BOOL, [W.HDC, C.c_int, C.c_int, C.POINTER(W.POINT)])
 args.out.mkdir(parents=True, exist_ok=True)
+ui.apply_skin(ui.DEFAULT_SKIN)  # the render shows the skin new users get
 theme = ui.Theme()
 results = []
 try:
@@ -50,7 +51,7 @@ try:
             p.expanded = mode == 'expanded'
             p.width, p.height = ui.window_size(p.active_view, p.expanded)
             p.repeats = 999; p.speed = 2; p.next_tab = False; p.slow = False
-            p.human = False
+            p.human = False; p.infinite = False
             p.mouse_description = 'Mouse: Logitech G502 HERO'
             p.record_started = time.monotonic() - 62
             p.play_started = time.monotonic() - 62
