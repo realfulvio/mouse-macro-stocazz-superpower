@@ -539,7 +539,7 @@ class PanelModelTests(unittest.TestCase):
                                         'speed': 2}))
             self.assertEqual(panel_model.read_settings(path),
                              {'skin': 'palio', 'device': None, 'double_click_ms': '400',
-                              'check_updates': True, 'window': {'width': 600}})
+                              'check_updates': True, 'close_to_tray': False, 'window': {'width': 600}})
             path.write_text('[1, 2]')
             self.assertEqual(panel_model.read_settings(path)['window'], {})
 

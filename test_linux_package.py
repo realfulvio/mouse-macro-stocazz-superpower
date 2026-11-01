@@ -177,7 +177,8 @@ class FlatpakFilesTests(unittest.TestCase):
     def test_bundle_permissions_match_the_manifest(self):
         args = package_linux.flatpak_finish_args()
         for needed in ('--socket=wayland', '--socket=fallback-x11', '--device=all', '--share=network',
-                       '--persist=.flet', '--filesystem=home', '--share=ipc'):
+                       '--persist=.flet', '--filesystem=home', '--share=ipc',
+                       '--talk-name=org.kde.StatusNotifierWatcher'):
             self.assertIn(needed, args)
         manifest = (ROOT / 'flatpak' / f'{package_linux.FLATPAK_ID}.yml').read_text()
         runtime, branch = package_linux.FLATPAK_RUNTIME

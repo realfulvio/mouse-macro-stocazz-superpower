@@ -30,6 +30,46 @@ SKINS = {
 }
 DEFAULT_SKIN = 'bambola'
 DARK_SKINS = ('unicorno', 'bambola')
+MOD_SKINS = {}  # 'mod:<id>' -> {'label', 'folder', 'regions', 'dark'}; filled by register_mod_skins()
+PALETTE_KEYS = ('background', 'surface', 'border', 'text', 'muted', 'record', 'play', 'ready', 'warning', 'error')
+
+
+def mods_dir():
+    return config_dir() / 'mods'
+
+
+def _is_dark(color):
+    r, g, b = (int(color[i:i + 2], 16) for i in (1, 3, 5))
+    return (0.299 * r + 0.587 * g + 0.114 * b) < 128
+
+
+def register_mod_skins(infos):
+    """Add the installed theme mods (macro.mods.ModInfo) to SKINS; replaces any registered before."""
+    from . import mods
+    for name in list(MOD_SKINS):
+        MOD_SKINS.pop(name)
+        SKINS.pop(name, None)
+    for info in infos:
+        if info.kind != 'theme':
+            continue
+        try:
+            colors, regions, folder = mods.load_theme(info)
+        except (OSError, ValueError, KeyError):
+            continue
+        palette = {key: colors.get(key, BAMBOLA['palette']['linux'][key]) for key in PALETTE_KEYS}
+        name = 'mod:' + info.id
+        SKINS[name] = palette
+        MOD_SKINS[name] = {'label': info.name, 'folder': folder, 'regions': regions,
+                           'dark': _is_dark(palette['background'])}
+
+
+def skin_is_dark(name):
+    return name in DARK_SKINS or MOD_SKINS.get(name, {}).get('dark', False)
+
+
+def skin_label(name):
+    return MOD_SKINS[name]['label'] if name in MOD_SKINS else {'bambola': 'Bambola', 'unicorno': 'Unicorno',
+                                                                'palio': 'Palio'}.get(name, name)
 UPDATE_DOT = {'current': 'ready', 'available': 'warning'}  # other states: 'border'
 WINDOW_LIMITS = {'width': (420, 4000), 'height': (380, 4000), 'left': (-20000, 20000), 'top': (-20000, 20000)}
 
@@ -97,6 +137,7 @@ def read_settings(path):
             'device': value.get('device') if isinstance(value.get('device'), str) else None,
             'double_click_ms': click if click.isdecimal() and 100 <= int(click) <= 1000 else '400',
             'check_updates': value.get('check_updates', True) if isinstance(value.get('check_updates', True), bool) else True,
+            'close_to_tray': value.get('close_to_tray') is True,
             'window': _window(value.get('window'))}
 
 
