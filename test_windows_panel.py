@@ -140,10 +140,10 @@ class PanelTests(unittest.TestCase):
     def test_bambola_animates_other_skins_do_not(self):
         ui.apply_skin('bambola')
         self.addCleanup(ui.apply_skin, ui.DEFAULT_SKIN)
-        frames = {ui.frame_index(t / 10) for t in range(0, 60)}
-        self.assertEqual(len(frames), 30)
+        frames = {ui.frame_index(t / 100) for t in range(0, 600)}
+        self.assertEqual(len(frames), 97)
         ui.apply_skin('unicorno')
-        self.assertEqual({ui.frame_index(t / 10) for t in range(0, 60)}, {0})
+        self.assertEqual({ui.frame_index(t / 100) for t in range(0, 600)}, {0})
 
     def test_bambola_bar_is_centered_with_its_own_size(self):
         p = self.panel()

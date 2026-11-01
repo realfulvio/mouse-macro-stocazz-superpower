@@ -19,13 +19,14 @@
   "sheet": {
    "file": "horses/bambola_{state}_sheet.png",
    "frame": [
-    336,
-    240
+    280,
+    200
    ],
-   "cols": 6,
-   "frames": 30,
-   "fps": 5,
-   "scale": 0.6
+   "cols": 10,
+   "frames": 97,
+   "fps": 24,
+   "scale": 0.5,
+   "note": "97 fotogrammi campionati a 16 fps dalle clip e riprodotti a 24 fps (velocità 1.5x), ritaglio 789x564 da (250,36)"
   }
  },
  "palette": {
