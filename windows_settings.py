@@ -135,8 +135,10 @@ class SettingsWindow:
         s = _dpi_scale()
         px = lambda n: round(n * s)
         self.make_gdi(s)
-        self.hwnd = U.CreateWindowExW(0, CLASS, 'Impostazioni · Mouse Macro Stocazz Superpower',
-                                      0x10C80000, px(160), px(120), px(580), px(560), None, None, instance, None)
+        # WS_EX_TOPMOST: the panel is always on top, so without it this window opens behind it.
+        # Height 604 leaves the Chiudi button (bottom at 528) fully inside the client area.
+        self.hwnd = U.CreateWindowExW(0x8, CLASS, 'Impostazioni · Mouse Macro Stocazz Superpower',
+                                      0x10C80000, px(160), px(120), px(580), px(604), None, None, instance, None)
         if not self.hwnd:
             raise C.WinError()
         if self.gdi['dark']:  # barra del titolo scura (Windows 10 20H1+ / 11); ignorato altrove
