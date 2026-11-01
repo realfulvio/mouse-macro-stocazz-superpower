@@ -48,7 +48,7 @@ try:
             p.theme = theme; p.dpi = dpi; p.hover = None
             p.active_view = mode in ('recording', 'playing', 'stopping')
             p.expanded = mode == 'expanded'
-            p.width, p.height = ui.ACTIVE_SIZE if p.active_view else (640, 608) if p.expanded else (340, 600)
+            p.width, p.height = ui.window_size(p.active_view, p.expanded)
             p.repeats = 999; p.speed = 2; p.next_tab = False; p.slow = False
             p.human = False
             p.mouse_description = 'Mouse: Logitech G502 HERO'
@@ -76,7 +76,7 @@ try:
                      patch.object(ui.U,'GetClientRect',side_effect=client), \
                      patch.object(ui.U,'IsWindowEnabled',return_value=True):
                     p.paint(None)
-                    boxes = {12:(208,12,72,40)} if p.active_view else {}
+                    boxes = {12:((p.width-60,16,48,40) if 'active_size' in ui.SKINS[ui.CURRENT['skin']] else (208,12,72,40))} if p.active_view else {}
                     if not p.active_view:
                         boxes.update({201:(p.width-98,7,28,28),202:(p.width-66,7,28,28),203:(p.width-34,7,28,28)})
                         boxes.update({10:(16,244,298,64),11:(326,244,298,64),24:(16,324,608,44),
@@ -84,6 +84,8 @@ try:
                             31:(192,402,162,38),32:(192,442,162,38),40:(386,399,220,38),41:(386,444,220,38),
                             101:(192,495,162,38),102:(366,495,240,38),104:(20,558,104,34),110:(346,562,266,30)}
                             if p.expanded else {10:(16,322,308,64),11:(16,398,308,64),24:(16,478,308,44),104:(20,538,98,34),110:(146,535,178,46)})
+                    dy = 0 if p.active_view else ui.hero_extra()  # same shift as Panel.layout
+                    boxes = {cid:(x,y if cid in (201,202,203,204,205) else y+dy,w,h) for cid,(x,y,w,h) in boxes.items()}
                     p.boxes = boxes
                     for cid,(x,y,w,h) in boxes.items():
                         pw,ph=round(w*dpi/96),round(h*dpi/96)

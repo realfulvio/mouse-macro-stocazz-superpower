@@ -38,8 +38,15 @@ class BambolaSkinTests(unittest.TestCase):
         x, y, w, h = self.data['linux']['bar_head']['crop']
         self.assertTrue(x + w <= width and y + h <= height)
 
-    def test_micro_bar_is_300_by_72(self):
+    def test_micro_bar_is_300_by_72_on_both_platforms(self):
         self.assertEqual(self.data['linux']['active_size'], [300, 72])
+        self.assertEqual(self.data['windows']['active_size'], [300, 72])
+
+    def test_windows_cover_layout_values_are_sane(self):
+        width, height = self.data['images']['frame']
+        x, y, w, h = self.data['windows']['bar_head']
+        self.assertTrue(x + w <= width and y + h <= height)
+        self.assertTrue(0 < self.data['windows']['hero_extra'] <= 80)
 
 
 if __name__ == '__main__':
