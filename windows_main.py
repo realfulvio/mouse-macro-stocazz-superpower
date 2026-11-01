@@ -252,6 +252,7 @@ class Panel:
         if self.hotkeys.failed:
             self.session.error('Tasti occupati: '+ ', '.join(self.hotkeys.failed)+ '. Chiudi l’altra app.')
         U.SetTimer(self.hwnd, 1, 100, None)  # drains queue, never changes focus/Z order
+        U.SetTimer(self.hwnd, 2, 16, None)  # mascot animation (24 frames/s), redraws only on a new frame
         self.render()
         U.ShowWindow(self.hwnd, 4)  # SW_SHOWNOACTIVATE
         U.SetWindowPos(self.hwnd, W.HWND(-1), 0, 0, 0, 0, 0x13)  # no move/size/activate
@@ -1011,6 +1012,12 @@ class Panel:
                         U.SetFocus(self.controls[22])
                         return 3  # activation handled here; preserve the click
                 return 3  # MA_NOACTIVATE
+            if msg == 0x113 and wp == 2 and self.hwnd and hasattr(self, 'session'):
+                frame = frame_index(time.monotonic())  # mascot animation tick, cheaper than drain()
+                if frame != self.last_frame:
+                    self.last_frame = frame
+                    U.InvalidateRect(self.hwnd, None, False)
+                return 0
             if msg == 0x113 and hasattr(self,'boxes'):
                 point=W.POINT();U.GetCursorPos(C.byref(point))
                 hovered=next((cid for cid in self.boxes if (lambda r:r[0]<=point.x<r[2] and r[1]<=point.y<r[3])(window_rect(self.controls[cid]))),None)
