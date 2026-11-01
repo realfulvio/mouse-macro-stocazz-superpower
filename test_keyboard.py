@@ -1,5 +1,6 @@
 """Tastiera nelle macro e macro avviabile (parte indipendente dal sistema)."""
 import json
+import os
 import tempfile
 import threading
 import unittest
@@ -261,7 +262,8 @@ class InfiniteAndLinuxLauncher(unittest.TestCase):
             script, mmr = export_launcher(macro, Path(folder) / "a$(x)'b.sh", 3, 2, human=True, platform='linux')
             self.assertEqual((script.name, mmr.name), ('a_(x)_b.sh', 'a_(x)_b.mmr'))
             text = script.read_text('ascii')
-            self.assertTrue(script.stat().st_mode & 0o100)
+            if os.name == 'posix':   # su Windows chmod non imposta il bit di esecuzione
+                self.assertTrue(script.stat().st_mode & 0o100)
             self.assertEqual(Macro.load(str(mmr)).events[0].key, 'kc:30')
         self.assertTrue(text.startswith('#!/usr/bin/env bash\n'))
         self.assertIn('--open "$DIR/a_(x)_b.mmr" --repeat 3 --speed 2 --human', text)
