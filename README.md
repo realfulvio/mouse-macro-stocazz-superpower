@@ -152,6 +152,6 @@ python -m unittest discover -v
 python build_native_windows.py
 ```
 
-Dettagli in [BUILD-v1.2.1.md](BUILD-v1.2.1.md). Su Linux: `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt 'pyinstaller==6.22.3'`, poi `.venv/bin/python build_release.py && .venv/bin/python package_linux.py` (pacchetto, `install.sh` e SHA256SUMS in `dist/linux`). La vecchia versione Linux v0.14 resta nella [release v0.14](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.14-beta); quella attuale è [linux-v1.2.0](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.2.0).
+Dettagli in [BUILD-v1.2.2.md](BUILD-v1.2.2.md). Su Linux: `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt 'pyinstaller==6.22.3'`, poi `.venv/bin/python build_release.py && .venv/bin/python package_linux.py` (pacchetto, `install.sh` e SHA256SUMS in `dist/linux`). La vecchia versione Linux v0.14 resta nella [release v0.14](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.14-beta); quella attuale è [linux-v1.2.0](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.2.0).
 
 [Tutte le release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases) · [Materiale promozionale](docs/promo/PRESENTAZIONE.md) · [Note di design](docs/design/README.md) · [Licenza PolyForm Noncommercial](LICENSE): uso libero personale e non commerciale, vietata la rivendita · [Licenze di terze parti](THIRD-PARTY-NOTICES.md) · Progetto e design: **hcok**
