@@ -13,6 +13,9 @@ if sys.platform == 'win32':
 @unittest.skipUnless(sys.platform == 'win32', 'Native Windows panel')
 class PanelTests(unittest.TestCase):
     def panel(self):
+        # The classic sizes below are those of Unicorno; Bambola has its own tests.
+        ui.apply_skin('unicorno')
+        self.addCleanup(ui.apply_skin, ui.DEFAULT_SKIN)
         p = ui.Panel.__new__(ui.Panel)
         p.hwnd = 123
         p.dpi = 96
@@ -27,7 +30,7 @@ class PanelTests(unittest.TestCase):
         p.clamp = lambda x,y,w,h: (max(-1920,min(x,-w)),max(0,min(y,1080-h)))
         p.active_work_area = lambda: SimpleNamespace(left=-1920,right=0,top=0,bottom=1080)
         def layout(dpi):
-            p.width,p.height = ui.ACTIVE_SIZE if p.active_view else (640,608) if p.expanded else (340,600)
+            p.width,p.height = ui.window_size(p.active_view,p.expanded)
         p.layout = layout
         return p
 
@@ -113,6 +116,26 @@ class PanelTests(unittest.TestCase):
         self.assertEqual(ui.ACTIVE_SIZE,(288,64))
         self.assertGreaterEqual(ui.ACTIVE_ALPHA,240)
         self.assertLess(ui.ACTIVE_ALPHA,255)
+
+    def test_bambola_cover_layout_and_micro_bar_sizes(self):
+        self.addCleanup(ui.apply_skin, ui.DEFAULT_SKIN)
+        ui.apply_skin('bambola')
+        extra = ui.hero_extra()
+        self.assertGreater(extra, 0)
+        self.assertEqual(ui.window_size(False, False), (340, 600 + extra))
+        self.assertEqual(ui.window_size(False, True), (640, 608 + extra))
+        self.assertEqual(ui.window_size(True, False), (300, 72))
+        ui.apply_skin('palio')
+        self.assertEqual((ui.hero_extra(), ui.active_size()), (0, ui.ACTIVE_SIZE))
+        self.assertEqual(ui.window_size(False, True), (640, 608))
+
+    def test_bambola_bar_is_centered_with_its_own_size(self):
+        p = self.panel()
+        ui.apply_skin('bambola')
+        with patch.object(ui,'window_rect',return_value=[-450,100,-110,700]),patch.object(ui,'U') as u:
+            u.SetLayeredWindowAttributes.return_value = True
+            p.set_active_view(True)
+            u.SetWindowPos.assert_called_with(123,None,-1110,504,300,72,0x14)
 
     def test_center_on_negative_coordinate_monitor_without_activation(self):
         p = self.panel()
