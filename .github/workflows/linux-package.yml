@@ -57,6 +57,11 @@ jobs:
           flatpak install --user -y --noninteractive --bundle dist/linux/MouseMacroStocazzSuperpower-Linux-v*.flatpak
           flatpak run io.github.realfulvio.MouseMacroStocazzSuperpower --self-test flatpak.json
           cat it.json en.json appimage.json
+      - name: The tray library is inside every binary
+        run: |
+          for report in it.json en.json appimage.json flatpak.json; do
+            python3 -c "import json,sys; r=json.load(open(sys.argv[1])); assert r['environment']['tray_library'] is True, sys.argv[1]" "$report"
+          done
       - name: Verify checksums
         working-directory: dist/linux
         run: sha256sum -c SHA256SUMS-linux-v*.txt

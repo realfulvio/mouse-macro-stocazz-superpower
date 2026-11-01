@@ -1,7 +1,7 @@
 """Reproducible Windows build procedure: official embed + pinned pure Python wheels."""
 from pathlib import Path
 import argparse, hashlib, json, shutil, subprocess, sys, urllib.request, zipfile
-VERSION = '1.1.4'
+VERSION = '1.2.0'
 ROOT = Path(__file__).resolve().parent
 PACKAGE = f'MouseMacroStocazzSuperpower-Windows-v{VERSION}'
 
