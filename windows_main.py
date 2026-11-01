@@ -105,6 +105,29 @@ WM_COMMAND, WM_CLOSE, WM_DESTROY = 0x111, 0x10, 2
 WM_APP = 0x8001
 ACTIVE_SIZE = (288, 64)  # logical pixels; the normal panel remains available at rest
 ACTIVE_ALPHA = 242  # 95% opaque: a slight transparency, including the controls
+
+
+def skin_value(key, default=None):
+    return SKINS[CURRENT['skin']].get(key, default)
+
+
+def active_size():
+    """Compact bar size: skins may be tinier than the default (Bambola is 300x72)."""
+    return skin_value('active_size', ACTIVE_SIZE)
+
+
+def hero_extra():
+    """Extra height of the status card for skins with a large horse (the "Copertina" layout)."""
+    return skin_value('hero_extra', 0)
+
+
+def window_size(active, expanded):
+    if active:
+        return active_size()
+    extra = hero_extra()
+    return (640, 608 + extra) if expanded else (340, 600 + extra)
+
+
 FOLDER = Path(os.environ.get('LOCALAPPDATA', Path.home())) / 'MouseMacroStocazzSuperpower'
 MODS_DIR = FOLDER / 'mods'
 
@@ -168,7 +191,7 @@ class Panel:
         dpi = U.GetDpiForSystem()
         scale = dpi / 96
         self.dpi = dpi
-        width, height = round(340 * scale), round(600 * scale)
+        width, height = (round(n * scale) for n in window_size(False, False))
         rect = W.RECT(0, 0, width, height)
         self.style = 0x82000000  # WS_POPUP | WS_CLIPCHILDREN; custom drawn chrome
         self.exstyle = 0x08040008  # NOACTIVATE | APPWINDOW | TOPMOST
@@ -235,15 +258,16 @@ class Panel:
     def layout(self, dpi):
         self.dpi = dpi
         scale = dpi / 96
-        width,height = ACTIVE_SIZE if self.active_view else (640,608) if self.expanded else (340,600)
+        width,height = window_size(self.active_view,self.expanded)
         self.width,self.height = width,height
+        dy = self.hero_dy = hero_extra()
         r = window_rect(self.hwnd)
         x,y = self.clamp(r[0],r[1],round(width*scale),round(height*scale))
         U.SetWindowPos(self.hwnd,None,x,y,round(width*scale),round(height*scale),0x14)
         # Windows owns this region after SetWindowRgn succeeds.
         region = G.CreateRoundRectRgn(0,0,round(width*scale)+1,round(height*scale)+1,round(36*scale),round(36*scale))
         if not U.SetWindowRgn(self.hwnd,region,True): G.DeleteObject(region)
-        boxes = {12:(208,12,72,40)} if self.active_view else {201:(width-98,7,28,28),202:(width-66,7,28,28),203:(width-34,7,28,28),
+        boxes = {12:((width-60,16,48,40) if 'active_size' in SKINS[CURRENT['skin']] else (208,12,72,40))} if self.active_view else {201:(width-98,7,28,28),202:(width-66,7,28,28),203:(width-34,7,28,28),
                                                   204:(width-130,7,28,28),205:(width-162,7,28,28)}
         if self.active_view:
             pass
@@ -258,6 +282,8 @@ class Panel:
         else:
             boxes.update({10:(16,322,308,64),11:(16,398,308,64),24:(16,478,308,44),
                           104:(20,538,98,34),110:(146,535,178,46)})
+        if dy and not self.active_view:  # everything under the taller status card moves down; the title-bar buttons stay
+            boxes = {cid:(x,y if cid in (201,202,203,204,205) else y+dy,w,h) for cid,(x,y,w,h) in boxes.items()}
         self.boxes = boxes
         font = G.CreateFontW(-round(18*scale),0,0,0,600,0,0,0,1,0,0,5,0,'Segoe UI')
         U.SendMessageW(self.controls[22],0x30,font,1)  # WM_SETFONT
@@ -289,7 +315,7 @@ class Panel:
             work = self.active_work_area()
             self.active_view = True
             self.layout(self.dpi)
-            w,h = (round(n*self.dpi/96) for n in ACTIVE_SIZE)
+            w,h = (round(n*self.dpi/96) for n in active_size())
             x,y = self.active_position or ((work.left+work.right-w)//2, (work.top+work.bottom-h)//2)
             x,y = self.clamp(x,y,w,h)
             U.SetWindowPos(self.hwnd,None,x,y,w,h,0x14)
@@ -314,17 +340,24 @@ class Panel:
         state = self.session.state
         recording = state == State.RECORDING
         color = COLORS['record'] if recording else COLORS['play']
-        c.horse('registrazione' if recording else 'riproduzione',6,12,36,40)
+        bar_head = skin_value('bar_head')
+        tiny = bar_head is not None
+        if tiny:  # 300x72 like a TinyTask-sized bar: head of the horse, three short lines, square Stop
+            c.horse('registrazione' if recording else 'riproduzione',0,0,84,72,region=bar_head)
+        else:
+            c.horse('registrazione' if recording else 'riproduzione',6,12,36,40)
         label = 'Registrazione' if recording else 'Arresto…' if state == State.STOPPING else 'Riproduzione'
-        c.text(label,48,4,154,24,16,color,True)
+        tx,tw = (88,146) if tiny else (48,154)
+        ty = (5,25,44) if tiny else (4,28,46)
+        c.text(label,tx,ty[0],tw,24,16 if not tiny else 15,color,True)
         if recording:
             count,duration = self.metrics()
             detail = f'{count} eventi · {duration.split(".")[0]}'
         else:
             seconds = max(0,int(time.monotonic()-(self.play_started or time.monotonic())))
             detail = f'{self.session.completed}/{self.repeats} giri · {seconds//60:02d}:{seconds%60:02d}'
-        c.text(detail,48,28,154,19,14,COLORS['text'])
-        c.text('F9 stop' if recording else 'F10 stop · Ctrl+Alt+F11',48,46,154,16,11,COLORS['muted'])
+        c.text(detail,tx,ty[1],tw,19,14 if not tiny else 12,COLORS['text'])
+        c.text('F9 stop' if recording else 'F10 stop · Ctrl+Alt+F11',tx,ty[2],tw,16,11,COLORS['muted'])
 
     def paint(self, hwnd):
         ps=Paint();hdc=U.BeginPaint(hwnd,C.byref(ps))
@@ -346,33 +379,43 @@ class Panel:
             state=self.session.state
             horse={State.RECORDING:'registrazione',State.PLAYING:'riproduzione',State.STOPPING:'riproduzione',State.ERROR:'errore'}.get(state,'pronto')
             color={'pronto':COLORS['ready'],'registrazione':COLORS['record'],'riproduzione':COLORS['play'],'errore':COLORS['error']}[horse]
-            c.rounded(16,102,w-32,126,14,COLORS['surface'],COLORS['border'],bottom=COLORS['surface_bottom'])
+            d=hero_extra()  # "Copertina": taller status card with the whole horse, the rest moves down
+            c.rounded(16,102,w-32,126+d,14,COLORS['surface'],COLORS['border'],bottom=COLORS['surface_bottom'])
             c.ellipse(32,125,16,16,color)
-            c.text(state.value.capitalize(),58,115,226 if self.expanded else 156,34,22,color if state==State.ERROR else COLORS['text'],True)
-            c.text(self.session.message,32,152,268 if self.expanded else 172,64,14,
+            c.text(state.value.capitalize(),58,115,226 if self.expanded and not d else 156,34,22,color if state==State.ERROR else COLORS['text'],True)
+            msg_w = (180 if self.expanded else 100) if d else (268 if self.expanded else 172)
+            c.text(self.session.message,32,152,msg_w,64+d//2 if d else 64,14,
                    COLORS['error'] if state==State.ERROR else COLORS['muted'],wrap=True)
             count,duration=self.metrics()
             if self.expanded:
-                for x in (314,386):c.line(x,127,x,207,COLORS['border'])
-                c.text('Eventi',328,127,66,24,13,COLORS['muted'])
-                c.text(count,328,154,60,34,22,bold=True)
-                c.text('Durata',402,127,110,24,13,COLORS['muted'])
-                c.text(duration,402,154,113,34,18,bold=True)
-                c.horse(horse,508,105,114,120)
-                c.rounded(16,324,w-32,220,14,COLORS['surface'],COLORS['border'])
-                c.text('Ripetizioni',32,376,140,26,14,bold=True)
-                c.text('Velocità',192,376,158,26,14,bold=True)
-                for x in (172,368):c.line(x,384,x,484,COLORS['border'])
-                c.rounded(66,410,46,38,1,COLORS['input'],COLORS['border'])
-                c.line(16,550,w-16,550,COLORS['border'])
+                if d:
+                    c.text('Eventi',232,118,100,22,13,COLORS['muted'])
+                    c.text(count,232,140,100,34,22,bold=True)
+                    c.text('Durata',232,186,100,22,13,COLORS['muted'])
+                    c.text(duration,232,208,130,34,20,bold=True)
+                    c.horse(horse,372,108,244,170+d-62,full=True)
+                else:
+                    for x in (314,386):c.line(x,127,x,207,COLORS['border'])
+                    c.text('Eventi',328,127,66,24,13,COLORS['muted'])
+                    c.text(count,328,154,60,34,22,bold=True)
+                    c.text('Durata',402,127,110,24,13,COLORS['muted'])
+                    c.text(duration,402,154,113,34,18,bold=True)
+                    c.horse(horse,508,105,114,120)
+                c.rounded(16,324+d,w-32,220,14,COLORS['surface'],COLORS['border'])
+                c.text('Ripetizioni',32,376+d,140,26,14,bold=True)
+                c.text('Velocità',192,376+d,158,26,14,bold=True)
+                for x in (172,368):c.line(x,384+d,x,484+d,COLORS['border'])
+                c.rounded(66,410+d,46,38,1,COLORS['input'],COLORS['border'])
+                c.line(16,550+d,w-16,550+d,COLORS['border'])
             else:
-                c.horse(horse,207,118,112,104)
+                if d:c.horse(horse,112,110,210,126+d-16,full=True)
+                else:c.horse(horse,207,118,112,104)
                 for x,cw,label,value in [(16,148,'Eventi',count),(176,148,'Durata',duration)]:
-                    c.rounded(x,240,cw,66,14,COLORS['surface'],COLORS['border'])
-                    c.text(label,x+16,247,cw-28,22,14,COLORS['muted'])
-                    c.text(value,x+16,267,cw-24,30,22 if label=='Eventi' else 19,bold=True)
+                    c.rounded(x,240+d,cw,66,14,COLORS['surface'],COLORS['border'])
+                    c.text(label,x+16,247+d,cw-28,22,14,COLORS['muted'])
+                    c.text(value,x+16,267+d,cw-24,30,22 if label=='Eventi' else 19,bold=True)
             c.text('hcok',w-57,h-19,44,14,11,COLORS['muted'],align=2)
-            c.text(self.mouse_description,20,228 if self.expanded else 306,w-40,16,11,COLORS['muted'])
+            c.text(self.mouse_description,20,(228 if self.expanded else 306)+d,w-40,16,11,COLORS['muted'])
         finally:c.close();U.EndPaint(hwnd,C.byref(ps))
 
     def metrics(self):
@@ -398,8 +441,10 @@ class Panel:
             c.clear(COLORS['chrome'] if cid in (201,202,203,204,205) else COLORS['surface'] if cid in (21,23,25,31,32,40,41,101,102) else COLORS['background'])
             if cid == 12:
                 c.rounded(1,1,w-2,h-2,12,COLORS['record'] if self.session.state==State.RECORDING else COLORS['play'],COLORS['border'])
-                c.icon('stop',6,12,16,fg_accent)
-                c.text('Stop',24,0,w-26,h,13,fg_accent,True)
+                if w<60:c.icon('stop',(w-16)/2,(h-16)/2,16,fg_accent)  # square Stop of the tiny bar
+                else:
+                    c.icon('stop',6,12,16,fg_accent)
+                    c.text('Stop',24,0,w-26,h,13,fg_accent,True)
             elif cid in (10,11):
                 key='record' if cid==10 else 'play'
                 bg=COLORS[key] if enabled else COLORS['disabled']
@@ -629,6 +674,7 @@ class Panel:
         self.settings['skin'] = name
         self.write_settings()
         self.last_view = None
+        self.layout(self.dpi)  # window size and control boxes depend on the skin
         U.InvalidateRect(self.hwnd,None,True)
         for hwnd in self.controls.values():U.InvalidateRect(hwnd,None,True)
 

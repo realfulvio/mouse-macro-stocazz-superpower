@@ -42,7 +42,11 @@ BAMBOLA = BAMBOLA_DATA['palette']['windows']
 SKINS = {
     # Bambola: full-body PNGs (560x400, from the il-maneggio clips); regions crop head and neck.
     'bambola': dict(label='Bambola', prefix='bambola', colors=BAMBOLA,
-                    regions={state: tuple(box) for state, box in BAMBOLA_DATA['windows']['regions'].items()}),
+                    regions={state: tuple(box) for state, box in BAMBOLA_DATA['windows']['regions'].items()},
+                    # "Copertina": taller status card with the whole horse; tiny 300x72 bar with its head.
+                    hero_extra=BAMBOLA_DATA['windows']['hero_extra'],
+                    active_size=tuple(BAMBOLA_DATA['windows']['active_size']),
+                    bar_head=tuple(BAMBOLA_DATA['windows']['bar_head'])),
     'unicorno': dict(label='Unicorno', prefix='unicorn', colors=UNICORN,
                      regions={'pronto': (180, 194, 126, 113), 'registrazione': (184, 191, 144, 114),
                               'riproduzione': (179, 181, 151, 119), 'errore': (209, 181, 134, 123)}),
@@ -211,11 +215,13 @@ class Canvas:
         D.GdipSetStringFormatTrimming(fmt,3)
         D.GdipDrawString(self.g,str(text),-1,self.theme.font(size,bold,display),C.byref(RectF(x,y,w,h)),fmt,b)
         D.GdipDeleteStringFormat(fmt);D.GdipDeleteBrush(b)
-    def horse(self,state,x,y,w,h):
+    def horse(self,state,x,y,w,h,full=False,region=None):
         # Supplied PNGs include catalog captions. Display the illustration region
         # only; original files are preserved byte for byte in assets/horses.
+        # full=True shows the whole image (the large horse of the Bambola cover);
+        # region=(sx,sy,sw,sh) shows an explicit crop (its head in the tiny bar).
         regions=SKINS[CURRENT['skin']]['regions'] or self.theme.sizes
-        sx,sy,sw,sh=regions[state]
+        sx,sy,sw,sh=region or (self.theme.sizes[state] if full else regions[state])
         ratio=min(w/sw,h/sh);dw,dh=sw*ratio,sh*ratio
         D.GdipDrawImageRectRect(self.g,self.theme.images[state],x+(w-dw)/2,y+(h-dh)/2,dw,dh,sx,sy,sw,sh,2,None,None,None)
     def icon(self,name,x,y,size,color):
