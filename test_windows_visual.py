@@ -56,7 +56,7 @@ class VisualTests(unittest.TestCase):
 
     def test_cleanup_releases_both_font_families(self):
         theme = visual.Theme.__new__(visual.Theme)
-        theme.fonts, theme.images = {}, {}
+        theme.fonts, theme.images, theme.sheets = {}, {}, {}
         theme.family, theme.body_family = 1, 2
         theme.collection = visual.P(3)
         theme.token = 4
