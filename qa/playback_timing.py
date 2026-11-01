@@ -24,16 +24,17 @@ from macro.events import LEFT_DOWN, LEFT_UP, MOVE_ABS, MacroEvent
 def panel_settings():
     tree = ast.parse((ROOT/'windows_main.py').read_text('utf-8'))
     panel = next(n for n in tree.body if isinstance(n, ast.ClassDef) and n.name == 'Panel')
+    migrate = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == 'migrate_default_skin')
     init = next(n for n in panel.body if isinstance(n, ast.FunctionDef) and n.name == '__init__')
     # Keep the real settings initialization; stop at the first native UI dependency.
     init.body = init.body[:next(i for i, n in enumerate(init.body)
         if isinstance(n, ast.Assign) and isinstance(n.value, ast.Call)
         and isinstance(n.value.func, ast.Name) and n.value.func.id == 'Theme')]
-    panel.body = [init, next(n for n in panel.body if isinstance(n, ast.FunctionDef) and n.name == 'options')]
+    panel.body = [init] + [n for n in panel.body if isinstance(n, ast.FunctionDef) and n.name in ('options', 'write_settings')]
     namespace = {'queue': queue, 'PlaybackOptions': PlaybackOptions, 'LoopMode': LoopMode, 'json': json,
-                 'FOLDER': Path(tempfile.gettempdir())/'mmss-timing-test', 'apply_skin': lambda name: name,
+                 'FOLDER': Path(tempfile.gettempdir())/'mmss-timing-test', 'apply_skin': lambda name: name, 'DEFAULT_SKIN': 'bambola',
                  'U': SimpleNamespace(GetDoubleClickTime=lambda: 500)}
-    exec(compile(ast.Module(body=[panel], type_ignores=[]), str(ROOT/'windows_main.py'), 'exec'), namespace)
+    exec(compile(ast.Module(body=[migrate, panel], type_ignores=[]), str(ROOT/'windows_main.py'), 'exec'), namespace)
     return namespace['Panel']()
 
 

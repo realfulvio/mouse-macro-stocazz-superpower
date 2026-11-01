@@ -6,6 +6,7 @@ import json
 import math
 from pathlib import Path
 import re
+import time
 import xml.etree.ElementTree as ET
 
 P = C.c_void_p
@@ -46,7 +47,9 @@ SKINS = {
                     # "Copertina": taller status card with the whole horse; tiny 300x72 bar with its head.
                     hero_extra=BAMBOLA_DATA['windows']['hero_extra'],
                     active_size=tuple(BAMBOLA_DATA['windows']['active_size']),
-                    bar_head=tuple(BAMBOLA_DATA['windows']['bar_head'])),
+                    bar_head=tuple(BAMBOLA_DATA['windows']['bar_head']),
+                    # Animated mascot: PNG sprite sheets (frames of the il-maneggio clips).
+                    sheet=BAMBOLA_DATA['images']['sheet']),
     'unicorno': dict(label='Unicorno', prefix='unicorn', colors=UNICORN,
                      regions={'pronto': (180, 194, 126, 113), 'registrazione': (184, 191, 144, 114),
                               'riproduzione': (179, 181, 151, 119), 'errore': (209, 181, 134, 123)}),
@@ -54,6 +57,12 @@ SKINS = {
 }
 DEFAULT_SKIN = 'bambola'
 CURRENT = {'skin': DEFAULT_SKIN}
+
+
+def frame_index(now):
+    """Animation frame for time `now` (seconds) in the current skin; 0 when it has no sprite sheet."""
+    sheet = SKINS[CURRENT['skin']].get('sheet')
+    return int(now * sheet['fps']) % sheet['frames'] if sheet else 0
 
 
 def register_mod_skins(infos):
@@ -142,7 +151,7 @@ class Theme:
                 raise RuntimeError('Font Outfit non disponibile')
         self.family=ptrcall(D.GdipCreateFontFamilyFromName,'Outfit',self.collection)
         self.body_family=ptrcall(D.GdipCreateFontFamilyFromName,'Segoe UI',None)
-        self.fonts={};self.images={};self.sizes={};self.icons={}
+        self.fonts={};self.images={};self.sizes={};self.icons={};self.sheets={}
         self.load_images()
         for path in (ROOT/'icons').glob('*.svg'): self.icons[path.stem]=ET.parse(path).getroot()
     def load_images(self):
@@ -157,9 +166,20 @@ class Theme:
             sizes[state]=(0,0,w.value,h.value)
         for p in self.images.values():D.GdipDisposeImage(p)
         self.images,self.sizes=images,sizes
+        sheets={}
+        sheet=skin.get('sheet')
+        if sheet:
+            try:
+                sheets={state:ptrcall(D.GdipLoadImageFromFile,str(ROOT/sheet['file'].format(state=state))) for state in STATES}
+            except Exception:
+                for p in sheets.values():D.GdipDisposeImage(p)
+                sheets={}  # without sheets the still image is shown
+        for p in self.sheets.values():D.GdipDisposeImage(p)
+        self.sheets=sheets
     def close(self):
         for p in self.fonts.values():D.GdipDeleteFont(p)
         for p in self.images.values():D.GdipDisposeImage(p)
+        for p in self.sheets.values():D.GdipDisposeImage(p)
         D.GdipDeleteFontFamily(self.body_family)
         D.GdipDeleteFontFamily(self.family);D.GdipDeletePrivateFontCollection(C.byref(self.collection))
         D.GdiplusShutdown(self.token)
@@ -223,7 +243,14 @@ class Canvas:
         regions=SKINS[CURRENT['skin']]['regions'] or self.theme.sizes
         sx,sy,sw,sh=region or (self.theme.sizes[state] if full else regions[state])
         ratio=min(w/sw,h/sh);dw,dh=sw*ratio,sh*ratio
-        D.GdipDrawImageRectRect(self.g,self.theme.images[state],x+(w-dw)/2,y+(h-dh)/2,dw,dh,sx,sy,sw,sh,2,None,None,None)
+        image=self.theme.images[state]
+        sheet=SKINS[CURRENT['skin']].get('sheet')
+        if sheet and state in self.theme.sheets:
+            # Animated skin: same crop, taken from the current frame of the sprite sheet.
+            k=sheet['scale'];fw,fh=sheet['frame'];i=frame_index(time.monotonic())
+            image=self.theme.sheets[state]
+            sx,sy,sw,sh=sx*k+(i%sheet['cols'])*fw,sy*k+(i//sheet['cols'])*fh,sw*k,sh*k
+        D.GdipDrawImageRectRect(self.g,image,x+(w-dw)/2,y+(h-dh)/2,dw,dh,sx,sy,sw,sh,2,None,None,None)
     def icon(self,name,x,y,size,color):
         # Render the supplied SVG primitives as vectors at the actual DPI.
         scale=size/24
