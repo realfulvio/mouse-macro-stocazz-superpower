@@ -42,6 +42,7 @@ for _name, _res, _args in [
         ('LoadCursorW', W.HANDLE, [W.HINSTANCE, C.c_void_p]), ('RegisterClassW', W.ATOM, [C.POINTER(WNDCLASS)]), ('InvalidateRect', W.BOOL, [W.HWND, C.c_void_p, W.BOOL]),
         ('FillRect', C.c_int, [W.HDC, C.POINTER(W.RECT), C.c_void_p]),
         ('GetClientRect', W.BOOL, [W.HWND, C.POINTER(W.RECT)]),
+        ('SystemParametersInfoW', W.BOOL, [W.UINT, W.UINT, C.c_void_p, W.UINT]),
         ('DrawTextW', C.c_int, [W.HDC, W.LPCWSTR, C.c_int, C.POINTER(W.RECT), W.UINT])]:
     _fn = getattr(U, _name)
     _fn.restype, _fn.argtypes = _res, _args
@@ -83,6 +84,13 @@ def _dpi_scale():
         return U.GetDpiForSystem() / 96
     except AttributeError:
         return 1.0
+
+
+def fit_to_work_area(x, y, w, h, work):
+    """Window rectangle moved up and, if still too tall, shrunk to stay inside `work` (left, top, right, bottom)."""
+    left, top, right, bottom = work
+    w, h = min(w, right - left), min(h, bottom - top)
+    return max(left, min(x, right - w)), max(top, min(y, bottom - h)), w, h
 
 
 def list_label(info, current_skin):
@@ -136,9 +144,14 @@ class SettingsWindow:
         px = lambda n: round(n * s)
         self.make_gdi(s)
         # WS_EX_TOPMOST: the panel is always on top, so without it this window opens behind it.
-        # Height 604 leaves the Chiudi button (bottom at 528) fully inside the client area.
+        # 560 px (outer) leaves the Chiudi button (bottom at 488) inside the client area; the
+        # window is also kept inside the work area, so it fits 768 px screens at 125%.
+        work = W.RECT()
+        if not U.SystemParametersInfoW(0x30, 0, C.byref(work), 0):  # SPI_GETWORKAREA
+            work = W.RECT(0, 0, 100000, 100000)
+        x, y, w, h = fit_to_work_area(px(160), px(120), px(580), px(560), (work.left, work.top, work.right, work.bottom))
         self.hwnd = U.CreateWindowExW(0x8, CLASS, 'Impostazioni · Mouse Macro Stocazz Superpower',
-                                      0x10C80000, px(160), px(120), px(580), px(604), None, None, instance, None)
+                                      0x10C80000, x, y, w, h, None, None, instance, None)
         if not self.hwnd:
             raise C.WinError()
         if self.gdi['dark']:  # barra del titolo scura (Windows 10 20H1+ / 11); ignorato altrove
@@ -153,13 +166,13 @@ class SettingsWindow:
                 (ID_TRAY, 'BUTTON', 'Chiudi nel tray (la X nasconde il pannello)', owner, 24, 66, 520, 36),
                 (ID_UPDATES, 'BUTTON', 'Controlla gli aggiornamenti all’avvio', owner, 24, 106, 520, 36),
                 (0, 'STATIC', 'Mod installate: pacchetti .mmmod di soli dati (temi e macro), senza codice', 0, 24, 156, 520, 22),
-                (ID_LIST, 'LISTBOX', '', 0x800000 + 0x200000 + 0x10000 + 0x141, 24, 184, 520, 190),
-                (ID_INSTALL, 'BUTTON', 'Installa da file…', owner, 24, 388, 170, 40),
-                (ID_USE, 'BUTTON', 'Usa tema', owner, 204, 388, 100, 40),
-                (ID_REMOVE, 'BUTTON', 'Rimuovi', owner, 314, 388, 100, 40),
-                (ID_FOLDER, 'BUTTON', 'Cartella mod', owner, 424, 388, 120, 40),
-                (0, 'STATIC', 'Le macro delle raccolte sono in «Cartella mod» → nome mod → macros: caricale con Carica.', 0, 24, 440, 520, 40),
-                (ID_CLOSE, 'BUTTON', 'Chiudi', owner, 424, 488, 120, 40)]
+                (ID_LIST, 'LISTBOX', '', 0x800000 + 0x200000 + 0x10000 + 0x141, 24, 184, 520, 150),
+                (ID_INSTALL, 'BUTTON', 'Installa da file…', owner, 24, 346, 170, 40),
+                (ID_USE, 'BUTTON', 'Usa tema', owner, 204, 346, 100, 40),
+                (ID_REMOVE, 'BUTTON', 'Rimuovi', owner, 314, 346, 100, 40),
+                (ID_FOLDER, 'BUTTON', 'Cartella mod', owner, 424, 346, 120, 40),
+                (0, 'STATIC', 'Le macro delle raccolte sono in «Cartella mod» → nome mod → macros: caricale con Carica.', 0, 24, 398, 520, 40),
+                (ID_CLOSE, 'BUTTON', 'Chiudi', owner, 424, 446, 120, 40)]
         self.controls = {}
         for cid, cls, text, style, x, y, w, h in spec:
             handle = make(cls, text, style, x, y, w, h, cid)
