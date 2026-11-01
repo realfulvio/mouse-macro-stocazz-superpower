@@ -59,6 +59,11 @@ DEFAULT_SKIN = 'bambola'
 CURRENT = {'skin': DEFAULT_SKIN}
 
 
+def animated_skin():
+    """True when the current skin animates its mascot (it has a sprite sheet)."""
+    return 'sheet' in SKINS[CURRENT['skin']]
+
+
 def frame_index(now):
     """Animation frame for time `now` (seconds) in the current skin; 0 when it has no sprite sheet."""
     sheet = SKINS[CURRENT['skin']].get('sheet')
