@@ -1,5 +1,6 @@
 """Tastiera nelle macro e macro avviabile (parte indipendente dal sistema)."""
 import json
+import os
 import tempfile
 import threading
 import unittest
@@ -78,9 +79,12 @@ class MacroFile(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.roundtrip(Macro('windows', [event]))
 
-    def test_linux_macros_cannot_contain_keys(self):
-        with self.assertRaises(ValueError):
-            self.roundtrip(Macro('linux', [MacroEvent(0, KEY_DOWN, key='vk:65')]))
+    def test_linux_macros_use_evdev_codes_and_windows_ones_are_rejected(self):
+        loaded = self.roundtrip(Macro('linux', [MacroEvent(0, KEY_DOWN, key='kc:30'), MacroEvent(.1, KEY_UP, key='kc:30')]))
+        self.assertEqual([e.key for e in loaded.events], ['kc:30', 'kc:30'])
+        for platform, bad in (('linux', 'vk:65'), ('linux', 'kc:0'), ('linux', 'kc:249'), ('windows', 'kc:30')):
+            with self.assertRaises(ValueError, msg=(platform, bad)):
+                self.roundtrip(Macro(platform, [MacroEvent(0, KEY_DOWN, key=bad)]))
 
 
 class Validation(unittest.TestCase):
@@ -233,6 +237,40 @@ class Launcher(unittest.TestCase):
             self.assertTrue(session.export(Path(folder) / 'x.cmd', 2, 2))
             self.assertTrue((Path(folder) / 'x.cmd').exists())
             self.assertIn('x.cmd', session.message)
+
+
+class InfiniteAndLinuxLauncher(unittest.TestCase):
+    def test_infinite_replaces_the_repeat_count(self):
+        text = launcher_text('m', 5, 1, infinite=True)
+        self.assertIn('--infinite --speed 1', text)
+        self.assertNotIn('--repeat', text)
+        self.assertEqual(launcher_text('m', 5, 1).count('--infinite'), 0)
+        launcher_text('m', 0, 1, infinite=True)   # il numero è ignorato quando è infinito
+
+    def test_run_arguments_accept_infinite(self):
+        request = parse_run_args(['--run', 'm.mmr', '--infinite'])
+        self.assertTrue(request.infinite)
+        self.assertFalse(parse_run_args(['--run', 'm.mmr']).infinite)
+        self.assertEqual(parse_run_args(['--open', 'a b.mmr', '--repeat', '2'], '--open').path, 'a b.mmr')
+        with self.assertRaises(ValueError):
+            parse_run_args(['--run', 'm.mmr'], '--open')
+
+    def test_linux_script_is_valid_executable_and_sanitized(self):
+        from macro.export import linux_script_text
+        macro = Macro('linux', [MacroEvent(0, KEY_DOWN, key='kc:30'), MacroEvent(.1, KEY_UP, key='kc:30')])
+        with tempfile.TemporaryDirectory() as folder:
+            script, mmr = export_launcher(macro, Path(folder) / "a$(x)'b.sh", 3, 2, human=True, platform='linux')
+            self.assertEqual((script.name, mmr.name), ('a_(x)_b.sh', 'a_(x)_b.mmr'))
+            text = script.read_text('ascii')
+            if os.name == 'posix':   # su Windows chmod non imposta il bit di esecuzione
+                self.assertTrue(script.stat().st_mode & 0o100)
+            self.assertEqual(Macro.load(str(mmr)).events[0].key, 'kc:30')
+        self.assertTrue(text.startswith('#!/usr/bin/env bash\n'))
+        self.assertIn('--open "$DIR/a_(x)_b.mmr" --repeat 3 --speed 2 --human', text)
+        self.assertNotIn('$(x)', text)
+        self.assertIn('--infinite', linux_script_text('m', infinite=True))
+        with self.assertRaises(ValueError):
+            linux_script_text('m', 1000)
 
 
 class RunArguments(unittest.TestCase):

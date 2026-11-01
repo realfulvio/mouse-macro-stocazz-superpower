@@ -18,8 +18,8 @@ RIGHT_UP = "right_up"
 MIDDLE_DOWN = "middle_down"
 MIDDLE_UP = "middle_up"
 WHEEL = "wheel"
-# Tastiera (solo Windows). Il tasto è il codice virtuale, es. "vk:65" per la A: vale
-# per qualsiasi layout e permette di riprodurre anche Ctrl, frecce, F1..F24.
+# Tastiera. Il tasto è un codice indipendente dal layout: Windows "vk:65" (codice virtuale,
+# la A), Linux "kc:30" (codice evdev, la A). Così si riproducono anche Ctrl, frecce, F1..F24.
 KEY_DOWN = "key_down"
 KEY_UP = "key_up"
 KEY_KINDS = (KEY_DOWN, KEY_UP)
@@ -30,12 +30,13 @@ BUTTON_OF_DOWN = {LEFT_DOWN: "left", RIGHT_DOWN: "right", MIDDLE_DOWN: "middle"}
 BUTTON_OF_UP = {LEFT_UP: "left", RIGHT_UP: "right", MIDDLE_UP: "middle"}
 
 
-def valid_key_name(name) -> bool:
-    """Un tasto valido è "vk:" seguito da un codice virtuale Windows da 1 a 254."""
-    if not isinstance(name, str) or not name.startswith("vk:"):
+def valid_key_name(name, platform: str = "windows") -> bool:
+    """Windows: "vk:" + codice virtuale (1-254). Linux: "kc:" + codice evdev (1-248)."""
+    prefix, maximum = ("vk:", 254) if platform == "windows" else ("kc:", 248)
+    if not isinstance(name, str) or not name.startswith(prefix):
         return False
-    digits = name[3:]
-    return digits.isdigit() and len(digits) <= 3 and 1 <= int(digits) <= 254
+    digits = name[len(prefix):]
+    return digits.isdigit() and len(digits) <= 3 and 1 <= int(digits) <= maximum
 
 
 @dataclass
@@ -106,8 +107,7 @@ class Macro:
             raise ValueError("La macro contiene eventi incompleti o con campi sconosciuti.") from error
         kinds = set(BUTTON_OF_DOWN) | set(BUTTON_OF_UP) | {WHEEL}
         kinds.add(MOVE_ABS if data["platform"] == "windows" else MOVE_REL)
-        if data["platform"] == "windows":
-            kinds.update(KEY_KINDS)
+        kinds.update(KEY_KINDS)
         previous = 0.0
         for event in events:
             values = (event.t, event.dx, event.dy, event.x, event.y, event.wheel)
@@ -119,7 +119,7 @@ class Macro:
             if event.kind not in kinds or not isinstance(event.snap, str):
                 raise ValueError("La macro contiene un tipo di evento non valido.")
             if event.kind in KEY_KINDS:
-                if not valid_key_name(event.key):
+                if not valid_key_name(event.key, data["platform"]):
                     raise ValueError("La macro contiene un tasto della tastiera non valido.")
             elif event.key:
                 raise ValueError("La macro contiene un tasto dove non dovrebbe esserci.")
