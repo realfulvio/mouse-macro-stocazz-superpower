@@ -8,7 +8,7 @@ Un piccolo pannello sempre in primo piano per Windows e Linux: Python è incluso
 </p>
 
 <p align="center">
-<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.2.2"><b>⬇ Scarica per Windows</b></a>
+<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.2.3"><b>⬇ Scarica per Windows</b></a>
 · <a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.2.0"><b>⬇ Scarica per Linux</b></a>
 · <a href="GUIDA-ITALIANA.md">Guida italiana</a>
 · <a href="docs/ESITO-COLLAUDO-v1.1.1.md">Esito dei controlli</a>
@@ -40,19 +40,19 @@ Lo script scarica la release ufficiale da GitHub, ne verifica lo SHA-256, la est
 
 ## Altri modi di installare
 
-1. Scarica `MouseMacroStocazzSuperpower-Windows-v1.2.2.zip` dalla [release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.2.2).
+1. Scarica `MouseMacroStocazzSuperpower-Windows-v1.2.3.zip` dalla [release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.2.3).
 2. Estrai **tutto** lo ZIP in una cartella.
-3. Apri `Mouse Macro v1.2.2.exe` e rispondi **Sì** alla domanda *Installare Mouse Macro Stocazz Superpower sul computer?*: lo copia nella tua cartella utente (`%LOCALAPPDATA%\MouseMacroStocazzSuperpower`, senza permessi da amministratore), crea i collegamenti nel **menu Start** e sul **desktop** e la voce in *Impostazioni → App installate*, da cui si disinstalla. Con **No** lo avvia dallo ZIP senza installare. Se Windows blocca l'exe, apri invece `Mouse Macro v1.2.2 (senza exe).cmd` (avvia senza installare).
+3. Apri `Mouse Macro v1.2.3.exe` e rispondi **Sì** alla domanda *Installare Mouse Macro Stocazz Superpower sul computer?*: lo copia nella tua cartella utente (`%LOCALAPPDATA%\MouseMacroStocazzSuperpower`, senza permessi da amministratore), crea i collegamenti nel **menu Start** e sul **desktop** e la voce in *Impostazioni → App installate*, da cui si disinstalla. Con **No** lo avvia dallo ZIP senza installare. Se Windows blocca l'exe, apri invece `Mouse Macro v1.2.3 (senza exe).cmd` (avvia senza installare).
 
 Serve Windows x64; l'exe richiede anche .NET Framework 4 (già presente in Windows 10/11), il `.cmd` no. Python è incluso. L'interfaccia è in italiano. Lo SHA-256 dello ZIP è pubblicato con ogni release.
 
 ### Windows blocca l'exe?
 
-Il launcher `.exe` non è firmato: SmartScreen o il *Controllo intelligente delle app* (Smart App Control) di Windows 11 possono bloccarlo (*"Un criterio di controllo dell'applicazione ha bloccato il file"*). Le due vie senza exe, cioè il comando PowerShell qui sopra e il file **`Mouse Macro v1.2.2 (senza exe).cmd`** nello ZIP, sono state provate con Smart App Control nella v1.1.0 (Windows 11 build 26300, [rapporto precedente](docs/ESITO-COLLAUDO-v1.1.0.md)); la verifica SAC non è stata ripetuta dalla v1.1.1 in poi. Il `.cmd` avvia direttamente il `pythonw.exe` firmato PSF con gli stessi file. Se SmartScreen avvisa, usa *Ulteriori informazioni → Esegui comunque*; se blocca ancora, tasto destro sullo ZIP → *Proprietà* → **Sblocca** prima di estrarlo.
+Il launcher `.exe` non è firmato: SmartScreen o il *Controllo intelligente delle app* (Smart App Control) di Windows 11 possono bloccarlo (*"Un criterio di controllo dell'applicazione ha bloccato il file"*). Le due vie senza exe, cioè il comando PowerShell qui sopra e il file **`Mouse Macro v1.2.3 (senza exe).cmd`** nello ZIP, sono state provate con Smart App Control nella v1.1.0 (Windows 11 build 26300, [rapporto precedente](docs/ESITO-COLLAUDO-v1.1.0.md)); la verifica SAC non è stata ripetuta dalla v1.1.1 in poi. Il `.cmd` avvia direttamente il `pythonw.exe` firmato PSF con gli stessi file. Se SmartScreen avvisa, usa *Ulteriori informazioni → Esegui comunque*; se blocca ancora, tasto destro sullo ZIP → *Proprietà* → **Sblocca** prima di estrarlo.
 
 Se anche queste vie vengono bloccate sul tuo PC, scrivilo nelle [Issues](https://github.com/realfulvio/mouse-macro-stocazz-superpower/issues).
 
-La v1.1.3 ha aggiunto l'installazione dall'exe con i collegamenti in Start e sul desktop; la v1.2.0 all'avvio propone subito l'aggiornamento quando ne esce uno. Motore invariato rispetto alla v1.1.2. [Download Portable](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.2/MouseMacroStocazzSuperpower-Windows-Portable.zip).
+La v1.1.3 ha aggiunto l'installazione dall'exe con i collegamenti in Start e sul desktop; la v1.2.0 all'avvio propone subito l'aggiornamento quando ne esce uno. Motore invariato rispetto alla v1.1.2. [Download Portable](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.3/MouseMacroStocazzSuperpower-Windows-Portable.zip).
 
 ## Cosa fa
 
