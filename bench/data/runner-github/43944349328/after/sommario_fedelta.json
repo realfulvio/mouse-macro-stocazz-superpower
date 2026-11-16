@@ -1,0 +1,234 @@
+{
+  "runs": 30,
+  "pos_error_px": {
+    "n": 870,
+    "median": 0.0,
+    "p95": 0.0,
+    "mean": 0.0,
+    "stdev": 0.0,
+    "variance": 0.0,
+    "min": 0.0,
+    "max": 0.0
+  },
+  "interval_error_abs_ms": {
+    "n": 840,
+    "median": 4.2390000000004875,
+    "p95": 28.4944999999996,
+    "mean": 8.42275714285714,
+    "stdev": 9.875127136518518,
+    "variance": 97.51813596240444,
+    "min": 0.002999999998792191,
+    "max": 46.548000000000684
+  },
+  "drift_max_ms": {
+    "n": 30,
+    "median": 25.69950000000017,
+    "p95": 31.972899999999846,
+    "mean": 24.700933333333342,
+    "stdev": 5.349450986547106,
+    "variance": 28.61662585746981,
+    "min": 16.257000000000517,
+    "max": 36.1269999999995
+  },
+  "missing_total": 0,
+  "extra_total": 0,
+  "checks": {
+    "repetitions>=min": true,
+    "pos_median": true,
+    "pos_p95": true,
+    "interval_median": true,
+    "interval_p95": false,
+    "drift_p95": true,
+    "missing": true,
+    "extra": true
+  },
+  "verdict": "NON PASSA",
+  "per_run": [
+    {
+      "run": "run_01.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 25.662999999999556
+    },
+    {
+      "run": "run_02.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 20.29200000000037
+    },
+    {
+      "run": "run_03.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 29.064000000000306
+    },
+    {
+      "run": "run_04.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 36.1269999999995
+    },
+    {
+      "run": "run_05.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 18.860999999999876
+    },
+    {
+      "run": "run_06.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 29.02299999999923
+    },
+    {
+      "run": "run_07.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 28.860999999999876
+    },
+    {
+      "run": "run_08.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 29.15099999999984
+    },
+    {
+      "run": "run_09.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 17.14599999999973
+    },
+    {
+      "run": "run_10.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 25.422999999999774
+    },
+    {
+      "run": "run_11.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 27.21899999999914
+    },
+    {
+      "run": "run_12.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 19.019000000000233
+    },
+    {
+      "run": "run_13.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 23.367999999999483
+    },
+    {
+      "run": "run_14.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 19.457000000000335
+    },
+    {
+      "run": "run_15.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 30.74200000000019
+    },
+    {
+      "run": "run_16.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 27.58600000000024
+    },
+    {
+      "run": "run_17.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 28.769999999999527
+    },
+    {
+      "run": "run_18.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 18.39599999999973
+    },
+    {
+      "run": "run_19.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 16.55699999999979
+    },
+    {
+      "run": "run_20.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 29.22700000000077
+    },
+    {
+      "run": "run_21.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 17.072000000001026
+    },
+    {
+      "run": "run_22.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 21.511999999999716
+    },
+    {
+      "run": "run_23.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 26.845000000000255
+    },
+    {
+      "run": "run_24.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 29.31500000000051
+    },
+    {
+      "run": "run_25.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 32.97999999999956
+    },
+    {
+      "run": "run_26.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 24.627000000000407
+    },
+    {
+      "run": "run_27.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 25.736000000000786
+    },
+    {
+      "run": "run_28.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 20.37800000000061
+    },
+    {
+      "run": "run_29.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 26.35399999999936
+    },
+    {
+      "run": "run_30.csv",
+      "missing": 0,
+      "extra": 0,
+      "drift_max_ms": 16.257000000000517
+    }
+  ],
+  "source_commit": "898569be1c7cbaac4e7dabe0bee524a2b2eb4080",
+  "timed_code_sha256": {
+    "macro/engine.py": "58a048f50cfe35b5da8638a191c4f2dc8250694d46e719d69c6fa7fc76825b72",
+    "macro/windows_backend.py": "5bfb321f9b116dba3331e855b41bbe3fbdf464a5ef1f4a0b138037352320a56c"
+  },
+  "condition": "source, Python 3.13, shared Windows runner; not release ZIP"
+}

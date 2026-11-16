@@ -1,0 +1,63 @@
+{
+  "tool": "jitbit",
+  "fidelity": "non misurato",
+  "source": "https://www.jitbit.com/macro-recorder/",
+  "version_declared": "da leggere dal binario; versione di prova",
+  "inventory": {
+    "tool": "jitbit",
+    "url": "https://static.jitbit.com/mr/MacroRecorderSetup.exe",
+    "bytes": 2724984,
+    "sha256": "864d70dd755dab8431c2465531067cf8130166585e55dd4c4bb7de3df54a1967",
+    "expected": null,
+    "hash_ok": true,
+    "hash_source": "nessun hash pubblicato dall'autore: registrato qui",
+    "screen": [
+      1920,
+      1080
+    ],
+    "os": "win32",
+    "cpu": "Intel64 Family 6 Model 207 Stepping 2, GenuineIntel"
+  },
+  "run_id": "43945606448",
+  "commit": "53e3b1d34d293b4cf1a8123b69638dff3568eeb4",
+  "status": "misurato",
+  "exe": "D:\\a\\_temp\\bench_tool\\installed\\MacroRecorder.exe",
+  "binary": {
+    "company": "Jitbit Macro Recorder",
+    "product_version": "5.9.0.0",
+    "product": "MacroRecorder",
+    "file_version": "5.9.0.0"
+  },
+  "startup": {
+    "successful": 15,
+    "total": 15,
+    "warm_s": {
+      "n": 14,
+      "median": 0.279,
+      "p95": 0.29205,
+      "mean": 0.27885714285714286,
+      "stdev": 0.008891284780893299,
+      "variance": 7.90549450549448e-05,
+      "min": 0.267,
+      "max": 0.294
+    },
+    "note": "prima finestra visibile e reattiva, anche se dialogo iniziale; cold=1 indica solo il primo della serie"
+  },
+  "visible_windows": [
+    "Jitbit Macro Recorder - evaluation"
+  ],
+  "pid": 8344,
+  "orchestrator_integrity": "Mandatory Label\\High Mandatory Level                          Label            S-1-16-12288",
+  "idle": {
+    "samples": 57,
+    "observed_seconds": 59.35,
+    "cpu_core_pct_mean": 0.02616870876516483,
+    "private_mib_max": 15.39
+  },
+  "checks": {
+    "package": true,
+    "idle_cpu": true,
+    "idle_memory": true,
+    "startup": true
+  }
+}

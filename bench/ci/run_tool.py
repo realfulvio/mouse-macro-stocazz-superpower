@@ -3,7 +3,8 @@
 esegue N ripetizioni della macro di riferimento con il logger esterno, poi misura risorse a riposo e avvio.
   python bench/ci/run_tool.py --tool mmss|ahk|tinytask|ideal --runs 30 --out results
 Stampa i CSV grezzi nel log tra marcatori RAW (il job non puo' fare push) e li salva come artifact."""
-import argparse, ctypes, hashlib, json, os, shutil, struct, subprocess, sys, time, urllib.request, zipfile
+import argparse, ctypes, hashlib, json, os, shutil, struct, subprocess, sys, time, urllib.request, urllib.parse, zipfile
+from html.parser import HTMLParser
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -13,6 +14,32 @@ u = ctypes.windll.user32
 VK = {"CTRL": 0x11, "ALT": 0x12, "SHIFT": 0x10, "ENTER": 0x0D, "F8": 0x77}
 
 TOOLS = {
+    "pulover": {"url": "https://github.com/Pulover/PuloversMacroCreator/releases/download/v5.4.1/PuloversMacroCreator-Portable.zip",
+        "sha256": None, "hash_source": "nessun hash pubblicato dall'autore: registrato qui", "resources_only": True,
+        "package": "PuloversMacroCreator-Portable.zip", "install": "zip", "exe": "MacroCreatorPortable/x64/MacroCreator/MacroCreator.exe",
+        "source": "https://www.macrocreator.com/download/", "version_declared": "5.4.1"},
+    "jitbit": {"url": "https://static.jitbit.com/mr/MacroRecorderSetup.exe",
+        "sha256": None, "hash_source": "nessun hash pubblicato dall'autore: registrato qui", "resources_only": True,
+        "package": "MacroRecorderSetup.exe", "install": "inno", "exe": "MacroRecorder.exe",
+        "source": "https://www.jitbit.com/macro-recorder/", "version_declared": "da leggere dal binario; versione di prova"},
+    "minimouse": {"url": "https://downloads.sourceforge.net/project/minimousemacro/MiniMouseMacro.Setup.msi",
+        "fallback": ["https://pilotfiber.dl.sourceforge.net/project/minimousemacro/MiniMouseMacro.Setup.msi", "https://netix.dl.sourceforge.net/project/minimousemacro/MiniMouseMacro.Setup.msi"],
+        "sha256": "e5d5974a1a69cbe35dbf47eb2bde833075622b813cbfd133c245b3657907c3ea",
+        "hash_source": "SHA-256 pubblicato dalla pagina download SourceForge del progetto turnssoft", "resources_only": True,
+        "package": "MiniMouseMacro.Setup.msi", "install": "msi", "exe": "MiniMouseMacro.exe",
+        "installed_exe": "MiniMouseMacro/MiniMouseMacro.exe",
+        "source": "https://sourceforge.net/projects/minimousemacro/files/", "version_declared": "da leggere dal binario"},
+    "opautoclicker": {"url": "https://downloads.sourceforge.net/project/orphamielautoclicker/4.1/AutoClicker.exe",
+        "fallback": ["https://pilotfiber.dl.sourceforge.net/project/orphamielautoclicker/4.1/AutoClicker.exe", "https://netix.dl.sourceforge.net/project/orphamielautoclicker/4.1/AutoClicker.exe"],
+        "sha256": "1ce7da6f2813c2ad1d2e496be6714e08cd618e6d9fe2df26c2bd4d894c9a6ec1",
+        "hash_source": "SHA-256 pubblicato dalla pagina download SourceForge collegata dal sito ufficiale", "resources_only": True,
+        "package": "AutoClicker.exe", "install": "exe", "exe": "AutoClicker.exe",
+        "source": "https://www.opautoclicker.com/downloads.html", "version_declared": "da leggere dal binario"},
+    "actiona": {"url": "https://github.com/Jmgr/actiona/releases/download/v3.11.5/actiona-3.11.5-windows.exe",
+        "sha256": "9f50ed804fa0cc91d82202c0393fcebb7c0865781695cdf8b9c4f017d6c7e17c",
+        "hash_source": "digest SHA-256 della release ufficiale GitHub v3.11.5", "resources_only": True,
+        "package": "actiona-3.11.5-windows.exe", "install": "inno", "exe": "actiona.exe",
+        "source": "https://github.com/Jmgr/actiona/releases/tag/v3.11.5", "version_declared": "3.11.5"},
     "mmss": {"url": "https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.3/MouseMacroStocazzSuperpower-Windows-v1.2.3.zip",
              "sha256": "3b9e795f25bc4c8b4d46ee2cfe481521c1f5e432d71cf7630198c70f7e25a45e", "hash_source": "digest della release GitHub v1.2.3 e SHA256SUMS-v1.2.3.txt"},
     "ahk": {"url": "https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.31/AutoHotkey_2.0.31.zip",
@@ -32,12 +59,32 @@ def press(*keys):
 
 def download(url, dest):
     dest.parent.mkdir(parents=True, exist_ok=True)
-    req = urllib.request.Request(url, headers={
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) bench-download",
-        "Referer": "https://tinytask.net/download.html"})
-    with urllib.request.urlopen(req, timeout=120) as r, open(dest, "wb") as f:
-        shutil.copyfileobj(r, f)
-    return hashlib.sha256(dest.read_bytes()).hexdigest()
+    class Refresh(HTMLParser):
+        target = None
+        def handle_starttag(self, tag, attrs):
+            attrs = dict(attrs)
+            if tag == "meta" and attrs.get("http-equiv", "").lower() == "refresh":
+                value = attrs.get("content", "")
+                if "url=" in value.lower():
+                    self.target = value[value.lower().index("url=") + 4:].strip().strip("\"'")
+    for _ in range(3):
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) bench-download",
+            "Referer": "https://sourceforge.net/" if "sourceforge.net" in url else "https://tinytask.net/download.html"})
+        with urllib.request.urlopen(req, timeout=120) as r:
+            if "text/html" in r.headers.get("Content-Type", "").lower():
+                parser = Refresh(); parser.feed(r.read(1024 * 1024).decode("utf-8", errors="replace"))
+                target = urllib.parse.urljoin(r.url, parser.target or "")
+                host = urllib.parse.urlparse(target).hostname or ""
+                if parser.target and target.startswith("https://") and (host == "downloads.sourceforge.net" or host.endswith(".dl.sourceforge.net")):
+                    print("redirect HTML del download ufficiale SourceForge", host, flush=True)
+                    url = target
+                    continue
+                raise ValueError("il server ha restituito HTML invece del pacchetto: " + r.url)
+            with open(dest, "wb") as f:
+                shutil.copyfileobj(r, f)
+            return hashlib.sha256(dest.read_bytes()).hexdigest()
+    raise ValueError("troppi redirect HTML, nessun binario scaricato")
 
 
 def set_display():
@@ -58,7 +105,13 @@ def set_display():
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--tool", required=True, choices=TOOLS); ap.add_argument("--runs", type=int, default=30)
     ap.add_argument("--out", default="results"); ap.add_argument("--idle-s", type=int, default=60); ap.add_argument("--startups", type=int, default=15)
-    a = ap.parse_args(); cfg = TOOLS[a.tool]
+    ap.add_argument("--mmss-zip", help="Misura questo ZIP candidato invece della release baseline")
+    ap.add_argument("--sha256", help="SHA-256 atteso dello ZIP candidato, da SHA256SUMS dell'artifact")
+    a = ap.parse_args(); cfg = dict(TOOLS[a.tool])
+    if a.mmss_zip:
+        if a.tool != "mmss" or not a.sha256 or len(a.sha256) != 64 or any(c not in "0123456789abcdefABCDEF" for c in a.sha256):
+            ap.error("--mmss-zip richiede --tool mmss e --sha256 con 64 cifre esadecimali")
+        cfg.update(url=Path(a.mmss_zip).resolve().as_uri(), sha256=a.sha256.lower(), hash_source="SHA256SUMS dell'artifact candidato, verificato prima della misura")
     out = Path(a.out) / a.tool; out.mkdir(parents=True, exist_ok=True)
     u.SetProcessDpiAwarenessContext(ctypes.c_void_p(-4))
     w, h = set_display(); print(f"schermo di prova {w}x{h}", flush=True)
@@ -67,7 +120,7 @@ def main():
     used, f, got = None, None, None
     for url in ([] if a.tool == "ideal" else [cfg["url"]] + cfg.get("fallback", [])):     # link elencati nella pagina download ufficiale, in ordine
         try:
-            f = work / Path(url).name; got = download(url, f); used = url; print("scaricato da", url, flush=True); break
+            f = work / cfg.get("package", Path(url).name); got = download(url, f); used = url; print("scaricato da", url, flush=True); break
         except Exception as error:
             print("download fallito", url, error, flush=True)
     if used is None and a.tool != "ideal": sys.exit("nessun link di download funzionante")
@@ -77,6 +130,10 @@ def main():
            "screen": [w, h], "os": sys.platform, "cpu": os.environ.get("PROCESSOR_IDENTIFIER", "")}
     print("INVENTARIO", json.dumps(inv), flush=True); (out / "inventario.json").write_text(json.dumps(inv, indent=1))
     if not ok: sys.exit("hash non corrisponde: mi fermo")
+    if cfg.get("resources_only"):
+        from resource_tools import run_resources
+        run_resources(a, cfg, f, work, out, inv)
+        return  # nessuna macro/logger: fedeltà NON MISURATA per questi strumenti
     d = work / "x"; d.mkdir(parents=True, exist_ok=True)
     if f is None: pass
     elif f.suffix == ".zip":

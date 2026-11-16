@@ -1,0 +1,665 @@
+2026-11-16 20:02:49.758   Log opened. (Time zone: UTC+00:00)
+2026-11-16 20:02:49.758   Setup version: Inno Setup version 6.7.1
+2026-11-16 20:02:49.758   Original Setup EXE: D:\a\_temp\bench_tool\actiona-3.11.5-windows.exe
+2026-11-16 20:02:49.758   Setup command line: /SL5="$20160,74590118,853504,D:\a\_temp\bench_tool\actiona-3.11.5-windows.exe" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /DIR=D:\a\_temp\bench_tool\installed /LOG=D:\a\mouse-macro-stocazz-superpower\mouse-macro-stocazz-superpower\results\actiona\install.log
+2026-11-16 20:02:49.758   Windows version: 10.0.26100
+2026-11-16 20:02:49.758   Windows architecture: x64 (64-bit)
+2026-11-16 20:02:49.758   Machine types supported by system: x86 x64
+2026-11-16 20:02:49.758   User privileges: Administrative
+2026-11-16 20:02:49.760   Administrative install mode: Yes
+2026-11-16 20:02:49.760   Install mode root key: HKEY_LOCAL_MACHINE
+2026-11-16 20:02:49.760   64-bit install mode: Yes
+2026-11-16 20:02:49.760   RedirectionGuard status for current process: Enabled in enforcing mode
+2026-11-16 20:02:49.762   Created protected temporary directory: C:\Users\RUNNER~1\AppData\Local\Temp\is-H0QDOZWAFY.tmp
+2026-11-16 20:02:50.642   Found 57 files to register with RestartManager.
+2026-11-16 20:02:50.642   Calling RestartManager's RmGetList.
+2026-11-16 20:02:50.646   RmGetList finished successfully.
+2026-11-16 20:02:50.646   RestartManager found no applications using one of our files.
+2026-11-16 20:02:50.650   Starting the installation process.
+2026-11-16 20:02:50.652   Directory for uninstall files: D:\a\_temp\bench_tool\installed
+2026-11-16 20:02:50.652   Creating new uninstall log: D:\a\_temp\bench_tool\installed\unins000.dat
+2026-11-16 20:02:50.734   -- File entry --
+2026-11-16 20:02:50.734   Dest filename: D:\a\_temp\bench_tool\installed\unins000.exe
+2026-11-16 20:02:50.734   Non-default bitness: 32-bit
+2026-11-16 20:02:50.836   Time stamp of our file: 2026-11-16 20:02:49.521
+2026-11-16 20:02:50.836   Installing the file.
+2026-11-16 20:02:50.850   Successfully installed the file.
+2026-11-16 20:02:50.850   -- File entry --
+2026-11-16 20:02:50.850   Dest filename: D:\a\_temp\bench_tool\installed\actiona.exe
+2026-11-16 20:02:50.850   Time stamp of our file: 2026-11-02 20:59:58.000
+2026-11-16 20:02:50.850   Installing the file.
+2026-11-16 20:02:50.909   Successfully installed the file.
+2026-11-16 20:02:50.909   -- File entry --
+2026-11-16 20:02:50.909   Dest filename: D:\a\_temp\bench_tool\installed\actexec.exe
+2026-11-16 20:02:50.909   Time stamp of our file: 2026-11-02 21:00:02.000
+2026-11-16 20:02:50.909   Installing the file.
+2026-11-16 20:02:50.911   Successfully installed the file.
+2026-11-16 20:02:50.911   -- File entry --
+2026-11-16 20:02:50.911   Dest filename: D:\a\_temp\bench_tool\installed\actiona.exe
+2026-11-16 20:02:50.911   Time stamp of our file: 2026-11-02 20:59:58.000
+2026-11-16 20:02:50.911   Dest file exists.
+2026-11-16 20:02:50.913   Time stamp of existing file: 2026-11-02 20:59:58.000
+2026-11-16 20:02:50.913   Installing the file.
+2026-11-16 20:02:50.915   Successfully installed the file.
+2026-11-16 20:02:50.915   -- File entry --
+2026-11-16 20:02:50.915   Dest filename: D:\a\_temp\bench_tool\installed\actionpackdata.dll
+2026-11-16 20:02:50.915   Time stamp of our file: 2026-11-02 21:00:26.000
+2026-11-16 20:02:50.915   Installing the file.
+2026-11-16 20:02:50.934   Successfully installed the file.
+2026-11-16 20:02:50.934   -- File entry --
+2026-11-16 20:02:50.934   Dest filename: D:\a\_temp\bench_tool\installed\actionpackdevice.dll
+2026-11-16 20:02:50.934   Time stamp of our file: 2026-11-02 21:00:20.000
+2026-11-16 20:02:50.934   Installing the file.
+2026-11-16 20:02:50.941   Successfully installed the file.
+2026-11-16 20:02:50.941   -- File entry --
+2026-11-16 20:02:50.941   Dest filename: D:\a\_temp\bench_tool\installed\actionpackinternal.dll
+2026-11-16 20:02:50.941   Time stamp of our file: 2026-11-02 21:00:14.000
+2026-11-16 20:02:50.941   Installing the file.
+2026-11-16 20:02:50.947   Successfully installed the file.
+2026-11-16 20:02:50.947   -- File entry --
+2026-11-16 20:02:50.947   Dest filename: D:\a\_temp\bench_tool\installed\actionpacksystem.dll
+2026-11-16 20:02:50.947   Time stamp of our file: 2026-11-02 21:00:24.000
+2026-11-16 20:02:50.947   Installing the file.
+2026-11-16 20:02:50.958   Successfully installed the file.
+2026-11-16 20:02:50.958   -- File entry --
+2026-11-16 20:02:50.958   Dest filename: D:\a\_temp\bench_tool\installed\actionpackwindows.dll
+2026-11-16 20:02:50.958   Time stamp of our file: 2026-11-02 21:00:18.000
+2026-11-16 20:02:50.958   Installing the file.
+2026-11-16 20:02:50.963   Successfully installed the file.
+2026-11-16 20:02:50.963   -- File entry --
+2026-11-16 20:02:50.963   Dest filename: D:\a\_temp\bench_tool\installed\actiontools.dll
+2026-11-16 20:02:50.965   Time stamp of our file: 2026-11-02 21:00:12.000
+2026-11-16 20:02:50.965   Installing the file.
+2026-11-16 20:02:51.005   Successfully installed the file.
+2026-11-16 20:02:51.005   -- File entry --
+2026-11-16 20:02:51.005   Dest filename: D:\a\_temp\bench_tool\installed\CHANGELOG.txt
+2026-11-16 20:02:51.005   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:51.005   Installing the file.
+2026-11-16 20:02:51.005   Successfully installed the file.
+2026-11-16 20:02:51.005   -- File entry --
+2026-11-16 20:02:51.005   Dest filename: D:\a\_temp\bench_tool\installed\concrt140.dll
+2026-11-16 20:02:51.007   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:51.007   Installing the file.
+2026-11-16 20:02:51.016   Successfully installed the file.
+2026-11-16 20:02:51.016   -- File entry --
+2026-11-16 20:02:51.016   Dest filename: D:\a\_temp\bench_tool\installed\execution.dll
+2026-11-16 20:02:51.016   Time stamp of our file: 2026-11-02 21:00:08.000
+2026-11-16 20:02:51.016   Installing the file.
+2026-11-16 20:02:51.022   Successfully installed the file.
+2026-11-16 20:02:51.022   -- File entry --
+2026-11-16 20:02:51.022   Dest filename: D:\a\_temp\bench_tool\installed\icudt53.dll
+2026-11-16 20:02:51.022   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:51.022   Installing the file.
+2026-11-16 20:02:51.465   Successfully installed the file.
+2026-11-16 20:02:51.466   -- File entry --
+2026-11-16 20:02:51.466   Dest filename: D:\a\_temp\bench_tool\installed\icuin53.dll
+2026-11-16 20:02:51.466   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:51.466   Installing the file.
+2026-11-16 20:02:51.507   Successfully installed the file.
+2026-11-16 20:02:51.509   -- File entry --
+2026-11-16 20:02:51.509   Dest filename: D:\a\_temp\bench_tool\installed\icuuc53.dll
+2026-11-16 20:02:51.509   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:51.509   Installing the file.
+2026-11-16 20:02:51.541   Successfully installed the file.
+2026-11-16 20:02:51.541   -- File entry --
+2026-11-16 20:02:51.541   Dest filename: D:\a\_temp\bench_tool\installed\libcrypto-3-x64.dll
+2026-11-16 20:02:51.541   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:51.541   Installing the file.
+2026-11-16 20:02:51.655   Successfully installed the file.
+2026-11-16 20:02:51.657   -- File entry --
+2026-11-16 20:02:51.657   Dest filename: D:\a\_temp\bench_tool\installed\libEGL.dll
+2026-11-16 20:02:51.657   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:51.657   Installing the file.
+2026-11-16 20:02:51.659   Successfully installed the file.
+2026-11-16 20:02:51.659   -- File entry --
+2026-11-16 20:02:51.659   Dest filename: D:\a\_temp\bench_tool\installed\libGLESv2.dll
+2026-11-16 20:02:51.659   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:51.659   Installing the file.
+2026-11-16 20:02:51.689   Successfully installed the file.
+2026-11-16 20:02:51.689   -- File entry --
+2026-11-16 20:02:51.689   Dest filename: D:\a\_temp\bench_tool\installed\libssl-3-x64.dll
+2026-11-16 20:02:51.689   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:51.689   Installing the file.
+2026-11-16 20:02:51.709   Successfully installed the file.
+2026-11-16 20:02:51.709   -- File entry --
+2026-11-16 20:02:51.709   Dest filename: D:\a\_temp\bench_tool\installed\LICENSE.txt
+2026-11-16 20:02:51.709   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:51.709   Installing the file.
+2026-11-16 20:02:51.711   Successfully installed the file.
+2026-11-16 20:02:51.711   -- File entry --
+2026-11-16 20:02:51.711   Dest filename: D:\a\_temp\bench_tool\installed\msvcp140.dll
+2026-11-16 20:02:51.711   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:51.711   Installing the file.
+2026-11-16 20:02:51.724   Successfully installed the file.
+2026-11-16 20:02:51.724   -- File entry --
+2026-11-16 20:02:51.724   Dest filename: D:\a\_temp\bench_tool\installed\msvcp140_1.dll
+2026-11-16 20:02:51.724   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:51.724   Installing the file.
+2026-11-16 20:02:51.726   Successfully installed the file.
+2026-11-16 20:02:51.726   -- File entry --
+2026-11-16 20:02:51.726   Dest filename: D:\a\_temp\bench_tool\installed\opencv_core4120.dll
+2026-11-16 20:02:51.726   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:51.726   Installing the file.
+2026-11-16 20:02:52.118   Successfully installed the file.
+2026-11-16 20:02:52.118   -- File entry --
+2026-11-16 20:02:52.118   Dest filename: D:\a\_temp\bench_tool\installed\opencv_imgproc4120.dll
+2026-11-16 20:02:52.118   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:52.118   Installing the file.
+2026-11-16 20:02:52.757   Successfully installed the file.
+2026-11-16 20:02:52.757   -- File entry --
+2026-11-16 20:02:52.757   Dest filename: D:\a\_temp\bench_tool\installed\Qt6Core.dll
+2026-11-16 20:02:52.757   Time stamp of our file: 2026-11-02 20:59:40.000
+2026-11-16 20:02:52.757   Installing the file.
+2026-11-16 20:02:53.021   Successfully installed the file.
+2026-11-16 20:02:53.021   -- File entry --
+2026-11-16 20:02:53.021   Dest filename: D:\a\_temp\bench_tool\installed\Qt6Core5Compat.dll
+2026-11-16 20:02:53.021   Time stamp of our file: 2026-11-02 20:59:40.000
+2026-11-16 20:02:53.021   Installing the file.
+2026-11-16 20:02:53.053   Successfully installed the file.
+2026-11-16 20:02:53.053   -- File entry --
+2026-11-16 20:02:53.053   Dest filename: D:\a\_temp\bench_tool\installed\Qt6Gui.dll
+2026-11-16 20:02:53.053   Time stamp of our file: 2026-11-02 20:59:40.000
+2026-11-16 20:02:53.053   Installing the file.
+2026-11-16 20:02:53.331   Successfully installed the file.
+2026-11-16 20:02:53.331   -- File entry --
+2026-11-16 20:02:53.331   Dest filename: D:\a\_temp\bench_tool\installed\Qt6Multimedia.dll
+2026-11-16 20:02:53.331   Time stamp of our file: 2026-11-02 20:59:40.000
+2026-11-16 20:02:53.331   Installing the file.
+2026-11-16 20:02:53.370   Successfully installed the file.
+2026-11-16 20:02:53.370   -- File entry --
+2026-11-16 20:02:53.370   Dest filename: D:\a\_temp\bench_tool\installed\Qt6MultimediaWidgets.dll
+2026-11-16 20:02:53.370   Time stamp of our file: 2026-11-02 20:59:40.000
+2026-11-16 20:02:53.370   Installing the file.
+2026-11-16 20:02:53.373   Successfully installed the file.
+2026-11-16 20:02:53.373   -- File entry --
+2026-11-16 20:02:53.373   Dest filename: D:\a\_temp\bench_tool\installed\Qt6Network.dll
+2026-11-16 20:02:53.373   Time stamp of our file: 2026-11-02 20:59:40.000
+2026-11-16 20:02:53.373   Installing the file.
+2026-11-16 20:02:53.424   Successfully installed the file.
+2026-11-16 20:02:53.424   -- File entry --
+2026-11-16 20:02:53.424   Dest filename: D:\a\_temp\bench_tool\installed\Qt6OpenGL.dll
+2026-11-16 20:02:53.424   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:53.424   Installing the file.
+2026-11-16 20:02:53.460   Successfully installed the file.
+2026-11-16 20:02:53.460   -- File entry --
+2026-11-16 20:02:53.460   Dest filename: D:\a\_temp\bench_tool\installed\Qt6OpenGLWidgets.dll
+2026-11-16 20:02:53.462   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:53.462   Installing the file.
+2026-11-16 20:02:53.462   Successfully installed the file.
+2026-11-16 20:02:53.464   -- File entry --
+2026-11-16 20:02:53.464   Dest filename: D:\a\_temp\bench_tool\installed\Qt6Qml.dll
+2026-11-16 20:02:53.464   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:53.464   Installing the file.
+2026-11-16 20:02:53.601   Successfully installed the file.
+2026-11-16 20:02:53.601   -- File entry --
+2026-11-16 20:02:53.602   Dest filename: D:\a\_temp\bench_tool\installed\Qt6Sql.dll
+2026-11-16 20:02:53.602   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:53.602   Installing the file.
+2026-11-16 20:02:53.610   Successfully installed the file.
+2026-11-16 20:02:53.610   -- File entry --
+2026-11-16 20:02:53.610   Dest filename: D:\a\_temp\bench_tool\installed\Qt6Svg.dll
+2026-11-16 20:02:53.610   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:53.610   Installing the file.
+2026-11-16 20:02:53.628   Successfully installed the file.
+2026-11-16 20:02:53.628   -- File entry --
+2026-11-16 20:02:53.628   Dest filename: D:\a\_temp\bench_tool\installed\Qt6TextToSpeech.dll
+2026-11-16 20:02:53.628   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:53.628   Installing the file.
+2026-11-16 20:02:53.632   Successfully installed the file.
+2026-11-16 20:02:53.632   -- File entry --
+2026-11-16 20:02:53.632   Dest filename: D:\a\_temp\bench_tool\installed\Qt6UiTools.dll
+2026-11-16 20:02:53.632   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:53.632   Installing the file.
+2026-11-16 20:02:53.648   Successfully installed the file.
+2026-11-16 20:02:53.648   -- File entry --
+2026-11-16 20:02:53.648   Dest filename: D:\a\_temp\bench_tool\installed\Qt6Widgets.dll
+2026-11-16 20:02:53.650   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:53.650   Installing the file.
+2026-11-16 20:02:53.840   Successfully installed the file.
+2026-11-16 20:02:53.840   -- File entry --
+2026-11-16 20:02:53.840   Dest filename: D:\a\_temp\bench_tool\installed\qtjsapi.dll
+2026-11-16 20:02:53.840   Time stamp of our file: 2026-11-02 20:59:40.000
+2026-11-16 20:02:53.840   Installing the file.
+2026-11-16 20:02:54.155   Successfully installed the file.
+2026-11-16 20:02:54.155   -- File entry --
+2026-11-16 20:02:54.155   Dest filename: D:\a\_temp\bench_tool\installed\README.md
+2026-11-16 20:02:54.155   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.155   Installing the file.
+2026-11-16 20:02:54.157   Successfully installed the file.
+2026-11-16 20:02:54.157   -- File entry --
+2026-11-16 20:02:54.157   Dest filename: D:\a\_temp\bench_tool\installed\tools.dll
+2026-11-16 20:02:54.157   Time stamp of our file: 2026-11-02 21:00:06.000
+2026-11-16 20:02:54.157   Installing the file.
+2026-11-16 20:02:54.159   Successfully installed the file.
+2026-11-16 20:02:54.159   -- File entry --
+2026-11-16 20:02:54.159   Dest filename: D:\a\_temp\bench_tool\installed\vcruntime140.dll
+2026-11-16 20:02:54.159   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.159   Installing the file.
+2026-11-16 20:02:54.162   Successfully installed the file.
+2026-11-16 20:02:54.162   -- File entry --
+2026-11-16 20:02:54.162   Dest filename: D:\a\_temp\bench_tool\installed\vcruntime140_1.dll
+2026-11-16 20:02:54.162   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.162   Installing the file.
+2026-11-16 20:02:54.164   Successfully installed the file.
+2026-11-16 20:02:54.164   -- File entry --
+2026-11-16 20:02:54.164   Dest filename: D:\a\_temp\bench_tool\installed\sfx\7zr.exe
+2026-11-16 20:02:54.164   Time stamp of our file: 2026-11-02 21:00:26.000
+2026-11-16 20:02:54.164   Installing the file.
+2026-11-16 20:02:54.164   Creating directory: D:\a\_temp\bench_tool\installed\sfx
+2026-11-16 20:02:54.177   Successfully installed the file.
+2026-11-16 20:02:54.177   -- File entry --
+2026-11-16 20:02:54.177   Dest filename: D:\a\_temp\bench_tool\installed\sfx\7zsd.sfx
+2026-11-16 20:02:54.177   Time stamp of our file: 2026-11-02 21:00:26.000
+2026-11-16 20:02:54.177   Installing the file.
+2026-11-16 20:02:54.180   Successfully installed the file.
+2026-11-16 20:02:54.180   -- File entry --
+2026-11-16 20:02:54.180   Dest filename: D:\a\_temp\bench_tool\installed\sfx\License.txt
+2026-11-16 20:02:54.180   Time stamp of our file: 2026-11-02 21:00:26.000
+2026-11-16 20:02:54.180   Installing the file.
+2026-11-16 20:02:54.180   Successfully installed the file.
+2026-11-16 20:02:54.182   -- File entry --
+2026-11-16 20:02:54.182   Dest filename: D:\a\_temp\bench_tool\installed\sfx\Readme.txt
+2026-11-16 20:02:54.182   Time stamp of our file: 2026-11-02 21:00:26.000
+2026-11-16 20:02:54.182   Installing the file.
+2026-11-16 20:02:54.182   Successfully installed the file.
+2026-11-16 20:02:54.182   -- File entry --
+2026-11-16 20:02:54.182   Dest filename: D:\a\_temp\bench_tool\installed\sfx\sfx.7z
+2026-11-16 20:02:54.182   Time stamp of our file: 2026-11-02 21:00:26.000
+2026-11-16 20:02:54.182   Installing the file.
+2026-11-16 20:02:54.184   Successfully installed the file.
+2026-11-16 20:02:54.184   -- File entry --
+2026-11-16 20:02:54.184   Dest filename: D:\a\_temp\bench_tool\installed\translations\actexec_fr_FR.qm
+2026-11-16 20:02:54.184   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.184   Installing the file.
+2026-11-16 20:02:54.184   Creating directory: D:\a\_temp\bench_tool\installed\translations
+2026-11-16 20:02:54.186   Successfully installed the file.
+2026-11-16 20:02:54.186   -- File entry --
+2026-11-16 20:02:54.186   Dest filename: D:\a\_temp\bench_tool\installed\translations\actexec_pt_BR.qm
+2026-11-16 20:02:54.186   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.186   Installing the file.
+2026-11-16 20:02:54.186   Successfully installed the file.
+2026-11-16 20:02:54.186   -- File entry --
+2026-11-16 20:02:54.186   Dest filename: D:\a\_temp\bench_tool\installed\translations\actexec_zh_CN.qm
+2026-11-16 20:02:54.186   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.186   Installing the file.
+2026-11-16 20:02:54.186   Successfully installed the file.
+2026-11-16 20:02:54.186   -- File entry --
+2026-11-16 20:02:54.186   Dest filename: D:\a\_temp\bench_tool\installed\translations\actiona_fr_FR.qm
+2026-11-16 20:02:54.186   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.186   Installing the file.
+2026-11-16 20:02:54.188   Successfully installed the file.
+2026-11-16 20:02:54.188   -- File entry --
+2026-11-16 20:02:54.188   Dest filename: D:\a\_temp\bench_tool\installed\translations\actiona_pt_BR.qm
+2026-11-16 20:02:54.188   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.188   Installing the file.
+2026-11-16 20:02:54.190   Successfully installed the file.
+2026-11-16 20:02:54.190   -- File entry --
+2026-11-16 20:02:54.190   Dest filename: D:\a\_temp\bench_tool\installed\translations\actiona_zh_CN.qm
+2026-11-16 20:02:54.190   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.190   Installing the file.
+2026-11-16 20:02:54.192   Successfully installed the file.
+2026-11-16 20:02:54.192   -- File entry --
+2026-11-16 20:02:54.192   Dest filename: D:\a\_temp\bench_tool\installed\translations\actionpackdata_fr_FR.qm
+2026-11-16 20:02:54.192   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.192   Installing the file.
+2026-11-16 20:02:54.194   Successfully installed the file.
+2026-11-16 20:02:54.194   -- File entry --
+2026-11-16 20:02:54.194   Dest filename: D:\a\_temp\bench_tool\installed\translations\actionpackdata_pt_BR.qm
+2026-11-16 20:02:54.194   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.194   Installing the file.
+2026-11-16 20:02:54.194   Successfully installed the file.
+2026-11-16 20:02:54.194   -- File entry --
+2026-11-16 20:02:54.194   Dest filename: D:\a\_temp\bench_tool\installed\translations\actionpackdata_zh_CN.qm
+2026-11-16 20:02:54.194   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.194   Installing the file.
+2026-11-16 20:02:54.196   Successfully installed the file.
+2026-11-16 20:02:54.196   -- File entry --
+2026-11-16 20:02:54.196   Dest filename: D:\a\_temp\bench_tool\installed\translations\actionpackdevice_fr_FR.qm
+2026-11-16 20:02:54.196   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.196   Installing the file.
+2026-11-16 20:02:54.196   Successfully installed the file.
+2026-11-16 20:02:54.196   -- File entry --
+2026-11-16 20:02:54.196   Dest filename: D:\a\_temp\bench_tool\installed\translations\actionpackdevice_pt_BR.qm
+2026-11-16 20:02:54.196   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.196   Installing the file.
+2026-11-16 20:02:54.198   Successfully installed the file.
+2026-11-16 20:02:54.198   -- File entry --
+2026-11-16 20:02:54.198   Dest filename: D:\a\_temp\bench_tool\installed\translations\actionpackdevice_zh_CN.qm
+2026-11-16 20:02:54.198   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.198   Installing the file.
+2026-11-16 20:02:54.198   Successfully installed the file.
+2026-11-16 20:02:54.198   -- File entry --
+2026-11-16 20:02:54.198   Dest filename: D:\a\_temp\bench_tool\installed\translations\actionpackinternal_fr_FR.qm
+2026-11-16 20:02:54.198   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.198   Installing the file.
+2026-11-16 20:02:54.198   Successfully installed the file.
+2026-11-16 20:02:54.198   -- File entry --
+2026-11-16 20:02:54.198   Dest filename: D:\a\_temp\bench_tool\installed\translations\actionpackinternal_pt_BR.qm
+2026-11-16 20:02:54.198   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.198   Installing the file.
+2026-11-16 20:02:54.200   Successfully installed the file.
+2026-11-16 20:02:54.200   -- File entry --
+2026-11-16 20:02:54.200   Dest filename: D:\a\_temp\bench_tool\installed\translations\actionpackinternal_zh_CN.qm
+2026-11-16 20:02:54.200   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.200   Installing the file.
+2026-11-16 20:02:54.200   Successfully installed the file.
+2026-11-16 20:02:54.200   -- File entry --
+2026-11-16 20:02:54.200   Dest filename: D:\a\_temp\bench_tool\installed\translations\actionpacksystem_fr_FR.qm
+2026-11-16 20:02:54.200   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.200   Installing the file.
+2026-11-16 20:02:54.202   Successfully installed the file.
+2026-11-16 20:02:54.202   -- File entry --
+2026-11-16 20:02:54.202   Dest filename: D:\a\_temp\bench_tool\installed\translations\actionpacksystem_pt_BR.qm
+2026-11-16 20:02:54.202   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.202   Installing the file.
+2026-11-16 20:02:54.202   Successfully installed the file.
+2026-11-16 20:02:54.202   -- File entry --
+2026-11-16 20:02:54.202   Dest filename: D:\a\_temp\bench_tool\installed\translations\actionpacksystem_zh_CN.qm
+2026-11-16 20:02:54.202   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.202   Installing the file.
+2026-11-16 20:02:54.204   Successfully installed the file.
+2026-11-16 20:02:54.204   -- File entry --
+2026-11-16 20:02:54.204   Dest filename: D:\a\_temp\bench_tool\installed\translations\actionpackwindows_fr_FR.qm
+2026-11-16 20:02:54.204   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.204   Installing the file.
+2026-11-16 20:02:54.204   Successfully installed the file.
+2026-11-16 20:02:54.204   -- File entry --
+2026-11-16 20:02:54.204   Dest filename: D:\a\_temp\bench_tool\installed\translations\actionpackwindows_pt_BR.qm
+2026-11-16 20:02:54.204   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.204   Installing the file.
+2026-11-16 20:02:54.204   Successfully installed the file.
+2026-11-16 20:02:54.204   -- File entry --
+2026-11-16 20:02:54.204   Dest filename: D:\a\_temp\bench_tool\installed\translations\actionpackwindows_zh_CN.qm
+2026-11-16 20:02:54.204   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.204   Installing the file.
+2026-11-16 20:02:54.206   Successfully installed the file.
+2026-11-16 20:02:54.206   -- File entry --
+2026-11-16 20:02:54.206   Dest filename: D:\a\_temp\bench_tool\installed\translations\actiontools_fr_FR.qm
+2026-11-16 20:02:54.206   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.206   Installing the file.
+2026-11-16 20:02:54.206   Successfully installed the file.
+2026-11-16 20:02:54.206   -- File entry --
+2026-11-16 20:02:54.206   Dest filename: D:\a\_temp\bench_tool\installed\translations\actiontools_pt_BR.qm
+2026-11-16 20:02:54.206   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.206   Installing the file.
+2026-11-16 20:02:54.208   Successfully installed the file.
+2026-11-16 20:02:54.208   -- File entry --
+2026-11-16 20:02:54.208   Dest filename: D:\a\_temp\bench_tool\installed\translations\actiontools_zh_CN.qm
+2026-11-16 20:02:54.208   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.208   Installing the file.
+2026-11-16 20:02:54.208   Successfully installed the file.
+2026-11-16 20:02:54.208   -- File entry --
+2026-11-16 20:02:54.208   Dest filename: D:\a\_temp\bench_tool\installed\translations\execution_fr_FR.qm
+2026-11-16 20:02:54.210   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.210   Installing the file.
+2026-11-16 20:02:54.210   Successfully installed the file.
+2026-11-16 20:02:54.210   -- File entry --
+2026-11-16 20:02:54.210   Dest filename: D:\a\_temp\bench_tool\installed\translations\execution_pt_BR.qm
+2026-11-16 20:02:54.210   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.210   Installing the file.
+2026-11-16 20:02:54.210   Successfully installed the file.
+2026-11-16 20:02:54.210   -- File entry --
+2026-11-16 20:02:54.210   Dest filename: D:\a\_temp\bench_tool\installed\translations\execution_zh_CN.qm
+2026-11-16 20:02:54.210   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.210   Installing the file.
+2026-11-16 20:02:54.210   Successfully installed the file.
+2026-11-16 20:02:54.210   -- File entry --
+2026-11-16 20:02:54.210   Dest filename: D:\a\_temp\bench_tool\installed\translations\qtbase_fr_FR.qm
+2026-11-16 20:02:54.210   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.210   Installing the file.
+2026-11-16 20:02:54.215   Successfully installed the file.
+2026-11-16 20:02:54.215   -- File entry --
+2026-11-16 20:02:54.215   Dest filename: D:\a\_temp\bench_tool\installed\translations\qtbase_pt_BR.qm
+2026-11-16 20:02:54.215   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.215   Installing the file.
+2026-11-16 20:02:54.221   Successfully installed the file.
+2026-11-16 20:02:54.221   -- File entry --
+2026-11-16 20:02:54.221   Dest filename: D:\a\_temp\bench_tool\installed\translations\qtbase_zh_CN.qm
+2026-11-16 20:02:54.221   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.221   Installing the file.
+2026-11-16 20:02:54.225   Successfully installed the file.
+2026-11-16 20:02:54.225   -- File entry --
+2026-11-16 20:02:54.225   Dest filename: D:\a\_temp\bench_tool\installed\translations\qtlocation_fr_FR.qm
+2026-11-16 20:02:54.225   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.225   Installing the file.
+2026-11-16 20:02:54.226   Successfully installed the file.
+2026-11-16 20:02:54.226   -- File entry --
+2026-11-16 20:02:54.226   Dest filename: D:\a\_temp\bench_tool\installed\translations\qtlocation_pt_BR.qm
+2026-11-16 20:02:54.226   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.226   Installing the file.
+2026-11-16 20:02:54.228   Successfully installed the file.
+2026-11-16 20:02:54.228   -- File entry --
+2026-11-16 20:02:54.228   Dest filename: D:\a\_temp\bench_tool\installed\translations\qtlocation_zh_CN.qm
+2026-11-16 20:02:54.228   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.228   Installing the file.
+2026-11-16 20:02:54.228   Successfully installed the file.
+2026-11-16 20:02:54.228   -- File entry --
+2026-11-16 20:02:54.228   Dest filename: D:\a\_temp\bench_tool\installed\translations\qtmultimedia_fr_FR.qm
+2026-11-16 20:02:54.228   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.228   Installing the file.
+2026-11-16 20:02:54.230   Successfully installed the file.
+2026-11-16 20:02:54.230   -- File entry --
+2026-11-16 20:02:54.230   Dest filename: D:\a\_temp\bench_tool\installed\translations\qtmultimedia_pt_BR.qm
+2026-11-16 20:02:54.230   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.230   Installing the file.
+2026-11-16 20:02:54.230   Successfully installed the file.
+2026-11-16 20:02:54.230   -- File entry --
+2026-11-16 20:02:54.230   Dest filename: D:\a\_temp\bench_tool\installed\translations\qtmultimedia_zh_CN.qm
+2026-11-16 20:02:54.230   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.230   Installing the file.
+2026-11-16 20:02:54.230   Successfully installed the file.
+2026-11-16 20:02:54.230   -- File entry --
+2026-11-16 20:02:54.230   Dest filename: D:\a\_temp\bench_tool\installed\translations\qt_fr_FR.qm
+2026-11-16 20:02:54.232   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.232   Installing the file.
+2026-11-16 20:02:54.232   Successfully installed the file.
+2026-11-16 20:02:54.232   -- File entry --
+2026-11-16 20:02:54.232   Dest filename: D:\a\_temp\bench_tool\installed\translations\qt_pt_BR.qm
+2026-11-16 20:02:54.232   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.232   Installing the file.
+2026-11-16 20:02:54.232   Successfully installed the file.
+2026-11-16 20:02:54.232   -- File entry --
+2026-11-16 20:02:54.232   Dest filename: D:\a\_temp\bench_tool\installed\translations\qt_zh_CN.qm
+2026-11-16 20:02:54.232   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.232   Installing the file.
+2026-11-16 20:02:54.232   Successfully installed the file.
+2026-11-16 20:02:54.232   -- File entry --
+2026-11-16 20:02:54.232   Dest filename: D:\a\_temp\bench_tool\installed\translations\tools_fr_FR.qm
+2026-11-16 20:02:54.232   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.232   Installing the file.
+2026-11-16 20:02:54.234   Successfully installed the file.
+2026-11-16 20:02:54.234   -- File entry --
+2026-11-16 20:02:54.234   Dest filename: D:\a\_temp\bench_tool\installed\translations\tools_pt_BR.qm
+2026-11-16 20:02:54.234   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.234   Installing the file.
+2026-11-16 20:02:54.234   Successfully installed the file.
+2026-11-16 20:02:54.234   -- File entry --
+2026-11-16 20:02:54.234   Dest filename: D:\a\_temp\bench_tool\installed\translations\tools_zh_CN.qm
+2026-11-16 20:02:54.234   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.234   Installing the file.
+2026-11-16 20:02:54.234   Successfully installed the file.
+2026-11-16 20:02:54.234   -- File entry --
+2026-11-16 20:02:54.234   Dest filename: D:\a\_temp\bench_tool\installed\plugins\iconengines\qsvgicon.dll
+2026-11-16 20:02:54.236   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.236   Installing the file.
+2026-11-16 20:02:54.236   Creating directory: D:\a\_temp\bench_tool\installed\plugins
+2026-11-16 20:02:54.236   Creating directory: D:\a\_temp\bench_tool\installed\plugins\iconengines
+2026-11-16 20:02:54.238   Successfully installed the file.
+2026-11-16 20:02:54.238   -- File entry --
+2026-11-16 20:02:54.238   Dest filename: D:\a\_temp\bench_tool\installed\plugins\imageformats\qgif.dll
+2026-11-16 20:02:54.238   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.238   Installing the file.
+2026-11-16 20:02:54.238   Creating directory: D:\a\_temp\bench_tool\installed\plugins\imageformats
+2026-11-16 20:02:54.240   Successfully installed the file.
+2026-11-16 20:02:54.240   -- File entry --
+2026-11-16 20:02:54.240   Dest filename: D:\a\_temp\bench_tool\installed\plugins\imageformats\qico.dll
+2026-11-16 20:02:54.240   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.240   Installing the file.
+2026-11-16 20:02:54.240   Successfully installed the file.
+2026-11-16 20:02:54.240   -- File entry --
+2026-11-16 20:02:54.242   Dest filename: D:\a\_temp\bench_tool\installed\plugins\imageformats\qjpeg.dll
+2026-11-16 20:02:54.242   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.242   Installing the file.
+2026-11-16 20:02:54.256   Successfully installed the file.
+2026-11-16 20:02:54.256   -- File entry --
+2026-11-16 20:02:54.256   Dest filename: D:\a\_temp\bench_tool\installed\plugins\imageformats\qsvg.dll
+2026-11-16 20:02:54.256   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.256   Installing the file.
+2026-11-16 20:02:54.258   Successfully installed the file.
+2026-11-16 20:02:54.258   -- File entry --
+2026-11-16 20:02:54.258   Dest filename: D:\a\_temp\bench_tool\installed\plugins\multimedia\ffmpegmediaplugin.dll
+2026-11-16 20:02:54.258   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.258   Installing the file.
+2026-11-16 20:02:54.258   Creating directory: D:\a\_temp\bench_tool\installed\plugins\multimedia
+2026-11-16 20:02:54.278   Successfully installed the file.
+2026-11-16 20:02:54.278   -- File entry --
+2026-11-16 20:02:54.278   Dest filename: D:\a\_temp\bench_tool\installed\plugins\multimedia\windowsmediaplugin.dll
+2026-11-16 20:02:54.278   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.278   Installing the file.
+2026-11-16 20:02:54.286   Successfully installed the file.
+2026-11-16 20:02:54.286   -- File entry --
+2026-11-16 20:02:54.286   Dest filename: D:\a\_temp\bench_tool\installed\plugins\networkinformation\qnetworklistmanager.dll
+2026-11-16 20:02:54.286   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.286   Installing the file.
+2026-11-16 20:02:54.286   Creating directory: D:\a\_temp\bench_tool\installed\plugins\networkinformation
+2026-11-16 20:02:54.288   Successfully installed the file.
+2026-11-16 20:02:54.288   -- File entry --
+2026-11-16 20:02:54.288   Dest filename: D:\a\_temp\bench_tool\installed\plugins\platforms\qwindows.dll
+2026-11-16 20:02:54.288   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.288   Installing the file.
+2026-11-16 20:02:54.288   Creating directory: D:\a\_temp\bench_tool\installed\plugins\platforms
+2026-11-16 20:02:54.317   Successfully installed the file.
+2026-11-16 20:02:54.318   -- File entry --
+2026-11-16 20:02:54.318   Dest filename: D:\a\_temp\bench_tool\installed\plugins\sqldrivers\qsqlite.dll
+2026-11-16 20:02:54.318   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.318   Installing the file.
+2026-11-16 20:02:54.318   Creating directory: D:\a\_temp\bench_tool\installed\plugins\sqldrivers
+2026-11-16 20:02:54.383   Successfully installed the file.
+2026-11-16 20:02:54.383   -- File entry --
+2026-11-16 20:02:54.383   Dest filename: D:\a\_temp\bench_tool\installed\plugins\sqldrivers\qsqlodbc.dll
+2026-11-16 20:02:54.383   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.383   Installing the file.
+2026-11-16 20:02:54.387   Successfully installed the file.
+2026-11-16 20:02:54.387   -- File entry --
+2026-11-16 20:02:54.387   Dest filename: D:\a\_temp\bench_tool\installed\plugins\sqldrivers\qsqlpsql.dll
+2026-11-16 20:02:54.387   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.387   Installing the file.
+2026-11-16 20:02:54.391   Successfully installed the file.
+2026-11-16 20:02:54.391   -- File entry --
+2026-11-16 20:02:54.391   Dest filename: D:\a\_temp\bench_tool\installed\plugins\styles\qmodernwindowsstyle.dll
+2026-11-16 20:02:54.391   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.391   Installing the file.
+2026-11-16 20:02:54.391   Creating directory: D:\a\_temp\bench_tool\installed\plugins\styles
+2026-11-16 20:02:54.399   Successfully installed the file.
+2026-11-16 20:02:54.399   -- File entry --
+2026-11-16 20:02:54.399   Dest filename: D:\a\_temp\bench_tool\installed\plugins\tls\qcertonlybackend.dll
+2026-11-16 20:02:54.399   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.399   Installing the file.
+2026-11-16 20:02:54.399   Creating directory: D:\a\_temp\bench_tool\installed\plugins\tls
+2026-11-16 20:02:54.400   Successfully installed the file.
+2026-11-16 20:02:54.400   -- File entry --
+2026-11-16 20:02:54.400   Dest filename: D:\a\_temp\bench_tool\installed\plugins\tls\qopensslbackend.dll
+2026-11-16 20:02:54.400   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.400   Installing the file.
+2026-11-16 20:02:54.408   Successfully installed the file.
+2026-11-16 20:02:54.408   -- File entry --
+2026-11-16 20:02:54.408   Dest filename: D:\a\_temp\bench_tool\installed\plugins\tls\qschannelbackend.dll
+2026-11-16 20:02:54.410   Time stamp of our file: 2026-11-02 20:59:42.000
+2026-11-16 20:02:54.410   Installing the file.
+2026-11-16 20:02:54.416   Successfully installed the file.
+2026-11-16 20:02:54.416   -- File entry --
+2026-11-16 20:02:54.416   Dest filename: D:\a\_temp\bench_tool\installed\sfx\sfx64.7z
+2026-11-16 20:02:54.416   Time stamp of our file: 2026-11-02 21:00:44.000
+2026-11-16 20:02:54.416   Installing the file.
+2026-11-16 20:02:54.824   Successfully installed the file.
+2026-11-16 20:02:54.824   -- Icon entry --
+2026-11-16 20:02:54.824   Dest filename: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Actiona\Actiona.lnk
+2026-11-16 20:02:54.824   Creating directory: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Actiona
+2026-11-16 20:02:54.851   Creating the icon.
+2026-11-16 20:02:55.204   Successfully created the icon.
+2026-11-16 20:02:55.208   -- Icon entry --
+2026-11-16 20:02:55.208   Dest filename: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Actiona\Actiona on the Web.url
+2026-11-16 20:02:55.210   Creating the icon.
+2026-11-16 20:02:55.210   Successfully created the icon.
+2026-11-16 20:02:55.214   -- Icon entry --
+2026-11-16 20:02:55.214   Dest filename: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Actiona\Uninstall Actiona.lnk
+2026-11-16 20:02:55.214   Creating the icon.
+2026-11-16 20:02:55.218   Successfully created the icon.
+2026-11-16 20:02:55.223   -- Registry entry --
+2026-11-16 20:02:55.223   Key: HKEY_CLASSES_ROOT\.ascr
+2026-11-16 20:02:55.223   Creating or opening the key.
+2026-11-16 20:02:55.223   Creating or setting the value.
+2026-11-16 20:02:55.223   Successfully created or set the value.
+2026-11-16 20:02:55.223   -- Registry entry --
+2026-11-16 20:02:55.223   Key: HKEY_CLASSES_ROOT\.acod
+2026-11-16 20:02:55.223   Creating or opening the key.
+2026-11-16 20:02:55.223   Creating or setting the value.
+2026-11-16 20:02:55.223   Successfully created or set the value.
+2026-11-16 20:02:55.223   -- Registry entry --
+2026-11-16 20:02:55.223   Key: HKEY_CLASSES_ROOT\ActionaScriptFile
+2026-11-16 20:02:55.223   Creating or opening the key.
+2026-11-16 20:02:55.223   Creating or setting the value.
+2026-11-16 20:02:55.223   Successfully created or set the value.
+2026-11-16 20:02:55.223   -- Registry entry --
+2026-11-16 20:02:55.223   Key: HKEY_CLASSES_ROOT\ActionaCodeFile
+2026-11-16 20:02:55.223   Creating or opening the key.
+2026-11-16 20:02:55.223   Creating or setting the value.
+2026-11-16 20:02:55.223   Successfully created or set the value.
+2026-11-16 20:02:55.223   -- Registry entry --
+2026-11-16 20:02:55.223   Key: HKEY_CLASSES_ROOT\ActionaScriptFile\DefaultIcon
+2026-11-16 20:02:55.223   Creating or opening the key.
+2026-11-16 20:02:55.223   Creating or setting the value.
+2026-11-16 20:02:55.223   Successfully created or set the value.
+2026-11-16 20:02:55.223   -- Registry entry --
+2026-11-16 20:02:55.223   Key: HKEY_CLASSES_ROOT\ActionaCodeFile\DefaultIcon
+2026-11-16 20:02:55.223   Creating or opening the key.
+2026-11-16 20:02:55.223   Creating or setting the value.
+2026-11-16 20:02:55.223   Successfully created or set the value.
+2026-11-16 20:02:55.223   -- Registry entry --
+2026-11-16 20:02:55.223   Key: HKEY_CLASSES_ROOT\ActionaScriptFile\shell\open\command
+2026-11-16 20:02:55.223   Creating or opening the key.
+2026-11-16 20:02:55.223   Creating or setting the value.
+2026-11-16 20:02:55.226   Successfully created or set the value.
+2026-11-16 20:02:55.226   -- Registry entry --
+2026-11-16 20:02:55.226   Key: HKEY_CURRENT_USER\Software\Actiona\Actiona
+2026-11-16 20:02:55.226   Value name: installerLanguage
+2026-11-16 20:02:55.226   Creating or opening the key.
+2026-11-16 20:02:55.226   Creating or setting the value.
+2026-11-16 20:02:55.226   Successfully created or set the value.
+2026-11-16 20:02:55.226   -- Registry entry --
+2026-11-16 20:02:55.226   Key: HKEY_CLASSES_ROOT\actiona
+2026-11-16 20:02:55.226   Value name: URL Protocol
+2026-11-16 20:02:55.226   Creating or opening the key.
+2026-11-16 20:02:55.226   Creating or setting the value.
+2026-11-16 20:02:55.226   Successfully created or set the value.
+2026-11-16 20:02:55.226   -- Registry entry --
+2026-11-16 20:02:55.226   Key: HKEY_CLASSES_ROOT\actiona
+2026-11-16 20:02:55.226   Creating or opening the key.
+2026-11-16 20:02:55.226   Creating or setting the value.
+2026-11-16 20:02:55.226   Successfully created or set the value.
+2026-11-16 20:02:55.226   -- Registry entry --
+2026-11-16 20:02:55.226   Key: HKEY_CLASSES_ROOT\actiona\DefaultIcon
+2026-11-16 20:02:55.226   Creating or opening the key.
+2026-11-16 20:02:55.226   Creating or setting the value.
+2026-11-16 20:02:55.226   Successfully created or set the value.
+2026-11-16 20:02:55.226   -- Registry entry --
+2026-11-16 20:02:55.226   Key: HKEY_CLASSES_ROOT\actiona\shell\open\command
+2026-11-16 20:02:55.226   Creating or opening the key.
+2026-11-16 20:02:55.226   Creating or setting the value.
+2026-11-16 20:02:55.226   Successfully created or set the value.
+2026-11-16 20:02:55.226   -- Registry entry --
+2026-11-16 20:02:55.226   Key: HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment
+2026-11-16 20:02:55.226   Value name: Path
+2026-11-16 20:02:55.226   Creating or opening the key.
+2026-11-16 20:02:55.226   Creating or setting the value.
+2026-11-16 20:02:55.226   Successfully created or set the value.
+2026-11-16 20:02:55.226   Saving uninstall information.
+2026-11-16 20:02:55.226   Writing uninstaller messages: D:\a\_temp\bench_tool\installed\unins000.msg
+2026-11-16 20:02:55.226   Creating new uninstall key: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{098CDAF9-5A9B-4731-9F3C-F3F1DF7490C2}_is1
+2026-11-16 20:02:55.226   Writing uninstall key values.
+2026-11-16 20:02:55.228   Detected previous non administrative install? No
+2026-11-16 20:02:55.228   Detected previous administrative 32-bit install? No
+2026-11-16 20:02:55.228   Installation process succeeded.
+2026-11-16 20:02:55.230   Need to restart Windows? No
+2026-11-16 20:02:55.232   Deinitializing Setup.
+2026-11-16 20:02:55.249   Log closed.
