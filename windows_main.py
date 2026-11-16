@@ -12,7 +12,7 @@ import sys
 import threading
 import traceback
 import time
-from windows_visual import Theme, Canvas, COLORS, Paint, DrawItem, SKINS, CURRENT, apply_skin, register_mod_skins, DEFAULT_SKIN, frame_index, animated_skin
+from windows_visual import Theme, Canvas, Layer, COLORS, Paint, DrawItem, SKINS, CURRENT, apply_skin, register_mod_skins, DEFAULT_SKIN, frame_index, animated_skin
 
 from macro.windows_backend import (WindowsRecorder, WindowsPlayer, GlobalHotkeys,
     HOTKEY_RECORD, HOTKEY_PLAY, HOTKEY_EMERGENCY, screen_geometry, window_rect)
@@ -154,6 +154,7 @@ class Panel:
         self.tray = None  # i messaggi arrivano già durante CreateWindowEx
         self.quitting = False
         self.controls = {}
+        self.shown_text, self.shown_enabled = {}, {}  # last text / enabled state pushed by render()
         self.queue = queue.SimpleQueue()
         self.repeats = 1
         self.infinite = False  # solo per questa sessione: non resta acceso al prossimo avvio
@@ -196,6 +197,7 @@ class Panel:
             self.write_settings()
         apply_skin(self.settings.get('skin'))
         self.theme = Theme()
+        self.layer = Layer()  # per-frame repaint of the animated mascot (see windows_visual.Layer)
         self.proc = WNDPROC(self.wndproc)
         self.instance = K.GetModuleHandleW(None)
         icon = U.LoadImageW(None,str(Path(__file__).resolve().parent/'assets'/'icon.ico'),1,0,0,0x10|0x40)
@@ -381,7 +383,13 @@ class Panel:
         rect=W.RECT();U.GetClientRect(hwnd,C.byref(rect))
         dirty=ps.rect;clip=(dirty.left,dirty.top,dirty.right-dirty.left,dirty.bottom-dirty.top)
         if clip[2]<=0 or clip[3]<=0 or (clip[2]>=rect.right and clip[3]>=rect.bottom):clip=None
-        c=Canvas(self.theme,hdc,rect.right,rect.bottom,self.dpi/96,text_hint=4 if self.active_view else 5,clip=clip)
+        layer=self.layer
+        if clip is None or not layer.matches(clip):layer.valid=False  # any other paint may change what lies under the mascot
+        elif layer.valid:
+            try:layer.draw(self.theme,hdc,frame_index(time.monotonic()))  # mascot frame only: background + frame
+            finally:U.EndPaint(hwnd,C.byref(ps))
+            return
+        c=Canvas(self.theme,hdc,rect.right,rect.bottom,self.dpi/96,text_hint=4 if self.active_view else 5,clip=clip,layer=layer)
         self.theme.animated=[]  # filled again by the mascot drawings below
         try:
             w,h=self.width,self.height
@@ -609,14 +617,27 @@ class Panel:
                         return
         raise ValueError('Non c’è spazio libero per il pannello. Sposta i bersagli e registra di nuovo.')
 
+    def set_text(self, cid, text):
+        """SetWindowText only when the text changed: on an owner-drawn control every call
+        repaints it (and drain() runs render() ten times a second), unchanged or not."""
+        if self.shown_text.get(cid) != text:
+            self.shown_text[cid] = text
+            U.SetWindowTextW(self.hwnd if cid is None else self.controls[cid], text)
+
+    def set_enabled(self, cid, on):
+        on = bool(on)
+        if self.shown_enabled.get(cid) != on:
+            self.shown_enabled[cid] = on
+            U.EnableWindow(self.controls[cid], on)
+
     def render(self):
         state = self.session.state
         if state == State.RECORDING and self.record_started is None: self.record_started = time.monotonic()
         elif state != State.RECORDING: self.record_started = None
         count,duration=self.metrics()
-        U.SetWindowTextW(self.controls[3],count)
-        U.SetWindowTextW(self.controls[4],duration)
-        U.SetWindowTextW(self.hwnd,f'Mouse Macro {VERSION} · hcok · {state.value} · {count} eventi · {duration}')
+        self.set_text(3, count)
+        self.set_text(4, duration)
+        self.set_text(None, f'Mouse Macro {VERSION} · hcok · {state.value} · {count} eventi · {duration}')
         active = state in (State.RECORDING, State.PLAYING, State.STOPPING)
         if not active and self.active_view:
             self.set_active_view(False)
@@ -624,26 +645,26 @@ class Panel:
             self.play_started = time.monotonic()
         elif not active:
             self.play_started = None
-        U.SetWindowTextW(self.controls[12], 'Stop · F9' if state == State.RECORDING else 'Stop · F10')
-        U.EnableWindow(self.controls[12], active and state != State.STOPPING)
-        U.SetWindowTextW(self.controls[1], state.value.upper())
-        U.SetWindowTextW(self.controls[2], self.session.message)
-        U.SetWindowTextW(self.controls[10], 'FERMA  F9' if state == State.RECORDING else 'Registra  F9')
-        U.SetWindowTextW(self.controls[11], 'FERMA  F10' if state in (State.PLAYING, State.STOPPING) else 'Riproduci  F10')
-        U.EnableWindow(self.controls[10], state not in (State.PLAYING, State.STOPPING))
+        self.set_text(12, 'Stop · F9' if state == State.RECORDING else 'Stop · F10')
+        self.set_enabled(12, active and state != State.STOPPING)
+        self.set_text(1, state.value.upper())
+        self.set_text(2, self.session.message)
+        self.set_text(10, 'FERMA  F9' if state == State.RECORDING else 'Registra  F9')
+        self.set_text(11, 'FERMA  F10' if state in (State.PLAYING, State.STOPPING) else 'Riproduci  F10')
+        self.set_enabled(10, state not in (State.PLAYING, State.STOPPING))
         try:
             validate_gestures(self.session.macro.events)
             valid = True
         except ValueError: valid = False
-        U.EnableWindow(self.controls[11], state != State.RECORDING and valid)
-        for cid in (21,22,23,24,25,31,32,40,41,42,101,102,104,202,204,205):
-            U.EnableWindow(self.controls[cid], not active)
-        U.SetWindowTextW(self.controls[31], ('✓ ' if self.speed == 1 else '')+'Normale')
-        U.SetWindowTextW(self.controls[32], ('✓ ' if self.speed == 2 else '')+'Rapida 2×')
-        U.SetWindowTextW(self.controls[40], 'Scheda successiva tra i giri: '+('attivo' if self.next_tab else 'disattivato'))
-        U.SetWindowTextW(self.controls[41], 'Pagine lente: '+('attivo' if self.slow else 'disattivato'))
-        U.SetWindowTextW(self.controls[42], 'Movimento umano: '+('attivo' if self.human else 'disattivato'))
-        U.EnableWindow(self.controls[101], not active and valid)
+        self.set_enabled(11, state != State.RECORDING and valid)
+        for cid in (21,22,23,24,25,31,32,40,41,42,102,104,202,204,205):
+            self.set_enabled(cid, not active)
+        self.set_text(31, ('✓ ' if self.speed == 1 else '')+'Normale')
+        self.set_text(32, ('✓ ' if self.speed == 2 else '')+'Rapida 2×')
+        self.set_text(40, 'Scheda successiva tra i giri: '+('attivo' if self.next_tab else 'disattivato'))
+        self.set_text(41, 'Pagine lente: '+('attivo' if self.slow else 'disattivato'))
+        self.set_text(42, 'Movimento umano: '+('attivo' if self.human else 'disattivato'))
+        self.set_enabled(101, not active and valid)
         view=(state,self.session.message,self.metrics(),self.repeats,self.infinite,self.speed,self.next_tab,self.slow,self.human,
               int(time.monotonic()-(self.play_started or time.monotonic())),CURRENT['skin'],self.update['state'])
         if view != self.last_view:
@@ -704,9 +725,10 @@ class Panel:
             U.InvalidateRect(self.hwnd, None, False)
             return
         scale = self.dpi / 96
-        for x, y, w, h in rects:
-            box = W.RECT(int(x * scale) - 2, int(y * scale) - 2, int((x + w) * scale) + 3, int((y + h) * scale) + 3)
-            U.InvalidateRect(self.hwnd, C.byref(box), False)
+        boxes = [(int(x * scale) - 2, int(y * scale) - 2, int((x + w) * scale) + 3, int((y + h) * scale) + 3) for x, y, w, h in rects]
+        self.layer.set_box(boxes[0] if len(boxes) == 1 else None)  # one mascot: its frames are cached
+        for l, t, r, b in boxes:
+            U.InvalidateRect(self.hwnd, C.byref(W.RECT(l, t, r, b)), False)
 
     def set_skin(self, name):
         name = apply_skin(name)
@@ -1135,6 +1157,7 @@ class Panel:
                     G.DeleteObject(self.repeat_font)
                 if self.edit_brush:
                     G.DeleteObject(self.edit_brush)
+                self.layer.release()
                 self.theme.close()
                 U.PostQuitMessage(0)
                 return 0
