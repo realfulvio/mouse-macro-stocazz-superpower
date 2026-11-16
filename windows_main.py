@@ -413,6 +413,8 @@ class Panel:
             c.ellipse(32,125,16,16,color)
             c.text(state.value.capitalize(),58,115,226 if self.expanded and not d else 156,34,22,color if state==State.ERROR else COLORS['text'],True)
             msg_w = (180 if self.expanded else 100) if d else (268 if self.expanded else 172)
+            if state == State.ERROR and not self.expanded:
+                msg_w = w - 64  # actionable errors take the mascot's space in the compact card
             c.text(self.session.message,32,152,msg_w,64+d//2 if d else 64,14,
                    COLORS['error'] if state==State.ERROR else COLORS['muted'],wrap=True)
             count,duration=self.metrics()
@@ -437,8 +439,9 @@ class Panel:
                 c.rounded(66,410+d,46,38,1,COLORS['input'],COLORS['border'])
                 c.line(16,550+d,w-16,550+d,COLORS['border'])
             else:
-                if d:c.horse(horse,112,110,210,126+d-16,full=True)
-                else:c.horse(horse,207,118,112,104)
+                if state != State.ERROR:
+                    if d:c.horse(horse,112,110,210,126+d-16,full=True)
+                    else:c.horse(horse,207,118,112,104)
                 for x,cw,label,value in [(16,148,'Eventi',count),(176,148,'Durata',duration)]:
                     c.rounded(x,240+d,cw,66,14,COLORS['surface'],COLORS['border'])
                     c.text(label,x+16,247+d,cw-28,22,14,COLORS['muted'])
