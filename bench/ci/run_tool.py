@@ -31,7 +31,11 @@ def press(*keys):
 
 def download(url, dest):
     dest.parent.mkdir(parents=True, exist_ok=True)
-    urllib.request.urlretrieve(url, dest)
+    req = urllib.request.Request(url, headers={
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) bench-download",
+        "Referer": "https://tinytask.net/download.html"})
+    with urllib.request.urlopen(req, timeout=120) as r, open(dest, "wb") as f:
+        shutil.copyfileobj(r, f)
     return hashlib.sha256(dest.read_bytes()).hexdigest()
 
 
@@ -43,7 +47,7 @@ def set_display():
         if not u.EnumDisplaySettingsW(None, i, b): break
         modes.append(struct.unpack_from("III", b, 168))
     print("modalita' schermo disponibili:", sorted(set(modes))[-8:], flush=True)
-    if (1920, 1080) in [(m[0], m[1]) for m in modes] or any(m[0] == 1920 for m in modes):
+    if any(m[1] == 1920 and m[2] == 1080 for m in modes):  # (bpp, larghezza, altezza)
         b = ctypes.create_string_buffer(220); struct.pack_into("H", b, 68, 220); u.EnumDisplaySettingsW(None, -1, b)
         struct.pack_into("I", b, 172, 1920); struct.pack_into("I", b, 176, 1080); struct.pack_into("I", b, 72, 0x00080000 | 0x00100000)
         print("ChangeDisplaySettings ->", u.ChangeDisplaySettingsW(b, 0), flush=True); time.sleep(3)

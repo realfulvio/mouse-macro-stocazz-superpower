@@ -64,5 +64,6 @@ jobs:
           git checkout --orphan data
           git rm -rf --cached . | Out-Null
           git add -f results
+          if (-not (git status --porcelain)) { Write-Host "nessun dato da salvare"; exit 0 }
           git commit -m "Bench ${{ matrix.tool }} run ${{ github.run_id }}" | Out-Null
           git push origin "HEAD:refs/heads/bench-data/${{ github.run_id }}-${{ matrix.tool }}"
