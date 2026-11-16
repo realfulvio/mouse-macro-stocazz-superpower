@@ -1,0 +1,36 @@
+# Banco di prova comparativo su runner Windows (VM pulita a ogni esecuzione). Vedi bench/PROCEDURA.md.
+name: Bench comparativo Windows
+on:
+  workflow_dispatch:
+    inputs:
+      runs:
+        description: 'Ripetizioni per strumento'
+        default: '30'
+  pull_request:
+    paths:
+      - 'bench/**'
+      - '.github/workflows/bench.yml'
+permissions:
+  contents: read
+concurrency:
+  group: bench-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  smoke:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Logger esterno + clic iniettati
+        shell: pwsh
+        run: |
+          $log = Start-Process python -ArgumentList 'bench/logger/inputlogger.py','--out','smoke.csv','--duration','12' -PassThru -NoNewWindow
+          Start-Sleep 1
+          python bench/ci/smoke_input.py
+          $log.WaitForExit()
+          Get-Content smoke.csv | Select-String -Pattern 'ldown|lup|event' | Select -First 20
+          [System.Environment]::OSVersion.VersionString
+          Get-CimInstance Win32_Processor | Select Name,NumberOfCores,NumberOfLogicalProcessors | Format-List
