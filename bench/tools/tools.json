@@ -1,0 +1,11 @@
+{
+  "_comment": "Hotkey di avvio riproduzione per strumento. I valori marcati VERIFICARE vanno confermati sul programma installato prima della misura e annotati in matrice-funzioni.csv.",
+  "mmss":      {"play_hotkey": "F10", "stop_hotkey_after_run": "", "tail_s": 2.0, "note": "F10 avvia/ferma dal pannello, che deve essere aperto e in primo piano; Ctrl+Alt+F11 = stop di emergenza (README del progetto)"},
+  "mmss_cmd":  {"play_hotkey": "ENTER", "tail_s": 2.0, "note": ".cmd con --run: chiede conferma in una MessageBox; Invio la accetta"},
+  "tinytask":  {"play_hotkey": "CTRL+SHIFT+ALT+P", "tail_s": 2.0, "note": "documentazione ufficiale tinytask.net/support.html: Ctrl+Shift+Alt+P riproduce; verificare sull'exe installato"},
+  "ahk":       {"play_hotkey": "F8", "tail_s": 2.0, "note": "script reference.ahk generato da reference_macro.py (AutoHotkey v2)"},
+  "pulover":   {"play_hotkey": "F? VERIFICARE", "tail_s": 2.0, "note": "hotkey configurabili in Preferences; fissare e annotare"},
+  "jitbit":    {"play_hotkey": "F? VERIFICARE", "tail_s": 2.0, "note": "idem; versione di prova: annotare limiti (es. durata/numero azioni)"},
+  "minimouse": {"play_hotkey": "F? VERIFICARE", "tail_s": 2.0, "note": "idem"},
+  "opautoclicker": {"play_hotkey": "F6", "tail_s": 2.0, "note": "e' un auto-clicker, non un registratore: confrontabile solo sul sottoinsieme clic ripetuti su punto fisso (vedi RIVALI.md)"}
+}
