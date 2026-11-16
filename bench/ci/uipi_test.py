@@ -79,7 +79,9 @@ def case(name, out, launcher, expected_note=""):
 
 
 def main():
-    ap = argparse.ArgumentParser(); ap.add_argument("--out", default="results/uipi"); a = ap.parse_args()
+    ap = argparse.ArgumentParser(); ap.add_argument("--out", default="results/uipi")
+    ap.add_argument("--expect-warning", action="store_true", help="Richiede il blocco esplicito prima della riproduzione medio→alto")
+    a = ap.parse_args()
     out = Path(a.out); out.mkdir(parents=True, exist_ok=True)
     il, raw = integrity_of_this_process()
     spec = json.load(open(ROOT / "bench" / "macros" / "reference.spec.json"))
@@ -111,6 +113,20 @@ def main():
     res["casi"].append(case("D_mmss_medio_verso_alto", out, mmss("medio")))
     (out / "uipi.json").write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")
     print("UIPI", json.dumps(res, ensure_ascii=False), flush=True)
+    if a.expect_warning:
+        cases = res["casi"]
+        zero = dict.fromkeys(exp, 0)
+        valid = ("S-1-16-12288" in raw and all(c["uscita"] == 0 for c in cases)
+                 and cases[0]["arrivati"] == cases[2]["arrivati"] == exp
+                 and cases[1]["arrivati"] == cases[3]["arrivati"] == zero
+                 and cases[2]["pannello"].get("giri_completati") == 1
+                 and cases[2]["pannello"].get("stato") == "pronto"
+                 and cases[3]["pannello"].get("caricata") is True
+                 and cases[3]["pannello"].get("partita") is False
+                 and cases[3]["pannello"].get("stato") == "errore"
+                 and "Esegui come amministratore" in cases[3]["pannello"].get("messaggio", ""))
+        if not valid:
+            raise SystemExit("Prova UIPI non valida o avviso mancante: vedere uipi.json")
 
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@ name: Prova finestre elevate (UIPI)
 on:
   workflow_dispatch:
   pull_request:
-    paths: ['bench/ci/uipi_test.py', 'bench/ci/profile_idle.py', '.github/workflows/uipi.yml']
+    paths: ['windows_main.py', 'macro/windows_integrity.py', 'macro/runner.py', 'bench/ci/uipi_test.py', 'bench/ci/profile_idle.py', '.github/workflows/uipi.yml']
 concurrency:
   group: uipi-${{ github.ref }}
   cancel-in-progress: true
@@ -25,7 +25,7 @@ jobs:
         run: python -c "import sys; sys.path[:0]=['bench','bench/ci']; import run_tool; print(run_tool.set_display())"
       - name: Prova UIPI
         shell: pwsh
-        run: python bench/ci/uipi_test.py --out results/uipi
+        run: python bench/ci/uipi_test.py --out results/uipi --expect-warning
       - uses: actions/upload-artifact@v4
         if: always()
         with:

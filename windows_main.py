@@ -17,6 +17,7 @@ from windows_visual import Theme, Canvas, Layer, COLORS, Paint, DrawItem, SKINS,
 from macro.windows_backend import (WindowsRecorder, WindowsPlayer, GlobalHotkeys,
     HOTKEY_RECORD, HOTKEY_PLAY, HOTKEY_EMERGENCY, screen_geometry, window_rect)
 from macro.session import Session, State, VERSION, validate_gestures
+from macro.windows_integrity import ensure_input_integrity
 from macro.engine import LoopMode, PlaybackOptions
 from macro import updater, win_tray, mods
 from macro.mouse_devices import mouse_names, mouse_label
@@ -575,6 +576,10 @@ class Panel:
             double_click_gap_seconds=.08, protect_wheel_actions=True, humanize=self.human)
 
     def preflight(self, macro):
+        self.place_playback_bar(macro)
+        ensure_input_integrity(macro.events)
+
+    def place_playback_bar(self, macro):
         if macro.screen and macro.screen != screen_geometry():
             raise ValueError('Schermo o monitor diversi. Ripristinali o registra di nuovo.')
         r = window_rect(self.hwnd)
