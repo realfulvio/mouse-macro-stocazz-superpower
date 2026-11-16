@@ -36,6 +36,8 @@ jobs:
     needs: smoke
     runs-on: windows-latest        # una VM pulita per strumento
     timeout-minutes: 45
+    permissions:
+      contents: write              # solo per spingere i dati grezzi sul ramo bench-data/*
     strategy:
       fail-fast: false
       matrix:
@@ -53,3 +55,14 @@ jobs:
         with:
           name: bench-${{ matrix.tool }}
           path: results/
+      - name: Dati grezzi sul ramo bench-data
+        if: always() && github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'workflow_dispatch'
+        shell: pwsh
+        run: |
+          if (-not (Test-Path results)) { exit 0 }
+          git config user.name "bench-bot"; git config user.email "bench-bot@users.noreply.github.com"
+          git checkout --orphan data
+          git rm -rf --cached . | Out-Null
+          git add -f results
+          git commit -m "Bench ${{ matrix.tool }} run ${{ github.run_id }}" | Out-Null
+          git push origin "HEAD:refs/heads/bench-data/${{ github.run_id }}-${{ matrix.tool }}"
