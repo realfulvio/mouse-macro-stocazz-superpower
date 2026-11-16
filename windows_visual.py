@@ -134,6 +134,7 @@ for name,args in {
  'GdipDrawString':[P,W.LPCWSTR,C.c_int,P,C.POINTER(RectF),P,P],
  'GdipLoadImageFromFile':[W.LPCWSTR,C.POINTER(P)],'GdipDisposeImage':[P],
  'GdipDrawImageRectRect':[P,P,F,F,F,F,F,F,F,F,C.c_int,P,P,P],
+ 'GdipFlush':[P,C.c_int],
 }.items(): gd(name,args)
 api(G,'CreateCompatibleDC',W.HDC,[W.HDC]);api(G,'CreateCompatibleBitmap',W.HBITMAP,[W.HDC,C.c_int,C.c_int])
 api(G,'SelectObject',W.HGDIOBJ,[W.HDC,W.HGDIOBJ]);api(G,'DeleteObject',W.BOOL,[W.HGDIOBJ])
@@ -217,10 +218,12 @@ class Theme:
 
 class Canvas:
     view=clip=None;scale=1  # full repaint unless a clip is given
-    def __init__(self,theme,hdc,width,height,scale,text_hint=5,clip=None):
+    guard=None;overlap=False;layer=None
+    def __init__(self,theme,hdc,width,height,scale,text_hint=5,clip=None,layer=None):
         # clip=(x,y,w,h) in device pixels: only that part is drawn (into a bitmap of that size)
         # and copied to the window; the mascot animation repaints just its own rectangle.
         self.theme=theme;self.hdc=hdc;self.width=width;self.height=height;self.clip=clip;self.scale=scale
+        self.layer=layer
         bw,bh=(clip[2],clip[3]) if clip else (width,height)
         self.view=(clip[0]/scale-4,clip[1]/scale-4,(clip[0]+clip[2])/scale+4,(clip[1]+clip[3])/scale+4) if clip else None
         self.dc=G.CreateCompatibleDC(hdc);self.bmp=G.CreateCompatibleBitmap(hdc,bw,bh)
@@ -243,10 +246,14 @@ class Canvas:
         if self.clip:D.GdipTranslateWorldTransform(self.g,-self.clip[0],-self.clip[1],0)
     def hidden(self,x,y,w,h):
         """True when a logical rectangle is entirely outside the repainted area."""
+        g=self.guard
+        if g and not (x>g[2] or y>g[3] or x+w<g[0] or y+h<g[1]):self.overlap=True  # drawn over the mascot: its frames can't be cached
         v=self.view
         return bool(v) and (x>v[2] or y>v[3] or x+w<v[0] or y+h<v[1])
     def close(self):
         D.GdipDeleteGraphics(self.g)
+        if self.layer is not None and self.layer.pending:
+            self.layer.pending=False;self.layer.valid=not self.overlap  # nothing was drawn over the mascot after it
         if self.clip:
             x,y,w,h=self.clip;G.BitBlt(self.hdc,x,y,w,h,self.dc,0,0,0xcc0020)
         else:G.BitBlt(self.hdc,0,0,self.width,self.height,self.dc,0,0,0xcc0020)
@@ -307,6 +314,12 @@ class Canvas:
             bw,bh=max(1,round(dw*self.scale)),max(1,round(dh*self.scale))
             bitmap=self.theme.frame(state,i,bw,bh,src)
             self.device()  # cached frame: 1:1 copy at whole device pixels
+            layer=self.layer
+            if animate and layer is not None and layer.takes(self.clip):
+                # Snapshot of everything drawn so far in the repainted rectangle: the next frames redraw
+                # only the mascot over it (Layer.draw), in the same z-order and with the same pixels.
+                layer.capture(self,state,(sx,sy,sw,sh),sheet,bw,bh,round(dx*self.scale),round(dy*self.scale))
+                c=self.clip;k=self.scale;self.guard=(c[0]/k,c[1]/k,(c[0]+c[2])/k,(c[1]+c[3])/k)
             D.GdipDrawImageRectI(self.g,bitmap,round(dx*self.scale),round(dy*self.scale),bw,bh)
             self.logical()
             return
@@ -332,6 +345,50 @@ class Canvas:
                     pen=ptrcall(D.GdipCreatePen1,argb(color),2*scale,2)
                     D.GdipDrawPath(self.g,pen,p);D.GdipDeletePen(pen)
                 D.GdipDeletePath(p)
+
+class Layer:
+    """Per-frame repaint of one animated mascot, without rebuilding a canvas.
+    A repaint of just the mascot rectangle (box) normally redraws everything under it and then the frame:
+    a memory DC, a bitmap, a GDI+ graphics and every primitive, 24 times a second. Here the rectangle
+    drawn up to the mascot is kept once (capture) and each frame is three copies: background, frame, window.
+    Valid only while nothing else paints that rectangle: any other paint clears `valid`."""
+    def __init__(self):
+        self.box=None;self.valid=self.pending=False;self.clip=self.info=None
+        self.size=(0,0);self.bg=self.work=self.g=None
+    def set_box(self,box):
+        if box!=self.box:self.box=box;self.valid=self.pending=False
+    def matches(self,clip):
+        b=self.box
+        return b is not None and clip==(b[0],b[1],b[2]-b[0],b[3]-b[1])
+    takes=matches
+    def release(self):
+        for dc,bmp,old in (self.bg,self.work) if self.bg else ():
+            G.SelectObject(dc,old);G.DeleteObject(bmp);G.DeleteDC(dc)
+        if self.g:D.GdipDeleteGraphics(self.g)
+        self.bg=self.work=self.g=None;self.size=(0,0);self.valid=self.pending=False
+    def alloc(self,hdc,w,h):
+        if self.size==(w,h) and self.bg:return
+        self.release()
+        def make():
+            dc=G.CreateCompatibleDC(hdc);bmp=G.CreateCompatibleBitmap(hdc,w,h);return dc,bmp,G.SelectObject(dc,bmp)
+        self.bg=make();self.work=make();self.size=(w,h)
+        self.g=ptrcall(D.GdipCreateFromHDC,self.work[0])
+        D.GdipSetSmoothingMode(self.g,4);D.GdipSetInterpolationMode(self.g,7)
+    def capture(self,canvas,state,src,sheet,bw,bh,dx,dy):
+        x,y,w,h=canvas.clip
+        self.alloc(canvas.hdc,w,h)
+        D.GdipFlush(canvas.g,1)
+        G.BitBlt(self.bg[0],0,0,w,h,canvas.dc,0,0,0xcc0020)
+        self.clip=canvas.clip;self.pending=True;self.valid=False
+        self.info=(state,src,sheet['scale'],sheet['frame'],sheet['cols'],bw,bh,dx-x,dy-y)
+    def draw(self,theme,hdc,i):
+        state,(sx,sy,sw,sh),k,(fw,fh),cols,bw,bh,ox,oy=self.info
+        x,y,w,h=self.clip
+        bitmap=theme.frame(state,i,bw,bh,(sx*k+(i%cols)*fw,sy*k+(i//cols)*fh,sw*k,sh*k))
+        G.BitBlt(self.work[0],0,0,w,h,self.bg[0],0,0,0xcc0020)
+        D.GdipDrawImageRectI(self.g,bitmap,ox,oy,bw,bh)
+        D.GdipFlush(self.g,1)
+        G.BitBlt(hdc,x,y,w,h,self.work[0],0,0,0xcc0020)
 
 def svg_path(data,ox,oy,scale):
     tokens=re.findall(r'[a-zA-Z]|[-+]?(?:\d*\.\d+|\d+)(?:[eE][-+]?\d+)?',data)
