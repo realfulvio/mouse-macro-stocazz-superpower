@@ -26,6 +26,8 @@ class PanelTests(unittest.TestCase):
         p.normal_position = None
         p.last_view = None
         p.controls = {22:222}
+        p.layer = ui.Layer()
+        p.shown_text, p.shown_enabled = {}, {}
         p.repeats = 1
         p.clamp = lambda x,y,w,h: (max(-1920,min(x,-w)),max(0,min(y,1080-h)))
         p.active_work_area = lambda: SimpleNamespace(left=-1920,right=0,top=0,bottom=1080)
@@ -150,6 +152,46 @@ class PanelTests(unittest.TestCase):
             p.theme.animated = []  # nothing drawn yet: repaint everything
             p.invalidate_mascot()
             self.assertIsNone(invalidate.call_args[0][1])
+
+    def test_render_pushes_text_and_enabled_state_only_when_they_change(self):
+        """Every SetWindowText repaints an owner-drawn control and render() runs ten times a second."""
+        p = self.panel()
+        p.hwnd = 7
+        p.controls = {cid: 1000 + cid for cid in (1,2,3,4,10,11,12,21,22,23,24,25,31,32,40,41,42,101,102,104,202,204,205)}
+        p.session = SimpleNamespace(state=ui.State.READY, message='ok', macro=SimpleNamespace(events=[]), last_trace=None)
+        p.record_started = p.play_started = None
+        p.speed, p.next_tab, p.slow, p.human, p.infinite = 1.0, False, False, False, False
+        p.update = {'state': 'unknown', 'latest': None, 'release': None}
+        p.metrics = lambda: ('0', '0:00')
+        with patch.object(ui.U, 'SetWindowTextW') as text, patch.object(ui.U, 'EnableWindow') as enable, \
+                patch.object(ui.U, 'InvalidateRect'):
+            p.render()
+            first = (text.call_count, enable.call_count)
+            self.assertGreater(first[0], 0)
+            self.assertGreater(first[1], 0)
+            p.render()  # nothing changed: nothing pushed to the controls
+            self.assertEqual((text.call_count, enable.call_count), first)
+            p.session.message = 'altro'  # a changed text is pushed once
+            p.render()
+            self.assertEqual(text.call_count, first[0] + 1)
+            p.session.state = ui.State.RECORDING  # a changed state updates texts and enabled flags
+            p.render()
+            self.assertGreater(text.call_count, first[0] + 1)
+            self.assertGreater(enable.call_count, first[1])
+
+    def test_mascot_layer_only_matches_its_own_box_and_forgets_on_change(self):
+        layer = ui.Layer()
+        self.assertFalse(layer.matches((1, 2, 3, 4)))  # no box yet
+        layer.set_box((10, 20, 110, 90))
+        self.assertTrue(layer.matches((10, 20, 100, 70)))
+        self.assertFalse(layer.matches((10, 20, 100, 71)))  # any other dirty rectangle: full path
+        layer.valid = True
+        layer.set_box((10, 20, 110, 90))  # same box: still valid
+        self.assertTrue(layer.valid)
+        layer.set_box((11, 20, 110, 90))  # moved or resized: cached background is stale
+        self.assertFalse(layer.valid)
+        layer.set_box(None)
+        self.assertFalse(layer.matches((11, 20, 99, 70)))
 
     def test_animation_timer_runs_only_while_an_animated_skin_is_visible(self):
         p = self.panel()
