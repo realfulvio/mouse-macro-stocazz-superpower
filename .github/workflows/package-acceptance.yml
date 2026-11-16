@@ -1,7 +1,5 @@
 name: Collaudo ZIP Windows prima e dopo
 on:
-  pull_request:
-    types: [ready_for_review]
   workflow_dispatch:
     inputs:
       build_run:
