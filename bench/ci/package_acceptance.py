@@ -55,6 +55,7 @@ def panel_check(package, version, out, name):
         assert Path(path.value).resolve() == (package / 'runtime/pythonw.exe').resolve(), path.value
     finally:
         K.CloseHandle(process)
+    time.sleep(1)  # let the native window paint before the evidence screenshot
     ImageGrab.grab(all_screens=True).save(out / (name + '.png'))
     U.PostMessageW(hwnd, 0x10, 0, 0)
     wait(lambda: not U.FindWindowW('MouseMacroSuperpower017', None), 'chiusura pannello')
