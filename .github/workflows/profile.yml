@@ -1,0 +1,24 @@
+name: Profilo pannello a riposo (Windows)
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ['windows_main.py', 'windows_visual.py', 'macro/**', 'bench/ci/profile_idle.py', '.github/workflows/profile.yml']
+concurrency:
+  group: profile-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  profile:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: CPU a riposo senza profiler (tre ripetizioni)
+        shell: pwsh
+        run: |
+          foreach ($i in 1..3) { python bench/ci/profile_idle.py --mode cpu --warm 10 --window 20 | Select-String RISULTATO }
+      - name: Profilo del thread dell'interfaccia
+        shell: pwsh
+        run: python bench/ci/profile_idle.py --mode prof --warm 5 --window 25 --top 30
