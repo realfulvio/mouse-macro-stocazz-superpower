@@ -657,7 +657,7 @@ class Panel:
             valid = True
         except ValueError: valid = False
         self.set_enabled(11, state != State.RECORDING and valid)
-        for cid in (21,22,23,24,25,31,32,40,41,42,101,102,104,202,204,205):
+        for cid in (21,22,23,24,25,31,32,40,41,42,102,104,202,204,205):
             self.set_enabled(cid, not active)
         self.set_text(31, ('✓ ' if self.speed == 1 else '')+'Normale')
         self.set_text(32, ('✓ ' if self.speed == 2 else '')+'Rapida 2×')
