@@ -1,0 +1,228 @@
+{
+ "runs": 30,
+ "pos_error_px": {
+  "n": 870,
+  "median": 0.0,
+  "p95": 0.0,
+  "mean": 0.0,
+  "stdev": 0.0,
+  "variance": 0.0,
+  "min": 0.0,
+  "max": 0.0
+ },
+ "interval_error_abs_ms": {
+  "n": 840,
+  "median": 8.462000000000444,
+  "p95": 37.50089999999975,
+  "mean": 12.14819285714292,
+  "stdev": 10.982480211593478,
+  "variance": 120.61487159804234,
+  "min": 0.0020000000004074536,
+  "max": 57.08400000000074
+ },
+ "drift_max_ms": {
+  "n": 30,
+  "median": 33.13850000000002,
+  "p95": 41.2968499999994,
+  "mean": 31.786299999999976,
+  "stdev": 7.048219829784262,
+  "variance": 49.67740276896409,
+  "min": 19.444000000001324,
+  "max": 44.08399999999983
+ },
+ "missing_total": 0,
+ "extra_total": 0,
+ "checks": {
+  "repetitions>=min": true,
+  "pos_median": true,
+  "pos_p95": true,
+  "interval_median": false,
+  "interval_p95": false,
+  "drift_p95": true,
+  "missing": true,
+  "extra": true
+ },
+ "verdict": "NON PASSA",
+ "per_run": [
+  {
+   "run": "run_01.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 27.356000000000677
+  },
+  {
+   "run": "run_02.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 33.46399999999994
+  },
+  {
+   "run": "run_03.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 31.467999999999847
+  },
+  {
+   "run": "run_04.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 36.8809999999994
+  },
+  {
+   "run": "run_05.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 30.173000000000684
+  },
+  {
+   "run": "run_06.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 36.103000000000065
+  },
+  {
+   "run": "run_07.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 40.08100000000013
+  },
+  {
+   "run": "run_08.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 34.08400000000074
+  },
+  {
+   "run": "run_09.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 26.447000000000116
+  },
+  {
+   "run": "run_10.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 29.673999999999978
+  },
+  {
+   "run": "run_11.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 41.327000000000226
+  },
+  {
+   "run": "run_12.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 33.53500000000031
+  },
+  {
+   "run": "run_13.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 33.98399999999947
+  },
+  {
+   "run": "run_14.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 39.345000000001164
+  },
+  {
+   "run": "run_15.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 34.64799999999923
+  },
+  {
+   "run": "run_16.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 21.217000000000553
+  },
+  {
+   "run": "run_17.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 41.2599999999984
+  },
+  {
+   "run": "run_18.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 32.8130000000001
+  },
+  {
+   "run": "run_19.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 29.836999999999534
+  },
+  {
+   "run": "run_20.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 24.792000000000144
+  },
+  {
+   "run": "run_21.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 19.444000000001324
+  },
+  {
+   "run": "run_22.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 19.727999999999156
+  },
+  {
+   "run": "run_23.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 44.08399999999983
+  },
+  {
+   "run": "run_24.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 31.029999999998836
+  },
+  {
+   "run": "run_25.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 22.096999999999753
+  },
+  {
+   "run": "run_26.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 37.081999999999425
+  },
+  {
+   "run": "run_27.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 23.22099999999955
+  },
+  {
+   "run": "run_28.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 35.634000000000015
+  },
+  {
+   "run": "run_29.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 40.99300000000039
+  },
+  {
+   "run": "run_30.csv",
+   "missing": 0,
+   "extra": 0,
+   "drift_max_ms": 21.787000000000262
+  }
+ ]
+}
