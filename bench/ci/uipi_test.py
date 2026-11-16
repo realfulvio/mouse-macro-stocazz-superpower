@@ -12,6 +12,8 @@ import argparse, csv, ctypes, json, subprocess, sys, time
 from ctypes import wintypes as W
 from pathlib import Path
 
+sys.stdout.reconfigure(encoding="utf-8")  # GitHub logs, including the accented warning text
+
 ROOT = Path(__file__).resolve().parents[2]
 PY = sys.executable
 adv, k = ctypes.windll.advapi32, ctypes.windll.kernel32
@@ -81,6 +83,8 @@ def case(name, out, launcher, expected_note=""):
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--out", default="results/uipi")
     ap.add_argument("--expect-warning", action="store_true", help="Richiede il blocco esplicito prima della riproduzione medio→alto")
+    ap.add_argument("--app-root", help="Cartella app del pacchetto da provare")
+    ap.add_argument("--app-python", help="Interprete del pacchetto da provare")
     a = ap.parse_args()
     out = Path(a.out); out.mkdir(parents=True, exist_ok=True)
     il, raw = integrity_of_this_process()
@@ -94,12 +98,15 @@ def main():
     mmr = (out / "reference.mmr").resolve(); mmr.write_text(json.dumps(reference_macro.to_mmr(spec["events"], w, h, 0, 0)), encoding="utf-8")
     res["schermo"] = [w, h]
     inj = f'"{PY}" "{ROOT / "bench" / "ci" / "injector.py"}" "{ROOT / "bench" / "macros" / "reference.spec.json"}"'
-    mm = f'"{PY}" "{ROOT / "bench" / "ci" / "profile_idle.py"}" --mode uipi --warm 4 --macro "{mmr}"'
+    mm_args = [a.app_python or PY, str(ROOT / "bench/ci/profile_idle.py"), "--mode", "uipi", "--warm", "4", "--macro", str(mmr)]
+    if a.app_root:
+        mm_args += ["--app-root", a.app_root]
+    mm = subprocess.list2cmdline(mm_args)
     def high(cmd_args): return lambda: {"uscita": subprocess.run(cmd_args, capture_output=True, text=True, timeout=120).returncode}
     def mmss(runner):
         def go():
             if runner == "alto":
-                p = subprocess.run([PY, str(ROOT / "bench" / "ci" / "profile_idle.py"), "--mode", "uipi", "--warm", "4", "--macro", str(mmr)], capture_output=True, text=True, timeout=150)
+                p = subprocess.run(mm_args, capture_output=True, text=True, timeout=150)
                 txt, code = p.stdout + p.stderr, p.returncode
             else:
                 f = out / f"mmss_{runner}.txt"

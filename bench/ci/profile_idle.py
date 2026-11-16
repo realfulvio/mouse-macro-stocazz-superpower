@@ -10,7 +10,10 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 ap = argparse.ArgumentParser(); ap.add_argument("--mode", choices=("cpu", "prof", "verify", "active", "jitter", "uipi"), required=True)
 ap.add_argument("--warm", type=float, default=12); ap.add_argument("--window", type=float, default=30); ap.add_argument("--top", type=int, default=28); ap.add_argument("--macro", default=str(ROOT / "bench" / "macros" / "reference.mmr"))
+ap.add_argument("--app-root", help="Cartella app di un pacchetto estratto; usare il suo runtime per misurare l'exe distribuito")
 a = ap.parse_args()
+if a.app_root:
+    sys.path.insert(0, str(Path(a.app_root).resolve()))
 
 
 if a.mode == "jitter":   # mouse sintetico per la registrazione, in un processo separato (la sua CPU non entra nella misura del pannello)
@@ -26,6 +29,18 @@ if a.mode == "jitter":   # mouse sintetico per la registrazione, in un processo 
     sys.exit(0)
 import windows_main as wm  # noqa: E402
 import windows_visual as wv  # noqa: E402
+
+# A published release newer than the measured checkout can open a modal update
+# prompt while verify() pumps messages. Answer No in this measurement fixture,
+# just as a user would: keep the normal check, worker and decline bookkeeping.
+# The app and its updater are not modified in the measured source/package.
+_install_update = wm.Panel.install_update
+def decline_startup_update(self, startup=False):
+    if startup:
+        print("BANCO aggiornamento proposto: risposta No automatica", flush=True)
+        return False
+    return _install_update(self, startup=startup)
+wm.Panel.install_update = decline_startup_update
 
 k = ctypes.windll.kernel32; u = ctypes.windll.user32
 tid = k.GetCurrentThreadId(); result = {}
@@ -201,6 +216,7 @@ if prof: prof.enable()      # nel thread dell'interfaccia: comprende anche le pr
 panel.run()
 if prof: prof.disable()
 print("RISULTATO", json.dumps(result), flush=True)
+print("PROVENIENZA", json.dumps({"app": wm.__file__, "interprete": sys.executable}), flush=True)
 if prof:
     s = io.StringIO(); st = pstats.Stats(prof, stream=s).sort_stats("tottime"); st.print_stats(a.top)
     print("PROFILO tottime (thread interfaccia, finestra %.0f s)" % a.window); print(s.getvalue(), flush=True)
