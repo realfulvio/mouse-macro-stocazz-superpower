@@ -9,6 +9,7 @@ on:
   pull_request:
     paths:
       - 'bench/**'
+      - '!bench/ci/profile_idle.py'
       - '.github/workflows/bench.yml'
 permissions:
   contents: read

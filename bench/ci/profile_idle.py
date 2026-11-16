@@ -8,10 +8,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-ap = argparse.ArgumentParser(); ap.add_argument("--mode", choices=("cpu", "prof"), required=True)
+ap = argparse.ArgumentParser(); ap.add_argument("--mode", choices=("cpu", "prof", "verify"), required=True)
 ap.add_argument("--warm", type=float, default=12); ap.add_argument("--window", type=float, default=30); ap.add_argument("--top", type=int, default=28)
 a = ap.parse_args()
 import windows_main as wm  # noqa: E402
+import windows_visual as wv  # noqa: E402
 
 k = ctypes.windll.kernel32; u = ctypes.windll.user32
 tid = k.GetCurrentThreadId(); result = {}
@@ -66,7 +67,54 @@ def controller(panel, prof):
     u.PostThreadMessageW(tid, 0x12, 0, 0)   # WM_QUIT: esce da GetMessageW
 
 
+def verify():
+    """Il fotogramma della mascotte ridisegnato dal percorso rapido (Layer) deve essere IDENTICO, pixel per pixel,
+    a quello del percorso completo, per ogni fotogramma dello sprite sheet. Indice del fotogramma fissato a mano."""
+    import struct
+    u.GetDC.restype = ctypes.c_void_p; u.GetDC.argtypes = [ctypes.c_void_p]; u.ReleaseDC.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    g = ctypes.windll.gdi32
+    g.CreateCompatibleDC.restype = ctypes.c_void_p; g.CreateCompatibleDC.argtypes = [ctypes.c_void_p]
+    g.CreateCompatibleBitmap.restype = ctypes.c_void_p; g.CreateCompatibleBitmap.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
+    g.SelectObject.restype = ctypes.c_void_p; g.SelectObject.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    g.BitBlt.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_void_p, ctypes.c_int, ctypes.c_int, ctypes.c_uint]
+    g.GetDIBits.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint, ctypes.c_uint, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint]
+    g.DeleteObject.argtypes = [ctypes.c_void_p]; g.DeleteDC.argtypes = [ctypes.c_void_p]
+    msg = wm.W.MSG()
+    def pump(sec):
+        t = time.time()
+        while time.time() - t < sec:
+            while u.PeekMessageW(ctypes.byref(msg), None, 0, 0, 1):
+                u.TranslateMessage(ctypes.byref(msg)); u.DispatchMessageW(ctypes.byref(msg))
+            time.sleep(0.005)
+    pump(4)
+    cur = {"i": 0}
+    wm.frame_index = wv.frame_index = lambda now: cur["i"]
+    hwnd = panel.hwnd; sheet = wv.SKINS[wv.CURRENT["skin"]]["sheet"]
+    def grab(l, t, r, b):
+        w, h = r - l, b - t
+        hdc = u.GetDC(hwnd); mdc = g.CreateCompatibleDC(hdc); bmp = g.CreateCompatibleBitmap(hdc, w, h); old = g.SelectObject(mdc, bmp)
+        g.BitBlt(mdc, 0, 0, w, h, hdc, l, t, 0xCC0020)
+        bi = ctypes.create_string_buffer(struct.pack("IiiHHIIiiII", 40, w, -h, 1, 32, 0, 0, 0, 0, 0, 0) + b"\0" * 16)
+        buf = ctypes.create_string_buffer(w * h * 4); g.GetDIBits(mdc, bmp, 0, h, buf, bi, 0)
+        g.SelectObject(mdc, old); g.DeleteObject(bmp); g.DeleteDC(mdc); u.ReleaseDC(hwnd, hdc)
+        return bytes(buf)
+    res = {"frames": sheet["frames"], "compared": 0, "mismatch": [], "fast_used": 0, "layer_box": None}
+    for i in range(sheet["frames"]):
+        cur["i"] = i
+        panel.layer.valid = False; panel.invalidate_mascot(); u.UpdateWindow(hwnd)      # percorso completo
+        box = panel.layer.box; res["layer_box"] = box
+        if box is None: res["error"] = "nessuna mascotte singola: percorso rapido non usato"; break
+        full = grab(*box)
+        used = panel.layer.valid
+        panel.invalidate_mascot(); u.UpdateWindow(hwnd)                                   # percorso rapido (se valido)
+        fast = grab(*box); res["fast_used"] += int(used); res["compared"] += 1
+        if full != fast: res["mismatch"].append(i)
+    print("VERIFICA", json.dumps(res), flush=True)
+    sys.exit(0 if res["compared"] == sheet["frames"] and not res["mismatch"] and res["fast_used"] == res["compared"] else 1)
+
+
 panel = wm.Panel()
+if a.mode == "verify": verify()
 prof = cProfile.Profile() if a.mode == "prof" else None
 threading.Thread(target=controller, args=(panel, prof), daemon=True).start()
 if prof: prof.enable()      # nel thread dell'interfaccia: comprende anche le prime pitture e l'assestamento
