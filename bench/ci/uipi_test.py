@@ -51,7 +51,7 @@ def run_medium(cmd, timeout):
     lab = SIDAT(sid, 0x20)   # SE_GROUP_INTEGRITY
     if not adv.SetTokenInformation(new, 25, ctypes.byref(lab), ctypes.sizeof(SIDAT) + adv.GetLengthSid(sid)): raise ctypes.WinError()   # TokenIntegrityLevel
     si = STARTUPINFO(); si.cb = ctypes.sizeof(si); si.desktop = "winsta0\\default"; pi = PROCINFO()
-    if not adv.CreateProcessAsUserW(new, None, ctypes.create_unicode_buffer(cmd), None, False, 0, None, str(ROOT), ctypes.byref(si), ctypes.byref(pi)): raise ctypes.WinError()
+    if not adv.CreateProcessAsUserW(new, None, ctypes.create_unicode_buffer(cmd), None, None, False, 0, None, str(ROOT), ctypes.byref(si), ctypes.byref(pi)): raise ctypes.WinError()
     k.WaitForSingleObject(pi.hProcess, int(timeout * 1000))
     code = W.DWORD(); k.GetExitCodeProcess(pi.hProcess, ctypes.byref(code))
     for h in (pi.hProcess, pi.hThread, new, tok): k.CloseHandle(h)
