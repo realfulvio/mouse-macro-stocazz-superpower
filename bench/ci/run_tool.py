@@ -17,7 +17,8 @@ TOOLS = {
              "sha256": "3b9e795f25bc4c8b4d46ee2cfe481521c1f5e432d71cf7630198c70f7e25a45e", "hash_source": "digest della release GitHub v1.2.3 e SHA256SUMS-v1.2.3.txt"},
     "ahk": {"url": "https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.31/AutoHotkey_2.0.31.zip",
             "sha256": "ca1a595aca4528755d8d4cd7fed23d497a37bd9a0b6892072612d68dee1bd00a", "hash_source": "note della release AutoHotkey v2.0.31"},
-    "tinytask": {"url": "https://github.com/ron896/cJpzsJZwG/releases/download/tt/tinytask.exe", "sha256": None, "hash_source": "nessun hash pubblicato dall'autore: registrato qui"},
+    "tinytask": {"url": "https://github.com/ron896/cJpzsJZwG/releases/download/tt/tinytask.exe", "sha256": None, "hash_source": "nessun hash pubblicato dall'autore: registrato qui",
+                 "fallback": ["https://dl.tinytask.net/with-editor.exe", "https://dl.tinytask.net/micro-with-editor.exe"]},
 }
 
 
@@ -58,7 +59,14 @@ def main():
     w, h = set_display(); print(f"schermo di prova {w}x{h}", flush=True)
     work = Path(os.environ.get("RUNNER_TEMP", "C:/bench")) / "bench_tool"; shutil.rmtree(work, ignore_errors=True)
     # 1. download + hash
-    f = work / Path(cfg["url"]).name; got = download(cfg["url"], f)
+    used, f, got = None, None, None
+    for url in [cfg["url"]] + cfg.get("fallback", []):     # link elencati nella pagina download ufficiale, in ordine
+        try:
+            f = work / Path(url).name; got = download(url, f); used = url; print("scaricato da", url, flush=True); break
+        except Exception as error:
+            print("download fallito", url, error, flush=True)
+    if used is None: sys.exit("nessun link di download funzionante")
+    cfg = {**cfg, "url": used}
     ok = cfg["sha256"] is None or got == cfg["sha256"]
     inv = {"tool": a.tool, "url": cfg["url"], "bytes": f.stat().st_size, "sha256": got, "expected": cfg["sha256"], "hash_ok": ok, "hash_source": cfg["hash_source"],
            "screen": [w, h], "os": sys.platform, "cpu": os.environ.get("PROCESSOR_IDENTIFIER", "")}
@@ -87,7 +95,7 @@ def main():
         def trigger(): press("F8")
         idle_cmd, proc_name, startup = None, "AutoHotkey64", (str(exe), "AutoHotkey64", f'"{script}"')
     else:
-        exe = d / "tinytask.exe"; tt = subprocess.Popen([str(exe)]); procs.append(tt); time.sleep(3)
+        exe = d / f.name; tt = subprocess.Popen([str(exe)]); procs.append(tt); time.sleep(3)
         import injector
         for c in (VK["CTRL"], VK["SHIFT"], VK["ALT"]): u.keybd_event(c, 0, 0, 0)
         u.keybd_event(ord("R"), 0, 0, 0); time.sleep(0.06); u.keybd_event(ord("R"), 0, 2, 0)
@@ -101,7 +109,7 @@ def main():
             for c in (VK["CTRL"], VK["SHIFT"], VK["ALT"]): u.keybd_event(c, 0, 0, 0)
             u.keybd_event(ord("P"), 0, 0, 0); time.sleep(0.06); u.keybd_event(ord("P"), 0, 2, 0)
             for c in (VK["ALT"], VK["SHIFT"], VK["CTRL"]): u.keybd_event(c, 0, 2, 0)
-        idle_cmd, proc_name, startup = None, "tinytask", (str(exe), "tinytask", "")
+        idle_cmd, proc_name, startup = None, exe.stem, (str(exe), exe.stem, "")
     # 3. fedelta'
     runs = out / "fedelta"; runs.mkdir()
     for i in range(1, a.runs + 1):
@@ -129,6 +137,32 @@ def main():
     for name in ("risorse_riposo.csv", "avvio.csv"):
         p = out / name
         if p.exists(): print(f"RAW BEGIN {a.tool}/{name}\n{p.read_text(encoding='utf-8-sig')}RAW END", flush=True)
+    summary(a.tool, out, res, inv)
+
+
+def _num(x):
+    try: return float(str(x).replace(",", "."))
+    except ValueError: return None
+
+
+def summary(tool, out, res, inv):
+    """Riepilogo compatto in fondo al log (mediana, p95, varianza): e' la riga da leggere."""
+    import csv, statistics
+    r = {"tool": tool, "pacchetto_MB": round(inv["bytes"] / 1e6, 3), "schermo": inv["screen"], "fedelta": {
+         "verdetto": res["verdict"], "run": res["runs"], "pos_px": res["pos_error_px"], "intervallo_ms": res["interval_error_abs_ms"],
+         "deriva_ms": res["drift_max_ms"], "mancanti": res["missing_total"], "extra": res["extra_total"], "controlli": res["checks"]}}
+    p = out / "risorse_riposo.csv"
+    if p.exists():
+        rows = list(csv.DictReader(open(p, encoding="utf-8-sig")))
+        cpu = [v for v in (_num(x["cpu_pct_of_core"]) for x in rows) if v is not None]; mem = [v for v in (_num(x["private_mb"]) for x in rows) if v is not None]
+        if cpu: r["riposo"] = {"n": len(cpu), "cpu_core_pct": analyze.summary(cpu), "private_mb_max": max(mem) if mem else None, "processi": rows[-1].get("procs")}
+    p = out / "avvio.csv"
+    if p.exists():
+        rows = list(csv.DictReader(open(p, encoding="utf-8-sig")))
+        warm = [v for v in (_num(x["startup_s"]) for x in rows if x["ok"] == "1" and x["cold"] == "0") if v is not None]
+        r["avvio"] = {"riusciti": sum(x["ok"] == "1" for x in rows), "totali": len(rows), "caldo_s": analyze.summary(warm) if warm else None,
+                      "freddo_s": next((_num(x["startup_s"]) for x in rows if x["cold"] == "1" and x["ok"] == "1"), None)}
+    print("RIEPILOGO " + json.dumps(r), flush=True)
 
 
 if __name__ == "__main__":
