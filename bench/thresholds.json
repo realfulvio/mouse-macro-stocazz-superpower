@@ -1,0 +1,38 @@
+{
+  "_comment": "Soglie fissate PRIMA di misurare (vedi PREREGISTRAZIONE.md). Non modificarle dopo aver visto i dati: se servono cambi, nuovo file con nuova data e motivazione.",
+  "frozen_on": "2026-11-16",
+  "repetitions_min": 30,
+  "fidelity": {
+    "pos_error_px_median_max": 1.0,
+    "pos_error_px_p95_max": 2.0,
+    "interval_error_ms_median_max": 5.0,
+    "interval_error_ms_p95_max": 16.0,
+    "drift_ms_p95_max": 50.0,
+    "missing_events_max": 0,
+    "extra_events_max": 0
+  },
+  "resources": {
+    "idle_cpu_pct_of_core_avg_max": 2.0,
+    "running_cpu_pct_of_core_avg_max": 5.0,
+    "idle_private_mb_max": 150,
+    "running_private_mb_max": 200,
+    "startup_s_median_max": 2.0,
+    "startup_s_p95_max": 3.0,
+    "package_mb_max": 25
+  },
+  "endurance": {
+    "duration_hours_min": 4,
+    "crashes_max": 0,
+    "private_mb_growth_per_hour_max": 1.0
+  },
+  "security": {
+    "virustotal_detections_max": 0,
+    "smartscreen_block_allowed": false
+  },
+  "usability": {
+    "novices_min": 5,
+    "task_success_rate_min": 0.8,
+    "task_time_s_median_max": 120,
+    "sus_median_min": 68
+  }
+}
