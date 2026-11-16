@@ -13,7 +13,7 @@ Ambiente delle misure: runner GitHub Actions `windows-latest` (Windows Server 20
 | CPU/RAM a riposo (60 s) | **misurato** per MMSS, AutoHotkey, TinyTask | `risorse_riposo.csv` |
 | CPU a riposo MMSS dopo l'ottimizzazione Bambola | **misurato dal sorgente**: 1,48 · 1,48 · 1,33 % (prima 4,22–4,61 %), pixel identici 97/97, 24 fps invariati. **Non** misurato sull'exe impacchettato | `runner-github/ottimizzazione-cpu-bambola.md` |
 | CPU/RAM in esecuzione | **non misurato** | non ancora nel banco |
-| Tempo di avvio | **non misurato**: lo script non ha prodotto dati per MMSS; per TinyTask la finestra non è stata rilevata (30 s, 15 su 15) | da correggere `tools/measure_startup.ps1` |
+| Tempo di avvio | **misurato per MMSS** (run 43927100173, ramo `bench-data/43927100173-mmss`): 15 avvii, 14 a caldo: mediana 0,378 s, p95 0,402 s, primo avvio a freddo 0,452 s (soglia 2 s / 3 s). Dal CreateProcess alla finestra visibile e reattiva, su runner condiviso. **Non misurato** per AutoHotkey e TinyTask (finestra non rilevata) | `avvio.csv` |
 | Peso | **misurato** (MMSS 19.049.731 byte; AHK 3.160.453; TinyTask 5.678.424) | `inventario.json` |
 | DPI misto, multi-monitor, finestre elevate, giochi | **non misurato** | servono hardware reale, più monitor, un gioco |
 | Macro di più ore | **non misurato** | il job CI ha un limite di 45 minuti |

@@ -10,6 +10,8 @@ on:
     paths:
       - 'bench/**'
       - '!bench/ci/profile_idle.py'
+      - '!bench/RAPPORTO.md'
+      - '!bench/data/**'
       - '.github/workflows/bench.yml'
 permissions:
   contents: read
