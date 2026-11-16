@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 ap = argparse.ArgumentParser(); ap.add_argument("--mode", choices=("cpu", "prof", "verify", "active", "jitter", "uipi"), required=True)
-ap.add_argument("--warm", type=float, default=12); ap.add_argument("--window", type=float, default=30); ap.add_argument("--top", type=int, default=28)
+ap.add_argument("--warm", type=float, default=12); ap.add_argument("--window", type=float, default=30); ap.add_argument("--top", type=int, default=28); ap.add_argument("--macro", default=str(ROOT / "bench" / "macros" / "reference.mmr"))
 a = ap.parse_args()
 
 
@@ -117,6 +117,15 @@ def active_controller(panel):
         result["riproduzione_ancora_attiva"] = panel.session.state == S.PLAYING
         panel.session.request_stop()
         wait_state(panel, (S.READY, S.ERROR), 20)
+        if Path(a.macro).exists():     # macro rada del banco (29 eventi in 16 s, a giri infiniti): il caso tipico, senza flusso di movimenti
+            result["riferimento_caricata"] = bool(panel.session.load(a.macro))
+            panel.post("play")
+            if wait_state(panel, (S.PLAYING, S.ERROR)) and panel.session.state == S.PLAYING:
+                time.sleep(2.0)
+                result["riproduzione_riferimento_cpu_pct"] = measure(a.window)
+                panel.session.request_stop()
+                wait_state(panel, (S.READY, S.ERROR), 20)
+            else: result["riferimento_errore"] = panel.session.message
         result.update(window_s=a.window, skin=wm.CURRENT["skin"], dpi=panel.dpi, active_view=panel.active_view)
     finally:
         u.PostThreadMessageW(tid, 0x12, 0, 0)
@@ -127,7 +136,7 @@ def uipi_controller(panel):
     S = wm.State
     try:
         time.sleep(a.warm)
-        result["caricata"] = bool(panel.session.load(ROOT / "bench" / "macros" / "reference.mmr"))
+        result["caricata"] = bool(panel.session.load(a.macro))
         panel.repeats, panel.infinite = 1, False
         panel.post("play")
         result["partita"] = wait_state(panel, (S.PLAYING, S.ERROR), 15)
