@@ -22,11 +22,13 @@ TOOLS = {
         "package": "MacroRecorderSetup.exe", "install": "inno", "exe": "MacroRecorder.exe",
         "source": "https://www.jitbit.com/macro-recorder/", "version_declared": "da leggere dal binario; versione di prova"},
     "minimouse": {"url": "https://downloads.sourceforge.net/project/minimousemacro/MiniMouseMacro.Setup.msi",
+        "fallback": ["https://pilotfiber.dl.sourceforge.net/project/minimousemacro/MiniMouseMacro.Setup.msi", "https://netix.dl.sourceforge.net/project/minimousemacro/MiniMouseMacro.Setup.msi"],
         "sha256": "e5d5974a1a69cbe35dbf47eb2bde833075622b813cbfd133c245b3657907c3ea",
         "hash_source": "SHA-256 pubblicato dalla pagina download SourceForge del progetto turnssoft", "resources_only": True,
         "package": "MiniMouseMacro.Setup.msi", "install": "msi", "exe": "*Mini*Mouse*.exe",
         "source": "https://sourceforge.net/projects/minimousemacro/files/", "version_declared": "da leggere dal binario"},
-    "opautoclicker": {"url": "https://downloads.sourceforge.net/project/orphamielautoclicker/AutoClicker.exe",
+    "opautoclicker": {"url": "https://downloads.sourceforge.net/project/orphamielautoclicker/4.1/AutoClicker.exe",
+        "fallback": ["https://pilotfiber.dl.sourceforge.net/project/orphamielautoclicker/4.1/AutoClicker.exe", "https://netix.dl.sourceforge.net/project/orphamielautoclicker/4.1/AutoClicker.exe"],
         "sha256": "1ce7da6f2813c2ad1d2e496be6714e08cd618e6d9fe2df26c2bd4d894c9a6ec1",
         "hash_source": "SHA-256 pubblicato dalla pagina download SourceForge collegata dal sito ufficiale", "resources_only": True,
         "package": "AutoClicker.exe", "install": "exe", "exe": "AutoClicker.exe",
@@ -59,6 +61,8 @@ def download(url, dest):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) bench-download",
         "Referer": "https://tinytask.net/download.html"})
     with urllib.request.urlopen(req, timeout=120) as r, open(dest, "wb") as f:
+        if "text/html" in r.headers.get("Content-Type", "").lower():
+            raise ValueError("il server ha restituito HTML invece del pacchetto: " + r.url)
         shutil.copyfileobj(r, f)
     return hashlib.sha256(dest.read_bytes()).hexdigest()
 
