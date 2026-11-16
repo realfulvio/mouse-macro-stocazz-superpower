@@ -36,3 +36,7 @@ Nuove prove:
 ## Misure di altre sessioni (metodo diverso, **non conformi a questa procedura**)
 
 Da `project-state` (1/11/2026, VM vm-windows-test senza GPU, % di un core pronto, versione 1.2.3): pannello pronto 9,3 · Copertina 13,2 · Micro in registrazione 7,1 · Micro in riproduzione 6,0. Peso ZIP v1.1.1: 12.114.231 byte (`docs/ESITO-COLLAUDO-v1.1.1.md`). Riferimento di partenza, non verdetto.
+
+## Ottimizzazione delle attese Windows
+
+PR #48: confronto degli esatti ZIP e 30 ripetizioni per lato nel run 43960726750; precisione di posizione 0 px, eventi persi/extra zero, mediana intervalli 4,3175→0,6935 ms. P95 28,7270→26,9566 ms ancora non validabile. Sullo stesso host (43965391957), CPU densa 11,7367→5,1733%, rada 2,57→1,8767%. Finestre brevi di registrazione sopra soglia nel candidato; conservate. Diagnosi isolata 3×60 s per lato (43967066526): registrazione 4,47→4,4933%, tutte le finestre sotto il 5%. [Report e dati](runner-github/ottimizzazione-attese-risultati.md). Nessuna dichiarazione di stabilità universale o di tutte le soglie passate; release pubblica invariata.
