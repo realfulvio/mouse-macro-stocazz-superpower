@@ -12,6 +12,12 @@ if sys.platform == 'win32':
 
 @unittest.skipUnless(sys.platform == 'win32', 'Native Windows panel')
 class PanelTests(unittest.TestCase):
+    def setUp(self):
+        # Policy tests use synthetic coordinates, not the test runner's desktop.
+        guard = patch.object(ui, 'ensure_input_integrity')
+        self.integrity_check = guard.start()
+        self.addCleanup(guard.stop)
+
     def panel(self):
         # The classic sizes below are those of Unicorno; Bambola has its own tests.
         ui.apply_skin('unicorno')
@@ -300,6 +306,16 @@ class PanelTests(unittest.TestCase):
         with patch.object(ui,'window_rect',return_value=[-1104,508,-816,572]),patch.object(ui,'U') as u:
             p.preflight(Macro('windows',events))
             u.SetWindowPos.assert_not_called()
+
+    def test_integrity_warning_prevents_playback_after_bar_placement(self):
+        p = self.panel()
+        macro = Macro('windows', [])
+        self.integrity_check.side_effect = ValueError('Esegui come amministratore')
+        with patch.object(p, 'place_playback_bar') as place:
+            with self.assertRaisesRegex(ValueError, 'amministratore'):
+                p.preflight(macro)
+            place.assert_called_once_with(macro)
+            self.integrity_check.assert_called_once_with(macro.events)
 
     def test_preflight_relocates_bar_from_click_and_drag_path(self):
         for events in ([MacroEvent(0,LEFT_DOWN,x=-1000,y=540),MacroEvent(.2,LEFT_UP,x=-1000,y=540)],

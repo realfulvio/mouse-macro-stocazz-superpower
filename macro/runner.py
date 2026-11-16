@@ -56,6 +56,7 @@ def run_from_argv(argv: list[str]) -> int:
 
     from .engine import LoopMode, PlaybackOptions
     from .session import Session, State
+    from .windows_integrity import ensure_input_integrity
     from .windows_backend import (HOTKEY_EMERGENCY, GlobalHotkeys, WindowsPlayer,
                                   screen_geometry)
 
@@ -95,6 +96,7 @@ def run_from_argv(argv: list[str]) -> int:
             def preflight(macro):
                 if macro.screen and macro.screen != screen_geometry():
                     raise ValueError("Schermo o monitor diversi da quando hai registrato la macro.")
+                ensure_input_integrity(macro.events)
 
             session.toggle_play(options, request.next_tab, preflight)
             while session.state in (State.PLAYING, State.STOPPING):

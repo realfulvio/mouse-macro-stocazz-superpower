@@ -1,0 +1,15 @@
+{
+  "method": "inno",
+  "command": [
+    "D:\\a\\_temp\\bench_tool\\actiona-3.11.5-windows.exe",
+    "/VERYSILENT",
+    "/SUPPRESSMSGBOXES",
+    "/NORESTART",
+    "/SP-",
+    "/DIR=D:\\a\\_temp\\bench_tool\\installed",
+    "/LOG=D:\\a\\mouse-macro-stocazz-superpower\\mouse-macro-stocazz-superpower\\results\\actiona\\install.log"
+  ],
+  "exit_code": 0,
+  "stdout": "",
+  "stderr": ""
+}

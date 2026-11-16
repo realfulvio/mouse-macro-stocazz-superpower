@@ -1,0 +1,141 @@
+{
+  "run_id": 43941664289,
+  "head_sha": "f146f7cb6ca7b3945424927b68094bda1869fbf3",
+  "records": [
+    {
+      "stats_calls_ms": {
+        "msg 0x113 id1": [
+          183,
+          29.5
+        ],
+        "msg 0x113 id2": [
+          793,
+          59.5
+        ],
+        "msg 0xF": [
+          480,
+          306.8
+        ],
+        "paint": [
+          480,
+          302.7
+        ],
+        "render": [
+          183,
+          13.1
+        ]
+      },
+      "cpu_pct_of_core": 2.11,
+      "window_s": 20,
+      "shown": true,
+      "animating": true,
+      "skin": "bambola",
+      "dpi": 96
+    },
+    {
+      "stats_calls_ms": {
+        "msg 0x113 id1": [
+          182,
+          30.2
+        ],
+        "msg 0x113 id2": [
+          788,
+          59.9
+        ],
+        "msg 0xF": [
+          481,
+          306.4
+        ],
+        "paint": [
+          481,
+          302.3
+        ],
+        "render": [
+          182,
+          13.3
+        ]
+      },
+      "cpu_pct_of_core": 2.73,
+      "window_s": 20,
+      "shown": true,
+      "animating": true,
+      "skin": "bambola",
+      "dpi": 96
+    },
+    {
+      "stats_calls_ms": {
+        "msg 0x113 id1": [
+          183,
+          30.9
+        ],
+        "msg 0x113 id2": [
+          783,
+          59.5
+        ],
+        "msg 0xF": [
+          480,
+          302.4
+        ],
+        "paint": [
+          480,
+          298.4
+        ],
+        "render": [
+          183,
+          13.8
+        ]
+      },
+      "cpu_pct_of_core": 2.5,
+      "window_s": 20,
+      "shown": true,
+      "animating": true,
+      "skin": "bambola",
+      "dpi": 96
+    },
+    {
+      "stats_calls_ms": {},
+      "cpu_pct_of_core": 2.44,
+      "window_s": 25,
+      "shown": true,
+      "animating": true,
+      "skin": "bambola",
+      "dpi": 96
+    },
+    {
+      "registrazione_cpu_pct": 9.06,
+      "eventi_registrati": 2178,
+      "riproduzione_cpu_pct": 14.37,
+      "riproduzione_ancora_attiva": true,
+      "riferimento_caricata": true,
+      "riproduzione_riferimento_cpu_pct": 3.12,
+      "window_s": 15,
+      "skin": "bambola",
+      "dpi": 96,
+      "active_view": false
+    },
+    {
+      "registrazione_cpu_pct": 7.71,
+      "eventi_registrati": 2185,
+      "riproduzione_cpu_pct": 14.58,
+      "riproduzione_ancora_attiva": true,
+      "riferimento_caricata": true,
+      "riproduzione_riferimento_cpu_pct": 3.33,
+      "window_s": 15,
+      "skin": "bambola",
+      "dpi": 96,
+      "active_view": false
+    },
+    {
+      "registrazione_cpu_pct": 7.4,
+      "eventi_registrati": 2189,
+      "riproduzione_cpu_pct": 14.37,
+      "riproduzione_ancora_attiva": true,
+      "riferimento_caricata": true,
+      "riproduzione_riferimento_cpu_pct": 3.02,
+      "window_s": 15,
+      "skin": "bambola",
+      "dpi": 96,
+      "active_view": false
+    }
+  ]
+}
