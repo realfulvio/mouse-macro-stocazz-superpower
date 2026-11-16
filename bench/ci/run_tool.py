@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Banco di prova su runner Windows: UNO strumento per VM pulita. Scarica da fonte ufficiale, verifica l'hash dove l'autore lo pubblica,
 esegue N ripetizioni della macro di riferimento con il logger esterno, poi misura risorse a riposo e avvio.
-  python bench/ci/run_tool.py --tool mmss|ahk|tinytask --runs 30 --out results
+  python bench/ci/run_tool.py --tool mmss|ahk|tinytask|ideal --runs 30 --out results
 Stampa i CSV grezzi nel log tra marcatori RAW (il job non puo' fare push) e li salva come artifact."""
 import argparse, ctypes, hashlib, json, os, shutil, struct, subprocess, sys, time, urllib.request, zipfile
 from pathlib import Path
@@ -17,6 +17,7 @@ TOOLS = {
              "sha256": "3b9e795f25bc4c8b4d46ee2cfe481521c1f5e432d71cf7630198c70f7e25a45e", "hash_source": "digest della release GitHub v1.2.3 e SHA256SUMS-v1.2.3.txt"},
     "ahk": {"url": "https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.31/AutoHotkey_2.0.31.zip",
             "sha256": "ca1a595aca4528755d8d4cd7fed23d497a37bd9a0b6892072612d68dee1bd00a", "hash_source": "note della release AutoHotkey v2.0.31"},
+    "ideal": {"url": None, "sha256": None, "hash_source": "nessun programma: riproduzione con SendInput e attese QPC (riferimento del runner)"},
     "tinytask": {"url": "https://github.com/ron896/cJpzsJZwG/releases/download/tt/tinytask.exe", "sha256": None, "hash_source": "nessun hash pubblicato dall'autore: registrato qui",
                  "fallback": ["https://dl.tinytask.net/with-editor.exe", "https://dl.tinytask.net/micro-with-editor.exe"]},
 }
@@ -62,22 +63,23 @@ def main():
     u.SetProcessDpiAwarenessContext(ctypes.c_void_p(-4))
     w, h = set_display(); print(f"schermo di prova {w}x{h}", flush=True)
     work = Path(os.environ.get("RUNNER_TEMP", "C:/bench")) / "bench_tool"; shutil.rmtree(work, ignore_errors=True)
-    # 1. download + hash
+    # 1. download + hash ("ideal" non scarica nulla: e' il riferimento del runner, serve a separare il rumore dell'ambiente da quello dei programmi)
     used, f, got = None, None, None
-    for url in [cfg["url"]] + cfg.get("fallback", []):     # link elencati nella pagina download ufficiale, in ordine
+    for url in ([] if a.tool == "ideal" else [cfg["url"]] + cfg.get("fallback", [])):     # link elencati nella pagina download ufficiale, in ordine
         try:
             f = work / Path(url).name; got = download(url, f); used = url; print("scaricato da", url, flush=True); break
         except Exception as error:
             print("download fallito", url, error, flush=True)
-    if used is None: sys.exit("nessun link di download funzionante")
+    if used is None and a.tool != "ideal": sys.exit("nessun link di download funzionante")
     cfg = {**cfg, "url": used}
     ok = cfg["sha256"] is None or got == cfg["sha256"]
-    inv = {"tool": a.tool, "url": cfg["url"], "bytes": f.stat().st_size, "sha256": got, "expected": cfg["sha256"], "hash_ok": ok, "hash_source": cfg["hash_source"],
+    inv = {"tool": a.tool, "url": cfg["url"], "bytes": f.stat().st_size if f else 0, "sha256": got, "expected": cfg["sha256"], "hash_ok": ok, "hash_source": cfg["hash_source"],
            "screen": [w, h], "os": sys.platform, "cpu": os.environ.get("PROCESSOR_IDENTIFIER", "")}
     print("INVENTARIO", json.dumps(inv), flush=True); (out / "inventario.json").write_text(json.dumps(inv, indent=1))
     if not ok: sys.exit("hash non corrisponde: mi fermo")
     d = work / "x"; d.mkdir()
-    if f.suffix == ".zip":
+    if f is None: pass
+    elif f.suffix == ".zip":
         with zipfile.ZipFile(f) as z: z.extractall(d)
     else: shutil.copy(f, d / f.name)
     # 2. macro di riferimento
@@ -98,6 +100,10 @@ def main():
         procs.append(subprocess.Popen([str(exe), str(script)])); time.sleep(2)
         def trigger(): press("F8")
         idle_cmd, proc_name, startup = None, "AutoHotkey64", (str(exe), "AutoHotkey64", f'"{script}"')
+    elif a.tool == "ideal":
+        import injector
+        def trigger(): injector.play(spec)
+        idle_cmd, proc_name, startup = None, None, None
     else:
         exe = d / f.name; tt = subprocess.Popen([str(exe)]); procs.append(tt); time.sleep(3)
         import injector
@@ -129,6 +135,10 @@ def main():
     for p in procs:
         try: p.kill()
         except Exception: pass
+    if a.tool == "ideal":
+        print("RIEPILOGO " + json.dumps({"tool": "ideal", "schermo": inv["screen"], "fedelta": {"verdetto": res["verdict"], "run": res["runs"], "pos_px": res["pos_error_px"],
+              "intervallo_ms": res["interval_error_abs_ms"], "deriva_ms": res["drift_max_ms"], "mancanti": res["missing_total"], "extra": res["extra_total"]}}), flush=True)
+        return
     # 4. risorse a riposo e avvio (script PowerShell)
     ps = lambda *c: subprocess.run(["pwsh", "-NoProfile", "-File", *c], check=False)
     cmd = idle_cmd or ([str(exe), str(script)] if a.tool == "ahk" else [str(exe)])
