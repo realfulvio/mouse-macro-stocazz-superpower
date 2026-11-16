@@ -1,0 +1,15 @@
+{
+ "tool": "opautoclicker",
+ "url": "https://downloads.sourceforge.net/project/orphamielautoclicker/4.1/AutoClicker.exe",
+ "bytes": 1187192,
+ "sha256": "1ce7da6f2813c2ad1d2e496be6714e08cd618e6d9fe2df26c2bd4d894c9a6ec1",
+ "expected": "1ce7da6f2813c2ad1d2e496be6714e08cd618e6d9fe2df26c2bd4d894c9a6ec1",
+ "hash_ok": true,
+ "hash_source": "SHA-256 pubblicato dalla pagina download SourceForge collegata dal sito ufficiale",
+ "screen": [
+  1920,
+  1080
+ ],
+ "os": "win32",
+ "cpu": "AMD64 Family 25 Model 17 Stepping 1, AuthenticAMD"
+}
