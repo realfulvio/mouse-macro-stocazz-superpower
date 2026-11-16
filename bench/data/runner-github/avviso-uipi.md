@@ -9,7 +9,8 @@ la finestra attiva. Il pannello viene prima spostato fuori dai bersagli.
 Il controllo è applicato anche all'avvio `.mmr`/`--run`, prima della creazione
 del player. Un bersaglio di integrità superiore impedisce l'avvio e produce:
 
-> Bersaglio con privilegi più alti. Riapri Mouse Macro con «Esegui come amministratore» per riprodurre.
+> Bersaglio elevato.
+> Riapri con «Esegui come amministratore».
 
 Nessuna elevazione automatica. Nessuna chiamata aggiunta al ciclo temporizzato;
 `macro/engine.py` e `macro/windows_backend.py` invariati. Cache di punti e PID
@@ -51,3 +52,5 @@ Run [43944349328](https://github.com/realfulvio/mouse-macro-stocazz-superpower/a
 | Deriva p95 | 32,4054 ms | 31,9729 ms | passa ≤50 in entrambi |
 
 Nessuna soglia cambia da passa a non passa. Il verdetto meccanico globale resta NON PASSA per il p95, come nel riferimento ideale del banco. Questi dati non dimostrano un aumento di velocità e non sono il collaudo dello ZIP. Gli SHA-256 di `macro/engine.py` e `macro/windows_backend.py` sono identici prima/dopo, registrati nei sommari.
+
+Il testo è ridotto a due frasi brevi, con a capo esplicito, per il riquadro del pannello compatto (172×64, font effettivo 16). La prova UIPI con avviso acquisisce ora `warning-medium.png` dal vero pannello a integrità media prima della chiusura: il solo messaggio JSON non basta a verificare la leggibilità. La pausa di un secondo è nel banco dopo il risultato, non nella riproduzione.

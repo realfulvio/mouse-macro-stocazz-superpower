@@ -19,7 +19,7 @@ jobs:
         with:
           python-version: '3.13'
       - name: Dipendenze di Windows
-        run: pip install -r requirements-windows.txt
+        run: pip install -r requirements-windows.txt pillow==11.3.0
       - name: Schermo a 1920x1080 (la macro di riferimento e' registrata cosi')
         shell: pwsh
         run: python -c "import sys; sys.path[:0]=['bench','bench/ci']; import run_tool; print(run_tool.set_display())"
