@@ -106,5 +106,4 @@ def ensure_input_integrity(events):
         level = api.integrity(pid)
         if level is not None and level > own_level:
             raise ValueError(
-                'Bersaglio con privilegi più alti. Riapri Mouse Macro con '
-                '«Esegui come amministratore» per riprodurre.')
+                'Bersaglio elevato.\nRiapri con «Esegui come amministratore».')
