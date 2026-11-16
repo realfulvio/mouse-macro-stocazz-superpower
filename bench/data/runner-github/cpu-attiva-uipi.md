@@ -76,3 +76,7 @@ questa fase.** Dopo un eventuale via: pacchetti prima/dopo, stesso banco,
 posizione/intervalli/eventi persi non peggiorati e CPU ridotta; mediana attuale
 4,80–4,91 ms contro 5 ms lascia solo 0,09–0,20 ms di margine. Il riferimento
 ideale resta necessario per giudicare il p95 su runner condiviso.
+
+## Tornata conclusiva della PR #41
+
+Run `43942991759`, commit `6ecbf002`, stesso codice app: idle 1,72 · 2,11 · 1,64%; registrazione 5,52 · 6,15 · 5,31%; densa 14,58 · 15,10 · 15,00%; rada 3,12 · 1,77 · 2,81%. Idle attraversa ancora la soglia 2%; registrazione/densa non passano 5%, rada passa. La misura con cProfile è separata ed esclusa. JSON nella cartella del run. Nessuna modifica alle soglie o al timing.
