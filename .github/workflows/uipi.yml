@@ -1,0 +1,33 @@
+# Prova delle finestre elevate (UIPI) su runner Windows: input iniettato a integrita' media verso una finestra ad integrita' alta.
+name: Prova finestre elevate (UIPI)
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ['windows_main.py', 'macro/windows_integrity.py', 'macro/runner.py', 'bench/ci/uipi_test.py', 'bench/ci/profile_idle.py', '.github/workflows/uipi.yml']
+concurrency:
+  group: uipi-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  uipi:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Dipendenze di Windows
+        run: pip install -r requirements-windows.txt
+      - name: Schermo a 1920x1080 (la macro di riferimento e' registrata cosi')
+        shell: pwsh
+        run: python -c "import sys; sys.path[:0]=['bench','bench/ci']; import run_tool; print(run_tool.set_display())"
+      - name: Prova UIPI
+        shell: pwsh
+        run: python bench/ci/uipi_test.py --out results/uipi --expect-warning
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: uipi
+          path: results/uipi

@@ -8,7 +8,7 @@ Data: 2026-11-16 · Versione in prova: Windows v1.2.3 · Perimetro: solo Windows
 
 **Costruito e verificato**: banco completo (logger, macro di riferimento identica, orchestratore CI, misure di risorse/avvio, inventario con hash, ricerca VirusTotal, analisi con mediana/p95/varianza, soglie congelate prima di misurare, protocollo di usabilità con SUS). 11 test automatici sull'analisi.
 
-**Non misurato** (nessun numero stimato, elenco in `data/STATO-MISURE.md`): rivali Pulover, Jitbit, Mini Mouse Macro, OP Auto Clicker, Actiona (non girati), CPU in esecuzione, tempo di avvio (lo script non ha prodotto dati per MMSS: da correggere), DPI misto, multi-monitor, finestre elevate, giochi, macro di ore, VirusTotal (il container non raggiunge virustotal.com), SmartScreen, usabilità con persone, matrice funzioni in gran parte "non verificato".
+**Non misurato** (nessun numero stimato, elenco in `data/STATO-MISURE.md`): rivali Pulover, Jitbit, Mini Mouse Macro, OP Auto Clicker, Actiona (non girati), RAM attiva e CPU attiva del pacchetto exe, avvio dei rivali, DPI misto, multi-monitor, giochi, macro di ore, VirusTotal (nessuna chiave API disponibile in questa sessione), SmartScreen, usabilità con persone, matrice funzioni in gran parte "non verificato".
 
 ## 1b. Risultati misurati e limiti dell'ambiente
 
@@ -37,6 +37,33 @@ Lettura rispetto alle soglie congelate (`thresholds.json`, non modificate dopo l
 
 **TinyTask**: scaricato da `dl.tinytask.net/with-editor.exe` (5.678.424 byte, SHA-256 `4ef4cae2…bbb5` registrato qui perché l'autore non ne pubblica uno), avviato (2 processi, 4,6 MB, 0 % CPU a riposo). La registrazione con i tasti rapidi Ctrl+Maiusc+Alt+R (input iniettato con SendInput, come farebbe una persona) e la riproduzione con Ctrl+Maiusc+Alt+P non hanno prodotto nessun evento (870 persi su 870), e il rilevamento della finestra per il tempo di avvio è scaduto a 30 s in tutte le 15 prove. **Causa non accertata.** Ipotesi non verificata: la documentazione Microsoft dice che i ganci "journal" (WH_JOURNALRECORD/PLAYBACK) sono non supportati da Windows 11 in poi; se TinyTask li usa potrebbe non funzionare su Server 2025, ma non so se li usa. Per questo non scrivo che "TinyTask non funziona su Windows 11": va provato su un PC Windows 10/11 reale.
 
+### CPU attiva, riposo ripetuto e UIPI (PR #41)
+
+Misure dal **sorgente**, non dall'exe; dettagli, condizioni e JSON in
+[`data/runner-github/cpu-attiva-uipi.md`](data/runner-github/cpu-attiva-uipi.md).
+Run CPU `43941664289`, commit `f146f7c`, tre finestre da 15 s per carico:
+registrazione **9,06 · 7,71 · 7,40%** (non passa ≤5), riproduzione densa
+**14,37 · 14,58 · 14,37%** (non passa), riferimento rado
+**3,12 · 3,33 · 3,02%** (passa). CPU media della finestra in % di un core.
+La prima tornata (`43939878453`, stesso codice app) dava registrazione
+4,17 · 4,06 · 4,27% e riproduzione densa 10,73 · 12,19 · 13,02%.
+Il riposo ora dà **2,11 · 2,73 · 2,50%** (non passa ≤2), contro
+1,48 · 0,78 · 1,56% della prima tornata. Non è un A/B di codice diverso:
+variabilità del runner, ordine degli step e carico limitano il confronto.
+Il miglioramento Bambola documentato non garantisce il rispetto della soglia
+su tutti i runner. Pixel equivalenti 97/97; 480 · 481 · 480 WM_PAINT in 20 s.
+
+UIPI, run `43941664269`: attesi 13 down / 13 up / 3 wheel. Iniettore e MMSS
+alto→alto consegnano **13/13/3**; medio→alto consegnano **0/0/0**, uscita 0.
+MMSS termina entrambi i casi con stato **pronto** e «Completati 1 giri.».
+Il controllo passa, la segnalazione del blocco **non passa**: difetto confermato.
+Una prova per caso su token medio ristretto, non UAC interattivo o desktop sicuro.
+
+Avvio MMSS v1.2.3, run `43927100173`: 15 avvii, 14 a caldo, mediana
+**0,378 s**, p95 **0,402 s**, primo avvio **0,452 s**: passa ≤2/3 s.
+Avvio dei rivali non misurato. Il verde della CI indica che gli script sono
+terminati, non che le soglie prestazionali o tutti i comportamenti siano passati.
+
 ## 2. Rivali e perché
 
 Famiglie coperte (dettaglio e fonti in `RIVALI.md`): registratore minimale (TinyTask, Mini Mouse Macro), scripting (AutoHotkey), registratore + generatore (Pulover), commerciale (Jitbit), auto-clicker (OP Auto Clicker), automazione visuale/JS (Actiona).
@@ -59,27 +86,27 @@ Fatto API (documentazione Microsoft di SendInput): è soggetta a UIPI, si iniett
 | Lingua / licenza | italiano, open source | repo |
 | Macro avviabile senza exe | `.cmd` + `.mmr`, niente exe compilato da far valutare all'antivirus | repo |
 
-## 5. Dove perdiamo o rischiamo (da confermare col banco)
+## 5. Dove perdiamo o rischiamo: stato delle verifiche
 
 | # | Gap | Evidenza | Stato |
 |---|---|---|---|
-| 1 | **Costo a riposo dell'animazione Bambola**: mediana 4,5 % di un core (p95 7,5 %) misurata a riposo, due esecuzioni, contro soglia 2 %; AutoHotkey e TinyTask 0 %. Precedenti (VM senza GPU, metodo diverso): 9,3 % pannello, 13,2 % Copertina, 6–7 % Micro | **misurato**, `data/runner-github/` | **Corretto nel sorgente, da rilasciare**: dopo la modifica 1,48 · 1,48 · 1,33 % (prima 4,22–4,61 %), sotto la soglia 2 %, stessi 24 fotogrammi/s, pixel identici (`data/runner-github/ottimizzazione-cpu-bambola.md`). Non ancora misurato sul pacchetto exe né in esecuzione |
+| 1 | **Costo a riposo dell'animazione Bambola**: mediana 4,5 % di un core (p95 7,5 %) misurata a riposo, due esecuzioni, contro soglia 2 %; AutoHotkey e TinyTask 0 %. Precedenti (VM senza GPU, metodo diverso): 9,3 % pannello, 13,2 % Copertina, 6–7 % Micro | **misurato**, `data/runner-github/` | **Misurato, soglia non stabilmente rispettata**: A/B Bambola migliorato (1,33–1,48%); nuova tornata riposo 2,11–2,73% e registrazione 7,40–9,06% non passano. Riproduzione densa 14,37–14,58% non passa; rada 3,02–3,33% passa. Dal sorgente, runner condivisi; exe attivo non misurato |
 | 2 | **Peso, memoria e avvio**: ZIP v1.2.3 19,05 MB (non 12: quello era la v1.1.1) contro AHK 3,16 MB e TinyTask 5,68 MB; 48 MB di memoria contro 3 MB (AHK) e 4,6 MB (TinyTask). Avvio MMSS misurato: mediana 0,378 s, p95 0,402 s (15 avvii, 14 a caldo, runner condiviso), sotto la soglia di 2 s; per i rivali non misurato | **misurato** (peso, memoria) | passa le soglie assolute, perde il confronto relativo; deriva dalla struttura (Python embedded), non è un obiettivo |
-| 3 | **Antivirus/SmartScreen**: exe non firmato; issue #1 SentinelOne; Actiona dichiara la firma del codice | repo | da misurare (VirusTotal, SmartScreen) |
-| 4 | **Finestre elevate**: SendInput è soggetta a UIPI e il codice segnala solo il rifiuto di `SendInput`; se il bersaglio è elevato l'iniezione può non arrivare senza messaggio chiaro | doc. Microsoft + `checked_input` in `windows_backend.py` | **ipotesi dal codice**: prova S5 |
+| 3 | **Antivirus/SmartScreen**: exe non firmato; issue #1 SentinelOne; Actiona dichiara la firma del codice | repo | **non misurato** (VirusTotal, SmartScreen) |
+| 4 | **Finestre elevate**: SendInput è soggetta a UIPI e il codice segnala solo il rifiuto di `SendInput`; se il bersaglio è elevato l'iniezione può non arrivare senza messaggio chiaro | doc. Microsoft + `checked_input` in `windows_backend.py` | **Misurato, non passa**: caso D 0/0/0 su 13/13/3 attesi, ma «Completati 1 giri.»; controllo C 13/13/3. Avviso preflight da implementare separatamente |
 | 5 | **Errore di posizione di 1 px**: ipotesi dal codice (`round(x·65535/(w−1))` con VIRTUALDESK) | `CheckedMouse._position_set` | **non confermata** a 1920×1080, 96 DPI, un monitor: 0 px su 870 punti (anche per il riferimento ideale). Aperta per altre scale/monitor |
-| 6 | **Portabilità tra configurazioni schermo**: una macro con geometria diversa viene rifiutata ("Schermo o monitor diversi") | `macro/runner.py` | è una scelta di sicurezza; i rivali probabilmente non la fanno (da verificare) |
-| 7 | **DPI misto / multi-monitor**: la resa in pixel fisici è dichiarata (Per-Monitor-V2) ma mai misurata con logger esterno | codice | prova S2–S4 |
+| 6 | **Portabilità tra configurazioni schermo**: una macro con geometria diversa viene rifiutata ("Schermo o monitor diversi") | `macro/runner.py` | **verificato nel codice**, scelta di sicurezza; confronto con i rivali **non misurato** |
+| 7 | **DPI misto / multi-monitor**: la resa in pixel fisici è dichiarata (Per-Monitor-V2) ma mai misurata con logger esterno | codice | **non misurato**: prova S2–S4 |
 | 9 | **Margine sull'intervallo**: la mediana dell'errore di intervallo è 4,80–4,91 ms contro soglia 5 ms (riferimento ideale 0,70 ms): ~4 ms di attesa/dispatch in più per evento | **misurato**; passa di 0,1–0,2 ms | proteggere da regressioni; capire da dove vengono i ~4 ms |
-| 8 | Impostazioni non si riscala a caldo col DPI; pannello troppo alto a 1024×768 al 125 % | memoria di progetto | difetti noti |
+| 8 | Impostazioni non si riscala a caldo col DPI; pannello troppo alto a 1024×768 al 125 % | memoria di progetto | **non misurato in questo banco**; precedente segnalazione da riverificare |
 
 ## 6. Cosa fare e in che ordine (senza regressioni)
 
 Ogni intervento passa dal banco **prima e dopo** con la stessa procedura; si pubblica solo se nessuna soglia peggiora rispetto alla versione precedente (regola di Luca).
 
-1. **Fatto in parte**: banco collaudato su runner Windows, baseline 1.2.3 e AHK misurate (sezione 1b). Mancano: avvio (script da correggere per MMSS), CPU in esecuzione, TinyTask su un Windows 10/11 reale, e il p95 degli intervalli su hardware dedicato (qui non valutabile).
-2. **Gap 1, costo a riposo: fatto nel sorgente** (commit daf12ae e 2507bce): `render()` non riscrive testo e stato dei controlli se invariati (ogni riscrittura ridisegna il controllo owner-draw, 10 volte al secondo) e la mascotte si ridisegna per fotogramma con tre copie invece di ricostruire una tela GDI+ a 24 fps. CPU a riposo da 4,22–4,61 % a 1,33–1,48 % di un core, stessi 24 fotogrammi/s, pixel identici (97/97). Dati: `data/runner-github/ottimizzazione-cpu-bambola.md`. Da fare: misura sul pacchetto exe e in registrazione/riproduzione, poi rilascio quando lo decide il coordinatore.
-3. **Gap 4 (UIPI) e prove di posizione su altre scale DPI/monitor**: la correzione a 1 px per il gap 5 **non è giustificata** dai dati (0 px di errore); non scriverla. Resta l'avviso esplicito prima di riprodurre su un bersaglio elevato (non provato) e la prova con DPI misto su hardware reale.
+1. **Fatto in parte**: banco collaudato su runner Windows, baseline 1.2.3 e AHK misurate (sezione 1b). Avvio MMSS, CPU attiva dal sorgente e UIPI ora misurati (§1b). Mancano RAM attiva, CPU del pacchetto exe, avvio dei rivali, TinyTask su Windows 10/11 reale e p95 su hardware dedicato.
+2. **Gap 1, costo a riposo: fatto nel sorgente** (commit daf12ae e 2507bce): `render()` non riscrive testo e stato dei controlli se invariati (ogni riscrittura ridisegna il controllo owner-draw, 10 volte al secondo) e la mascotte si ridisegna per fotogramma con tre copie invece di ricostruire una tela GDI+ a 24 fps. CPU a riposo da 4,22–4,61 % a 1,33–1,48 % di un core, stessi 24 fotogrammi/s, pixel identici (97/97). Dati: `data/runner-github/ottimizzazione-cpu-bambola.md`. Nuove misure CPU: soglia non stabilmente rispettata a riposo/in registrazione; riproduzione densa sopra soglia, rada sotto. Prima di cambiare `_wait_until`, Luca deve approvare proposta e A/B descritti in `data/runner-github/cpu-attiva-uipi.md`. Timing invariato; pacchetto exe ancora da misurare, rilascio gestito da altro thread.
+3. **Gap 4 (UIPI) e prove di posizione su altre scale DPI/monitor**: la correzione a 1 px per il gap 5 **non è giustificata** dai dati (0 px di errore); non scriverla. Blocco silenzioso UIPI confermato: implementare l'avviso prima della riproduzione in PR separata, con test mock e prova C/D prima/dopo, senza modificare i tempi. DPI misto resta da provare su hardware reale.
 4. **Gap 3, firma e antivirus**: firma Authenticode del launcher (costo in soldi e tempo, non codice), segnalazione dei falsi positivi ai produttori; ripetere VirusTotal/SmartScreen a ogni release.
 5. **Gap 7 e 8**: scala DPI a caldo per Impostazioni e altezza del pannello; poi prova su PC reale con 2 monitor a scale diverse.
 6. Funzioni dei rivali non nostre (Jitbit compila in EXE, Actiona ha ricerca immagine e scripting): **non seguirle** finché il target resta "registratore semplice e sicuro"; valutare solo se il test di usabilità lo chiede.

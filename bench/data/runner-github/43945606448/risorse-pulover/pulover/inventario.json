@@ -1,0 +1,15 @@
+{
+ "tool": "pulover",
+ "url": "https://github.com/Pulover/PuloversMacroCreator/releases/download/v5.4.1/PuloversMacroCreator-Portable.zip",
+ "bytes": 10980836,
+ "sha256": "aebdf335913eae4270b585339727b44593a98d17d73a3aae80e4d46d27c01310",
+ "expected": null,
+ "hash_ok": true,
+ "hash_source": "nessun hash pubblicato dall'autore: registrato qui",
+ "screen": [
+  1920,
+  1080
+ ],
+ "os": "win32",
+ "cpu": "AMD64 Family 25 Model 17 Stepping 1, AuthenticAMD"
+}
