@@ -24,6 +24,10 @@ jobs:
         shell: pwsh
         run: |
           foreach ($i in 1..3) { python bench/ci/profile_idle.py --mode cpu --warm 10 --window 20 | Select-String RISULTATO }
+      - name: CPU in registrazione e in riproduzione (tre ripetizioni)
+        shell: pwsh
+        run: |
+          foreach ($i in 1..3) { python bench/ci/profile_idle.py --mode active --warm 8 --window 15 | Select-String RISULTATO }
       - name: Profilo del thread dell'interfaccia
         shell: pwsh
         run: python bench/ci/profile_idle.py --mode prof --warm 5 --window 25 --top 30
