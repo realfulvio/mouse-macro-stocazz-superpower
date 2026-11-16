@@ -51,3 +51,7 @@ Run [43944349328](https://github.com/realfulvio/mouse-macro-stocazz-superpower/a
 | Deriva p95 | 32,4054 ms | 31,9729 ms | passa ≤50 in entrambi |
 
 Nessuna soglia cambia da passa a non passa. Il verdetto meccanico globale resta NON PASSA per il p95, come nel riferimento ideale del banco. Questi dati non dimostrano un aumento di velocità e non sono il collaudo dello ZIP. Gli SHA-256 di `macro/engine.py` e `macro/windows_backend.py` sono identici prima/dopo, registrati nei sommari.
+
+## Conferma del testo finale e CPU
+
+Sul commit `d1761c3`, il run `43947163037` conferma ancora C=13/13/3, pronto, un giro; D=0/0/0, errore, zero giri, `partita=false` e testo abbreviato completo. Il run `43947162655` completa la verifica pixel (97/97) e le misure con rifiuto automatico della proposta di aggiornamento nel banco: idle 1,48 · 0,70 · 2,19%; registrazione 3,75 · 3,44 · 3,44%; densa 13,02 · 8,02 · 8,65%; rada 1,15 · 3,23 · 1,56%. Densa sopra soglia, rada sotto; idle non stabile fra le finestre. La variabilità tra runner impedisce di attribuire un miglioramento CPU al preflight; il confronto del pacchetto usa una procedura identica fra baseline e candidato. I 480 WM_PAINT per 20 s rimangono in tutte le tre finestre idle. La misura con cProfile (0,81% su 25 s) è esclusa dai confronti.

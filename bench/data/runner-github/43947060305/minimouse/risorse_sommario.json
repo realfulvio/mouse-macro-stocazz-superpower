@@ -1,0 +1,61 @@
+{
+  "tool": "minimouse",
+  "fidelity": "non misurato",
+  "source": "https://sourceforge.net/projects/minimousemacro/files/",
+  "version_declared": "da leggere dal binario",
+  "inventory": {
+    "tool": "minimouse",
+    "url": "https://downloads.sourceforge.net/project/minimousemacro/MiniMouseMacro.Setup.msi",
+    "bytes": 10540032,
+    "sha256": "e5d5974a1a69cbe35dbf47eb2bde833075622b813cbfd133c245b3657907c3ea",
+    "expected": "e5d5974a1a69cbe35dbf47eb2bde833075622b813cbfd133c245b3657907c3ea",
+    "hash_ok": true,
+    "hash_source": "SHA-256 pubblicato dalla pagina download SourceForge del progetto turnssoft",
+    "screen": [
+      1920,
+      1080
+    ],
+    "os": "win32",
+    "cpu": "AMD64 Family 25 Model 17 Stepping 1, AuthenticAMD"
+  },
+  "run_id": "43947060305",
+  "commit": "1215b7b0252ecb5ecc8d5568f52335df70f5de75",
+  "status": "misurato",
+  "exe": "C:\\Program Files (x86)\\MiniMouseMacro\\MiniMouseMacro.exe",
+  "binary": {
+    "company": "Stephen Turner",
+    "file_version": "1.0.0.0",
+    "product_version": "1.0.0.0+bc8607d135a51afde312ffef2f4cfa306d403725",
+    "product": "Mini Mouse Macro"
+  },
+  "startup": {
+    "successful": 15,
+    "total": 15,
+    "warm_s": {
+      "n": 14,
+      "median": 0.8585,
+      "p95": 0.9207500000000001,
+      "mean": 0.8704285714285714,
+      "stdev": 0.027650884770137645,
+      "variance": 0.0007645714285714299,
+      "min": 0.84,
+      "max": 0.937
+    },
+    "note": "prima finestra visibile e reattiva, anche se dialogo iniziale; cold=1 indica solo il primo della serie"
+  },
+  "visible_windows": [],
+  "pid": 1820,
+  "orchestrator_integrity": "Mandatory Label\\High Mandatory Level                          Label            S-1-16-12288",
+  "idle": {
+    "samples": 57,
+    "observed_seconds": 59.1,
+    "cpu_core_pct_mean": 0.1586011529748022,
+    "private_mib_max": 48.69
+  },
+  "checks": {
+    "package": true,
+    "idle_cpu": true,
+    "idle_memory": true,
+    "startup": true
+  }
+}
