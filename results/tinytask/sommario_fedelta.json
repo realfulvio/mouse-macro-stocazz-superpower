@@ -1,0 +1,207 @@
+{
+ "runs": 30,
+ "pos_error_px": {
+  "n": 0
+ },
+ "interval_error_abs_ms": {
+  "n": 0
+ },
+ "drift_max_ms": {
+  "n": 0
+ },
+ "missing_total": 870,
+ "extra_total": 0,
+ "checks": {
+  "repetitions>=min": true,
+  "pos_median": false,
+  "pos_p95": false,
+  "interval_median": false,
+  "interval_p95": false,
+  "drift_p95": false,
+  "missing": false,
+  "extra": true
+ },
+ "verdict": "NON PASSA",
+ "per_run": [
+  {
+   "run": "run_01.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_02.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_03.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_04.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_05.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_06.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_07.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_08.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_09.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_10.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_11.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_12.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_13.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_14.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_15.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_16.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_17.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_18.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_19.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_20.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_21.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_22.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_23.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_24.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_25.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_26.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_27.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_28.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_29.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  },
+  {
+   "run": "run_30.csv",
+   "missing": 29,
+   "extra": 0,
+   "drift_max_ms": NaN
+  }
+ ]
+}
