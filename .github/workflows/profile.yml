@@ -17,6 +17,9 @@ jobs:
           python-version: '3.13'
       - name: Dipendenze di Windows
         run: pip install -r requirements-windows.txt
+      - name: Il fotogramma del percorso rapido e' identico, pixel per pixel, a quello completo
+        shell: pwsh
+        run: python bench/ci/profile_idle.py --mode verify
       - name: CPU a riposo senza profiler (tre ripetizioni)
         shell: pwsh
         run: |
