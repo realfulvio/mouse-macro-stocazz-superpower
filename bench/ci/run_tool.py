@@ -77,7 +77,7 @@ def main():
            "screen": [w, h], "os": sys.platform, "cpu": os.environ.get("PROCESSOR_IDENTIFIER", "")}
     print("INVENTARIO", json.dumps(inv), flush=True); (out / "inventario.json").write_text(json.dumps(inv, indent=1))
     if not ok: sys.exit("hash non corrisponde: mi fermo")
-    d = work / "x"; d.mkdir()
+    d = work / "x"; d.mkdir(parents=True, exist_ok=True)
     if f is None: pass
     elif f.suffix == ".zip":
         with zipfile.ZipFile(f) as z: z.extractall(d)
