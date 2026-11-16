@@ -41,7 +41,7 @@ class IntegrityTests(unittest.TestCase):
     def test_later_target_is_checked_not_just_first_click(self):
         self.api.at.side_effect = [10, 0, 20]
         events = [MacroEvent(i, LEFT_DOWN, x=i, y=-200) for i in range(3)]
-        with self.assertRaisesRegex(ValueError, 'privilegi più alti'):
+        with self.assertRaisesRegex(ValueError, 'Esegui come amministratore'):
             guard.ensure_input_integrity(events)
 
     def test_points_and_process_tokens_are_deduplicated_per_preflight(self):

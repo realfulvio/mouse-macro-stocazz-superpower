@@ -158,6 +158,7 @@ def uipi_controller(panel):
         wait_state(panel, (S.READY, S.ERROR), 90)
         result.update(stato=panel.session.state.value, messaggio=panel.session.message, eventi=len(panel.session.macro.events),
                       giri_completati=getattr(panel.session, "completed", None))
+        time.sleep(1.0)  # allow the final UI state to paint for the external UIPI screenshot
     finally:
         u.PostThreadMessageW(tid, 0x12, 0, 0)
 
