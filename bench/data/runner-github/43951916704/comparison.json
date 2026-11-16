@@ -1,0 +1,428 @@
+{
+  "baseline": {
+    "version": "1.2.4",
+    "sha256": "b4be1b44f5f49611438a1090d5a2c708236183be0a2bf02b01d53cb1e29814dd",
+    "inventory": {
+      "tool": "mmss",
+      "url": "file:///D:/a/mouse-macro-stocazz-superpower/mouse-macro-stocazz-superpower/baseline-v1.2.4.zip",
+      "bytes": 19051139,
+      "sha256": "b4be1b44f5f49611438a1090d5a2c708236183be0a2bf02b01d53cb1e29814dd",
+      "expected": "b4be1b44f5f49611438a1090d5a2c708236183be0a2bf02b01d53cb1e29814dd",
+      "hash_ok": true,
+      "hash_source": "SHA256SUMS dell'artifact candidato, verificato prima della misura",
+      "screen": [
+        1920,
+        1080
+      ],
+      "os": "win32",
+      "cpu": "AMD64 Family 25 Model 17 Stepping 1, AuthenticAMD"
+    },
+    "cpu": {
+      "cpu_pct_of_core": {
+        "windows": [
+          1.87,
+          2.19,
+          1.48
+        ],
+        "mean": 1.8466666666666667
+      },
+      "registrazione_cpu_pct": {
+        "windows": [
+          6.87,
+          3.96,
+          6.15
+        ],
+        "mean": 5.66
+      },
+      "riproduzione_cpu_pct": {
+        "windows": [
+          13.02,
+          13.54,
+          13.75
+        ],
+        "mean": 13.436666666666666
+      },
+      "riproduzione_riferimento_cpu_pct": {
+        "windows": [
+          2.4,
+          3.33,
+          2.29
+        ],
+        "mean": 2.6733333333333333
+      }
+    },
+    "idle_60s": {
+      "cpu_mean": 1.5480799979883562,
+      "private_mib_max": 47.98,
+      "samples": 57
+    },
+    "startup": {
+      "successful": 15,
+      "total": 15,
+      "warm": {
+        "n": 14,
+        "median": 0.277,
+        "p95": 0.37445,
+        "mean": 0.3015714285714286,
+        "stdev": 0.043643158395391984,
+        "variance": 0.0019047252747252737,
+        "min": 0.271,
+        "max": 0.379
+      }
+    },
+    "fidelity": {
+      "runs": 30,
+      "pos_error_px": {
+        "n": 870,
+        "median": 0.0,
+        "p95": 0.0,
+        "mean": 0.0,
+        "stdev": 0.0,
+        "variance": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "interval_error_abs_ms": {
+        "n": 840,
+        "median": 4.237000000000535,
+        "p95": 28.63239999999905,
+        "mean": 8.110365476190525,
+        "stdev": 9.574705801272838,
+        "variance": 91.67499118092775,
+        "min": 9.094947017729282e-13,
+        "max": 42.84900000000016
+      },
+      "drift_max_ms": {
+        "n": 30,
+        "median": 25.472500000000764,
+        "p95": 36.39409999999939,
+        "mean": 24.673999999999946,
+        "stdev": 7.3361523881439155,
+        "variance": 53.819131862069675,
+        "min": 10.35399999999936,
+        "max": 40.81300000000101
+      },
+      "missing_total": 0,
+      "extra_total": 0,
+      "checks": {
+        "repetitions>=min": true,
+        "pos_median": true,
+        "pos_p95": true,
+        "interval_median": true,
+        "interval_p95": false,
+        "drift_p95": true,
+        "missing": true,
+        "extra": true
+      },
+      "verdict": "NON PASSA"
+    },
+    "uipi": {
+      "integrita_orchestratore": [
+        "Mandatory",
+        "Label\\High",
+        "Mandatory",
+        "Level"
+      ],
+      "attesi": {
+        "ldown": 13,
+        "lup": 13,
+        "wheel": 3
+      },
+      "casi": [
+        {
+          "caso": "A_iniettore_alto_verso_alto",
+          "arrivati": {
+            "ldown": 13,
+            "lup": 13,
+            "wheel": 3
+          },
+          "durata_s": 16.4,
+          "uscita": 0
+        },
+        {
+          "caso": "B_iniettore_medio_verso_alto",
+          "arrivati": {
+            "ldown": 0,
+            "lup": 0,
+            "wheel": 0
+          },
+          "durata_s": 16.4,
+          "uscita": 0
+        },
+        {
+          "caso": "C_mmss_alto_verso_alto",
+          "arrivati": {
+            "ldown": 13,
+            "lup": 13,
+            "wheel": 3
+          },
+          "durata_s": 22.2,
+          "uscita": 0,
+          "pannello": {
+            "caricata": true,
+            "partita": true,
+            "stato": "pronto",
+            "messaggio": "Completati 1 giri.",
+            "eventi": 44,
+            "giri_completati": 1
+          }
+        },
+        {
+          "caso": "D_mmss_medio_verso_alto",
+          "arrivati": {
+            "ldown": 0,
+            "lup": 0,
+            "wheel": 0
+          },
+          "durata_s": 22.2,
+          "uscita": 0,
+          "pannello": {
+            "caricata": true,
+            "partita": true,
+            "stato": "pronto",
+            "messaggio": "Completati 1 giri.",
+            "eventi": 44,
+            "giri_completati": 1
+          }
+        }
+      ],
+      "schermo": [
+        1920,
+        1080
+      ]
+    },
+    "checks": {
+      "gui_package": true,
+      "cpu_pct_of_core": true,
+      "registrazione_cpu_pct": false,
+      "riproduzione_cpu_pct": false,
+      "riproduzione_riferimento_cpu_pct": true,
+      "repetitions>=min": true,
+      "pos_median": true,
+      "pos_p95": true,
+      "interval_median": true,
+      "interval_p95": false,
+      "drift_p95": true,
+      "missing": true,
+      "extra": true,
+      "idle_60s_cpu": true,
+      "idle_memory": true,
+      "startup": true,
+      "package": true
+    }
+  },
+  "candidate": {
+    "version": "1.2.5",
+    "sha256": "def843426d25dc0d12a5344c750a156e81f3b5567390df816337908c09174975",
+    "inventory": {
+      "tool": "mmss",
+      "url": "file:///D:/a/mouse-macro-stocazz-superpower/mouse-macro-stocazz-superpower/candidate/MouseMacroStocazzSuperpower-Windows-v1.2.5.zip",
+      "bytes": 19053039,
+      "sha256": "def843426d25dc0d12a5344c750a156e81f3b5567390df816337908c09174975",
+      "expected": "def843426d25dc0d12a5344c750a156e81f3b5567390df816337908c09174975",
+      "hash_ok": true,
+      "hash_source": "SHA256SUMS dell'artifact candidato, verificato prima della misura",
+      "screen": [
+        1920,
+        1080
+      ],
+      "os": "win32",
+      "cpu": "AMD64 Family 25 Model 1 Stepping 1, AuthenticAMD"
+    },
+    "cpu": {
+      "cpu_pct_of_core": {
+        "windows": [
+          1.8,
+          1.8,
+          2.27
+        ],
+        "mean": 1.9566666666666668
+      },
+      "registrazione_cpu_pct": {
+        "windows": [
+          5.0,
+          5.73,
+          4.06
+        ],
+        "mean": 4.93
+      },
+      "riproduzione_cpu_pct": {
+        "windows": [
+          12.92,
+          13.44,
+          13.02
+        ],
+        "mean": 13.126666666666667
+      },
+      "riproduzione_riferimento_cpu_pct": {
+        "windows": [
+          3.02,
+          2.81,
+          2.71
+        ],
+        "mean": 2.8466666666666667
+      }
+    },
+    "idle_60s": {
+      "cpu_mean": 1.80940292723851,
+      "private_mib_max": 48.15,
+      "samples": 57
+    },
+    "startup": {
+      "successful": 15,
+      "total": 15,
+      "warm": {
+        "n": 14,
+        "median": 0.361,
+        "p95": 0.3727,
+        "mean": 0.33328571428571424,
+        "stdev": 0.04013329439108281,
+        "variance": 0.0016106813186813188,
+        "min": 0.277,
+        "max": 0.374
+      }
+    },
+    "fidelity": {
+      "runs": 30,
+      "pos_error_px": {
+        "n": 870,
+        "median": 0.0,
+        "p95": 0.0,
+        "mean": 0.0,
+        "stdev": 0.0,
+        "variance": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "interval_error_abs_ms": {
+        "n": 840,
+        "median": 4.018000000000029,
+        "p95": 28.7957500000004,
+        "mean": 8.32248571428571,
+        "stdev": 9.881289314993943,
+        "variance": 97.63987852661346,
+        "min": 0.0059999999994033715,
+        "max": 42.396999999999025
+      },
+      "drift_max_ms": {
+        "n": 30,
+        "median": 28.301999999999225,
+        "p95": 33.92864999999997,
+        "mean": 26.708866666666474,
+        "stdev": 5.034582171022794,
+        "variance": 25.34701763678058,
+        "min": 16.51800000000003,
+        "max": 38.535000000000764
+      },
+      "missing_total": 0,
+      "extra_total": 0,
+      "checks": {
+        "repetitions>=min": true,
+        "pos_median": true,
+        "pos_p95": true,
+        "interval_median": true,
+        "interval_p95": false,
+        "drift_p95": true,
+        "missing": true,
+        "extra": true
+      },
+      "verdict": "NON PASSA"
+    },
+    "uipi": {
+      "integrita_orchestratore": [
+        "Mandatory",
+        "Label\\High",
+        "Mandatory",
+        "Level"
+      ],
+      "attesi": {
+        "ldown": 13,
+        "lup": 13,
+        "wheel": 3
+      },
+      "casi": [
+        {
+          "caso": "A_iniettore_alto_verso_alto",
+          "arrivati": {
+            "ldown": 13,
+            "lup": 13,
+            "wheel": 3
+          },
+          "durata_s": 16.4,
+          "uscita": 0
+        },
+        {
+          "caso": "B_iniettore_medio_verso_alto",
+          "arrivati": {
+            "ldown": 0,
+            "lup": 0,
+            "wheel": 0
+          },
+          "durata_s": 16.4,
+          "uscita": 0
+        },
+        {
+          "caso": "C_mmss_alto_verso_alto",
+          "arrivati": {
+            "ldown": 13,
+            "lup": 13,
+            "wheel": 3
+          },
+          "durata_s": 22.3,
+          "uscita": 0,
+          "pannello": {
+            "caricata": true,
+            "partita": true,
+            "stato": "pronto",
+            "messaggio": "Completati 1 giri.",
+            "eventi": 44,
+            "giri_completati": 1
+          }
+        },
+        {
+          "caso": "D_mmss_medio_verso_alto",
+          "arrivati": {
+            "ldown": 0,
+            "lup": 0,
+            "wheel": 0
+          },
+          "durata_s": 5.3,
+          "uscita": 0,
+          "pannello": {
+            "caricata": true,
+            "partita": false,
+            "stato": "errore",
+            "messaggio": "Bersaglio elevato.\nRiapri con «Esegui come amministratore».",
+            "eventi": 44,
+            "giri_completati": 0
+          }
+        }
+      ],
+      "schermo": [
+        1920,
+        1080
+      ]
+    },
+    "checks": {
+      "gui_package": true,
+      "cpu_pct_of_core": true,
+      "registrazione_cpu_pct": true,
+      "riproduzione_cpu_pct": false,
+      "riproduzione_riferimento_cpu_pct": true,
+      "repetitions>=min": true,
+      "pos_median": true,
+      "pos_p95": true,
+      "interval_median": true,
+      "interval_p95": false,
+      "drift_p95": true,
+      "missing": true,
+      "extra": true,
+      "idle_60s_cpu": true,
+      "idle_memory": true,
+      "startup": true,
+      "package": true
+    }
+  },
+  "threshold_downgrades": [],
+  "criterion": "No previously passing frozen threshold becomes failing; CPU profiles use means of three equal windows. Shared-runner interval p95 remains reported, not certified."
+}

@@ -1,0 +1,106 @@
+{
+  "fidelity (after)": {
+    "runs": 30,
+    "pos_error_px": {
+      "n": 870,
+      "median": 0,
+      "p95": 0,
+      "mean": 0,
+      "stdev": 0,
+      "variance": 0,
+      "min": 0,
+      "max": 0
+    },
+    "interval_error_abs_ms": {
+      "n": 840,
+      "median": 3.669499999999971,
+      "p95": 28.974999999999543,
+      "mean": 8.574998809523764,
+      "stdev": 10.528088381515857,
+      "variance": 110.84064496900918,
+      "min": 0.004999999999199645,
+      "max": 44.3229999999985
+    },
+    "drift_max_ms": {
+      "n": 30,
+      "median": 28.64300000000003,
+      "p95": 40.05314999999987,
+      "mean": 28.21343333333331,
+      "stdev": 7.247027312954725,
+      "variance": 52.51940487471179,
+      "min": 17.048000000000684,
+      "max": 48.79699999999957
+    },
+    "missing_total": 0,
+    "extra_total": 0,
+    "checks": {
+      "repetitions>=min": true,
+      "pos_median": true,
+      "pos_p95": true,
+      "interval_median": true,
+      "interval_p95": false,
+      "drift_p95": true,
+      "missing": true,
+      "extra": true
+    },
+    "verdict": "NON PASSA",
+    "source_commit": "de756daf4f99e675a31e1e6af013582ead7ff0c8",
+    "timed_code_sha256": {
+      "macro/engine.py": "58a048f50cfe35b5da8638a191c4f2dc8250694d46e719d69c6fa7fc76825b72",
+      "macro/windows_backend.py": "5bfb321f9b116dba3331e855b41bbe3fbdf464a5ef1f4a0b138037352320a56c"
+    },
+    "condition": "source, Python 3.13, shared Windows runner; not release ZIP"
+  },
+  "fidelity (before)": {
+    "runs": 30,
+    "pos_error_px": {
+      "n": 870,
+      "median": 0,
+      "p95": 0,
+      "mean": 0,
+      "stdev": 0,
+      "variance": 0,
+      "min": 0,
+      "max": 0
+    },
+    "interval_error_abs_ms": {
+      "n": 840,
+      "median": 4.643999999999778,
+      "p95": 28.790250000000466,
+      "mean": 8.389652380952361,
+      "stdev": 9.568619740130876,
+      "variance": 91.55848373122227,
+      "min": 0.0030000000006111804,
+      "max": 45.75
+    },
+    "drift_max_ms": {
+      "n": 30,
+      "median": 23.1550000000002,
+      "p95": 34.98615000000054,
+      "mean": 24.49433333333351,
+      "stdev": 6.3885235644343235,
+      "variance": 40.81323333333264,
+      "min": 14.43500000000131,
+      "max": 36.33100000000013
+    },
+    "missing_total": 0,
+    "extra_total": 0,
+    "checks": {
+      "repetitions>=min": true,
+      "pos_median": true,
+      "pos_p95": true,
+      "interval_median": true,
+      "interval_p95": false,
+      "drift_p95": true,
+      "missing": true,
+      "extra": true
+    },
+    "verdict": "NON PASSA",
+    "source_commit": "1d6e792cc3e950673336dcbeb0d028195a644012",
+    "timed_code_sha256": {
+      "macro/engine.py": "58a048f50cfe35b5da8638a191c4f2dc8250694d46e719d69c6fa7fc76825b72",
+      "macro/windows_backend.py": "5bfb321f9b116dba3331e855b41bbe3fbdf464a5ef1f4a0b138037352320a56c"
+    },
+    "condition": "source, Python 3.13, shared Windows runner; not release ZIP"
+  }
+}

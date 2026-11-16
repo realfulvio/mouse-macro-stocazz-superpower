@@ -1,6 +1,6 @@
 # Mouse Macro Stocazz Superpower contro i rivali: analisi comparativa (Windows)
 
-Data: 2026-11-16 · Baseline comparativa: Windows v1.2.3; aggiornamento Windows v1.2.5 in collaudo · Perimetro: solo Windows (Linux escluso da Luca).
+Data: 2026-11-16 · Baseline comparativa: Windows v1.2.3; Windows v1.2.5 collaudata sullo ZIP finale · Perimetro: solo Windows (Linux escluso da Luca).
 
 ## 1. Cosa è stato fatto davvero (leggi prima questo)
 
@@ -71,6 +71,12 @@ PR #41 unita dopo tutti i controlli verdi. Il controllo preflight della PR #44 i
 
 Misurati peso, avvio e riposo di Pulover 5.4.1, Jitbit 5.9.0.0 in prova, OP Auto Clicker 4.1 , Actiona 3.11.5 e Mini Mouse Macro MSI (launcher 1.0.0.0). [Tabella e dati grezzi](data/runner-github/rivali-risorse.md). Nella tornata `43945606448` passano le soglie assolute di CPU, memoria e avvio; Actiona supera il peso massimo (75,835 MB contro 25). Actiona è misurato con il dialogo iniziale di aggiornamento aperto; Jitbit in una tornata precedente aveva un avvio scaduto. Mini Mouse Macro completa le quattro soglie nel run `43947060305`; versione e stato del processo figlio hanno i limiti dichiarati nel dettaglio. Hardware variabile fra job: nessuna classifica assoluta ricavata da questi tempi. **Fedeltà non misurata per tutti e cinque i nuovi rivali.**
 
+### Collaudo del pacchetto Windows 1.2.5 contro 1.2.4
+
+Run `43951916704`, build `43951421876`: stessa procedura su due runner, esatto ZIP da 19.053.039 byte, hash `def843426d25dc0d12a5344c750a156e81f3b5567390df816337908c09174975`. Nessuna soglia prima passata diventa fallita. Posizione 0 px, eventi persi/extra zero; mediana intervalli 4,2370→4,0180 ms; p95 28,6324→28,7958 ms non validabile qui. CPU media di tre finestre: idle 1,8467→1,9567%, registrazione 5,6600→4,9300%, densa 13,4367→13,1267% (ancora sopra soglia), rada 2,6733→2,8467%. Singole finestre e tornate precedenti superano le soglie idle/registrazione: non è un miglioramento stabile dimostrato.
+
+Riposo 60 s: CPU media 1,5481→1,8094%, memoria privata massima 47,98→48,15 MiB. Avvio caldo mediana 0,277→0,361 s, p95 0,37445→0,37270 s, 15/15 avvii per lato. Exe, cmd, installazione per utente e pixel 97/97 passano. Il candidato avvisa e non parte verso il bersaglio elevato; controllo alto→alto 13/13/3. [Rapporto completo, limiti e dati](../docs/ESITO-COLLAUDO-v1.2.5.md). Le prove CPU usano runtime e file estratti dallo ZIP, la fedeltà il suo pythonw.exe: non sono più soltanto misure del checkout. Restano esclusi RAM attiva e prove hardware elencate sopra.
+
 ## 2. Rivali e perché
 
 Famiglie coperte (dettaglio e fonti in `RIVALI.md`): registratore minimale (TinyTask, Mini Mouse Macro), scripting (AutoHotkey), registratore + generatore (Pulover), commerciale (Jitbit), auto-clicker (OP Auto Clicker), automazione visuale/JS (Actiona).
@@ -89,7 +95,7 @@ Fatto API (documentazione Microsoft di SendInput): è soggetta a UIPI, si iniett
 | Aggiornamenti | pallino, SHA-256 verificato, installazione con un clic | repo |
 | Formato | `.mmr` JSON leggibile e validato | repo |
 | Rotella | registrata e riprodotta | repo |
-| Manutenzione | baseline MMSS 1.2.3; aggiornamento 1.2.4 pubblicato il 2026-11-16; Pulover 5.4.1 del 2021, TinyTask 1.77 del 2019 | repo, repo Pulover, tinytask.net |
+| Manutenzione | baseline MMSS 1.2.3; aggiornamento 1.2.5 collaudato il 2026-11-16; Pulover 5.4.1 del 2021, TinyTask 1.77 del 2019 | repo, repo Pulover, tinytask.net |
 | Lingua / licenza | italiano, open source | repo |
 | Macro avviabile senza exe | `.cmd` + `.mmr`, niente exe compilato da far valutare all'antivirus | repo |
 
@@ -97,7 +103,7 @@ Fatto API (documentazione Microsoft di SendInput): è soggetta a UIPI, si iniett
 
 | # | Gap | Evidenza | Stato |
 |---|---|---|---|
-| 1 | **Costo a riposo dell'animazione Bambola**: mediana 4,5 % di un core (p95 7,5 %) misurata a riposo, due esecuzioni, contro soglia 2 %; AutoHotkey e TinyTask 0 %. Precedenti (VM senza GPU, metodo diverso): 9,3 % pannello, 13,2 % Copertina, 6–7 % Micro | **misurato**, `data/runner-github/` | **Misurato, soglia non stabilmente rispettata**: A/B Bambola migliorato (1,33–1,48%); nuova tornata riposo 2,11–2,73% e registrazione 7,40–9,06% non passano. Riproduzione densa 14,37–14,58% non passa; rada 3,02–3,33% passa. Dal sorgente, runner condivisi; exe attivo non misurato |
+| 1 | **Costo a riposo dell'animazione Bambola**: mediana 4,5 % di un core (p95 7,5 %) misurata a riposo, due esecuzioni, contro soglia 2 %; AutoHotkey e TinyTask 0 %. Precedenti (VM senza GPU, metodo diverso): 9,3 % pannello, 13,2 % Copertina, 6–7 % Micro | **misurato**, `data/runner-github/` | **Misurato, soglia non stabilmente rispettata**: A/B Bambola migliorato (1,33–1,48%); nuova tornata riposo 2,11–2,73% e registrazione 7,40–9,06% non passano. Riproduzione densa 14,37–14,58% non passa; rada 3,02–3,33% passa. Sorgente e ZIP finale misurati: CPU media 1.2.5 idle 1,9567%, registrazione 4,93%, densa 13,1267%, rada 2,8467%; soglie non stabili tra finestre/runner |
 | 2 | **Peso, memoria e avvio**: ZIP v1.2.3 19,05 MB (non 12: quello era la v1.1.1) contro AHK 3,16 MB e TinyTask 5,68 MB; 48 MB di memoria contro 3 MB (AHK) e 4,6 MB (TinyTask). Avvio MMSS misurato: mediana 0,378 s, p95 0,402 s (15 avvii, 14 a caldo, runner condiviso), sotto la soglia di 2 s; altri rivali misurati nel rapporto risorse | **misurato** (peso, memoria, avvio) | passa le soglie assolute, perde il confronto relativo; deriva dalla struttura (Python embedded), non è un obiettivo |
 | 3 | **Antivirus/SmartScreen**: exe non firmato; issue #1 SentinelOne; Actiona dichiara la firma del codice | repo | **non misurato** (VirusTotal, SmartScreen) |
 | 4 | **Finestre elevate**: SendInput è soggetta a UIPI e il codice segnala solo il rifiuto di `SendInput`; se il bersaglio è elevato l'iniezione può non arrivare senza messaggio chiaro | doc. Microsoft + `checked_input` in `windows_backend.py` | **Misurato, correzione verificata**: prima D dichiarava un giro pur consegnando zero eventi; dopo si ferma prima di partire con avviso amministratore. C resta 13/13/3. Limiti del controllo descritti nel rapporto UIPI |
@@ -111,7 +117,7 @@ Fatto API (documentazione Microsoft di SendInput): è soggetta a UIPI, si iniett
 
 Ogni intervento passa dal banco **prima e dopo** con la stessa procedura; si pubblica solo se nessuna soglia peggiora rispetto alla versione precedente (regola di Luca).
 
-1. **Fatto in parte**: banco collaudato su runner Windows, baseline 1.2.3 e AHK misurate (sezione 1b). Avvio MMSS, CPU attiva dal sorgente e UIPI ora misurati (§1b). Mancano RAM attiva, CPU del pacchetto exe, fedeltà dei cinque nuovi rivali, TinyTask su Windows 10/11 reale e p95 su hardware dedicato.
+1. **Fatto in parte**: banco collaudato su runner Windows, baseline 1.2.3 e AHK misurate (sezione 1b). Avvio MMSS, CPU attiva dal sorgente e UIPI ora misurati (§1b). CPU del pacchetto ora misurata nel confronto 1.2.4→1.2.5. Mancano RAM attiva, fedeltà dei cinque nuovi rivali, TinyTask su Windows 10/11 reale e p95 su hardware dedicato.
 2. **Gap 1, costo a riposo: fatto nel sorgente** (commit daf12ae e 2507bce): `render()` non riscrive testo e stato dei controlli se invariati (ogni riscrittura ridisegna il controllo owner-draw, 10 volte al secondo) e la mascotte si ridisegna per fotogramma con tre copie invece di ricostruire una tela GDI+ a 24 fps. CPU a riposo da 4,22–4,61 % a 1,33–1,48 % di un core, stessi 24 fotogrammi/s, pixel identici (97/97). Dati: `data/runner-github/ottimizzazione-cpu-bambola.md`. Nuove misure CPU: soglia non stabilmente rispettata a riposo/in registrazione; riproduzione densa sopra soglia, rada sotto. Prima di cambiare `_wait_until`, Luca deve approvare proposta e A/B descritti in `data/runner-github/cpu-attiva-uipi.md`. Timing invariato. La successiva richiesta di Luca autorizza la release Windows 1.2.5 dopo il collaudo dell’esatto ZIP; l’ottimizzazione delle attese resta una proposta da approvare separatamente.
 3. **Gap 4 (UIPI) e prove di posizione su altre scale DPI/monitor**: la correzione a 1 px per il gap 5 **non è giustificata** dai dati (0 px di errore); non scriverla. Blocco silenzioso UIPI confermato e avviso implementato in PR #44, con test mock e prova C/D prima/dopo; tempi invariati. DPI misto resta da provare su hardware reale.
 4. **Gap 3, firma e antivirus**: firma Authenticode del launcher (costo in soldi e tempo, non codice), segnalazione dei falsi positivi ai produttori; ripetere VirusTotal/SmartScreen a ogni release.
