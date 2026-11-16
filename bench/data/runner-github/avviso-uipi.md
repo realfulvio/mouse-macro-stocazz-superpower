@@ -53,7 +53,7 @@ Run [43944349328](https://github.com/realfulvio/mouse-macro-stocazz-superpower/a
 
 Nessuna soglia cambia da passa a non passa. Il verdetto meccanico globale resta NON PASSA per il p95, come nel riferimento ideale del banco. Questi dati non dimostrano un aumento di velocità e non sono il collaudo dello ZIP. Gli SHA-256 di `macro/engine.py` e `macro/windows_backend.py` sono identici prima/dopo, registrati nei sommari.
 
-## Conferma del testo finale e CPU
+## Verifica intermedia dell’avviso e CPU
 
 Sul commit `d1761c3`, il run `43947163037` conferma ancora C=13/13/3, pronto, un giro; D=0/0/0, errore, zero giri, `partita=false` e testo abbreviato completo. Il run `43947162655` completa la verifica pixel (97/97) e le misure con rifiuto automatico della proposta di aggiornamento nel banco: idle 1,48 · 0,70 · 2,19%; registrazione 3,75 · 3,44 · 3,44%; densa 13,02 · 8,02 · 8,65%; rada 1,15 · 3,23 · 1,56%. Densa sopra soglia, rada sotto; idle non stabile fra le finestre. La variabilità tra runner impedisce di attribuire un miglioramento CPU al preflight; il confronto del pacchetto usa una procedura identica fra baseline e candidato. I 480 WM_PAINT per 20 s rimangono in tutte le tre finestre idle. La misura con cProfile (0,81% su 25 s) è esclusa dai confronti.
 
@@ -62,3 +62,18 @@ Il secondo A/B dal sorgente, sul testo finale (`43947162649`, baseline `6ecbf002
 Il testo finale è ridotto a due frasi brevi, con a capo esplicito, per il riquadro del pannello compatto (172×64, font effettivo 16). La prova UIPI con avviso acquisisce `warning-medium.png` dal vero pannello a integrità media prima della chiusura. La pausa di un secondo è nel banco dopo il risultato, non nella riproduzione.
 
 La cattura del run `43950328529` ha mostrato che il messaggio era ancora troncato con Bambola compatta: la mascotte lasciava soltanto 100 px di larghezza. In stato errore la scheda compatta usa ora tutta la larghezza del messaggio e omette la mascotte decorativa. Layout e animazione negli stati pronto/registrazione/riproduzione restano identici. La correzione viene verificata su una nuova cattura prima del rilascio.
+
+## Avviso leggibile: verifica finale dal sorgente
+
+Run [43951420288](https://github.com/realfulvio/mouse-macro-stocazz-superpower/actions/runs/43951420288), commit `c5a7c5d`: conferma C 13/13/3, pronto, un giro; D 0/0/0, errore, zero giri e macro non partita. La [cattura del vero pannello compatto](43951420288/warning-medium.png) è stata ispezionata: entrambe le frasi, compresa l’istruzione amministratore, sono interamente visibili. JSON e conteggi grezzi sono conservati nella stessa cartella. Nessun cambiamento a motore, backend, velocità o attese.
+
+Il profilo del layout definitivo (`43951420324`, `c5a7c5d`) verifica ancora 97/97 fotogrammi identici. CPU dal sorgente, in % di un core: idle 2,03 · 2,03 · 1,87; registrazione 6,15 · 4,37 · 3,85; densa 13,96 · 13,96 · 14,06; rada 3,12 · 2,60 · 3,44. La media delle tre finestre idle è 1,98%, registrazione 4,79%, ma singole finestre superano le soglie e le tornate precedenti restano valide: risultati non stabili sul runner. La riproduzione densa resta sopra soglia e quella rada sotto. Il record con cProfile (2,25% su 25 s) è separato. Dati in `43951420324/profile.json`.
+
+## Confronti del layout definitivo
+
+| Run | Mediana intervalli prima → dopo, ms | P95 intervalli prima → dopo, ms | Deriva p95 prima → dopo, ms |
+|---|---:|---:|---:|
+| 43951420250 (PR #44) | 4,6440 → 3,6695 | 28,7903 → 28,9750 | 34,9862 → 40,0532 |
+| 43951432413 (candidato 1.2.5) | 3,9005 → 4,2355 | 28,9234 → 28,6542 | 32,3149 → 33,5396 |
+
+Entrambi usano 30 ripetizioni per lato: 0 px mediana/p95, zero eventi persi/extra su 870. Le medesime soglie passano prima e dopo (il p95 degli intervalli continua a non passare meccanicamente e non è validabile nel runner condiviso). I tempi non migliorano in modo uniforme; non si deduce un miglioramento prestazionale. Baseline `1d6e792`, checkout dopo `de756daf` e `e5cfa0a5`; hash motore/backend identici. Sommari completi nelle cartelle dei run.
