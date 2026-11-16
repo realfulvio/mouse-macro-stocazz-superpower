@@ -1,0 +1,15 @@
+{
+ "tool": "ahk",
+ "url": "https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.31/AutoHotkey_2.0.31.zip",
+ "bytes": 3160453,
+ "sha256": "ca1a595aca4528755d8d4cd7fed23d497a37bd9a0b6892072612d68dee1bd00a",
+ "expected": "ca1a595aca4528755d8d4cd7fed23d497a37bd9a0b6892072612d68dee1bd00a",
+ "hash_ok": true,
+ "hash_source": "note della release AutoHotkey v2.0.31",
+ "screen": [
+  1024,
+  768
+ ],
+ "os": "win32",
+ "cpu": "AMD64 Family 25 Model 1 Stepping 1, AuthenticAMD"
+}
