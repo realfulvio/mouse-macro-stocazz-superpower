@@ -1,0 +1,64 @@
+{
+  "tool": "pulover",
+  "fidelity": "non misurato",
+  "source": "https://www.macrocreator.com/download/",
+  "version_declared": "5.4.1",
+  "inventory": {
+    "tool": "pulover",
+    "url": "https://github.com/Pulover/PuloversMacroCreator/releases/download/v5.4.1/PuloversMacroCreator-Portable.zip",
+    "bytes": 10980836,
+    "sha256": "aebdf335913eae4270b585339727b44593a98d17d73a3aae80e4d46d27c01310",
+    "expected": null,
+    "hash_ok": true,
+    "hash_source": "nessun hash pubblicato dall'autore: registrato qui",
+    "screen": [
+      1920,
+      1080
+    ],
+    "os": "win32",
+    "cpu": "AMD64 Family 25 Model 17 Stepping 1, AuthenticAMD"
+  },
+  "run_id": "43945606448",
+  "commit": "53e3b1d34d293b4cf1a8123b69638dff3568eeb4",
+  "status": "misurato",
+  "exe": "D:\\a\\_temp\\bench_tool\\installed\\MacroCreatorPortable\\x64\\MacroCreator\\MacroCreator.exe",
+  "binary": {
+    "company": "",
+    "product": "Pulover's Macro Creator",
+    "product_version": "5.4.1",
+    "file_version": "5.4.1"
+  },
+  "startup": {
+    "successful": 15,
+    "total": 15,
+    "warm_s": {
+      "n": 14,
+      "median": 0.911,
+      "p95": 0.9321,
+      "mean": 0.9123571428571429,
+      "stdev": 0.014589812793954477,
+      "variance": 0.00021286263736263773,
+      "min": 0.893,
+      "max": 0.936
+    },
+    "note": "prima finestra visibile e reattiva, anche se dialogo iniziale; cold=1 indica solo il primo della serie"
+  },
+  "visible_windows": [
+    "Pulover's Macro Creator",
+    "Pulover's Macro Creator v5.4.1"
+  ],
+  "pid": 3300,
+  "orchestrator_integrity": "Mandatory Label\\High Mandatory Level                          Label            S-1-16-12288",
+  "idle": {
+    "samples": 57,
+    "observed_seconds": 59.07000000000001,
+    "cpu_core_pct_mean": 0.5021125288186559,
+    "private_mib_max": 40.68
+  },
+  "checks": {
+    "package": true,
+    "idle_cpu": true,
+    "idle_memory": true,
+    "startup": true
+  }
+}

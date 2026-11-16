@@ -1,0 +1,1110 @@
+=== Verbose logging started: 11/16/2026  20:03:39  Build type: SHIP UNICODE 5.00.10011.00  Calling process: C:\Windows\SYSTEM32\msiexec.exe ===
+MSI (c) (08:D8) [20:03:39:442]: Resetting cached policy values
+MSI (c) (08:D8) [20:03:39:442]: Machine policy value 'Debug' is 0
+MSI (c) (08:D8) [20:03:39:442]: ******* RunEngine:
+           ******* Product: D:\a\_temp\bench_tool\MiniMouseMacro.Setup.msi
+           ******* Action: 
+           ******* CommandLine: **********
+MSI (c) (08:D8) [20:03:39:449]: Client-side and UI is none or basic: Running entire install on the server.
+MSI (c) (08:D8) [20:03:39:449]: Grabbed execution mutex.
+MSI (c) (08:D8) [20:03:39:485]: Cloaking enabled.
+MSI (c) (08:D8) [20:03:39:485]: Attempting to enable all disabled privileges before calling Install on Server
+MSI (c) (08:D8) [20:03:39:487]: Incrementing counter to disable shutdown. Counter after increment: 0
+MSI (s) (E8:38) [20:03:39:499]: Running installation inside multi-package transaction D:\a\_temp\bench_tool\MiniMouseMacro.Setup.msi
+MSI (s) (E8:38) [20:03:39:499]: Grabbed execution mutex.
+MSI (s) (E8:3C) [20:03:39:503]: Resetting cached policy values
+MSI (s) (E8:3C) [20:03:39:503]: Machine policy value 'Debug' is 0
+MSI (s) (E8:3C) [20:03:39:503]: ******* RunEngine:
+           ******* Product: D:\a\_temp\bench_tool\MiniMouseMacro.Setup.msi
+           ******* Action: 
+           ******* CommandLine: **********
+MSI (s) (E8:3C) [20:03:39:520]: Machine policy value 'DisableUserInstalls' is 0
+MSI (s) (E8:3C) [20:03:39:546]: Note: 1: 2203 2: C:\Windows\Installer\inprogressinstallinfo.ipi 3: -2147287038 
+MSI (s) (E8:3C) [20:03:39:550]: SRSetRestorePoint skipped for this transaction.
+MSI (s) (E8:3C) [20:03:39:556]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer 3: 2 
+MSI (s) (E8:3C) [20:03:39:558]: File will have security applied from OpCode.
+MSI (s) (E8:3C) [20:03:39:584]: SOFTWARE RESTRICTION POLICY: Verifying package --> 'D:\a\_temp\bench_tool\MiniMouseMacro.Setup.msi' against software restriction policy
+MSI (s) (E8:3C) [20:03:39:586]: SOFTWARE RESTRICTION POLICY: D:\a\_temp\bench_tool\MiniMouseMacro.Setup.msi has a digital signature
+MSI (s) (E8:3C) [20:03:40:009]: SOFTWARE RESTRICTION POLICY: D:\a\_temp\bench_tool\MiniMouseMacro.Setup.msi is permitted to run at the 'unrestricted' authorization level.
+MSI (s) (E8:3C) [20:03:40:009]: MSCOREE not loaded loading copy from system32
+MSI (s) (E8:3C) [20:03:40:086]: End dialog not enabled
+MSI (s) (E8:3C) [20:03:40:086]: Original package ==> D:\a\_temp\bench_tool\MiniMouseMacro.Setup.msi
+MSI (s) (E8:3C) [20:03:40:086]: Package we're running from ==> C:\Windows\Installer\feb03.msi
+MSI (s) (E8:3C) [20:03:40:088]: APPCOMPAT: Compatibility mode property overrides found.
+MSI (s) (E8:3C) [20:03:40:107]: APPCOMPAT: looking for appcompat database entry with ProductCode '{B584706B-0B5E-426D-8C87-A8E049718234}'.
+MSI (s) (E8:3C) [20:03:40:128]: APPCOMPAT: no matching ProductCode found in database.
+MSI (s) (E8:3C) [20:03:40:632]: Machine policy value 'TransformsSecure' is 1
+MSI (s) (E8:3C) [20:03:40:632]: Note: 1: 2262 2: MsiFileHash 3: -2147287038 
+MSI (s) (E8:3C) [20:03:40:632]: Machine policy value 'DisablePatch' is 0
+MSI (s) (E8:3C) [20:03:40:632]: Machine policy value 'AllowLockdownPatch' is 0
+MSI (s) (E8:3C) [20:03:40:632]: Machine policy value 'DisableLUAPatching' is 0
+MSI (s) (E8:3C) [20:03:40:632]: Machine policy value 'DisableFlyWeightPatching' is 0
+MSI (s) (E8:3C) [20:03:40:636]: APPCOMPAT: looking for appcompat database entry with ProductCode '{B584706B-0B5E-426D-8C87-A8E049718234}'.
+MSI (s) (E8:3C) [20:03:40:636]: APPCOMPAT: no matching ProductCode found in database.
+MSI (s) (E8:3C) [20:03:40:668]: Transforms are not secure.
+MSI (s) (E8:3C) [20:03:40:668]: PROPERTY CHANGE: Adding MsiLogFileLocation property. Its value is 'D:\a\mouse-macro-stocazz-superpower\mouse-macro-stocazz-superpower\results\minimouse\install.log'.
+MSI (s) (E8:3C) [20:03:40:668]: Command Line: REBOOT=ReallySuppress INSTALLDIR=D:\a\_temp\bench_tool\installed CURRENTDIRECTORY=D:\a\mouse-macro-stocazz-superpower\mouse-macro-stocazz-superpower CLIENTUILEVEL=3 CLIENTPROCESSID=8 
+MSI (s) (E8:3C) [20:03:40:668]: PROPERTY CHANGE: Adding PackageCode property. Its value is '{0BA9BFAE-8922-45FB-AB71-7A4C7FBCB478}'.
+MSI (s) (E8:3C) [20:03:40:668]: Product Code passed to Engine.Initialize:           ''
+MSI (s) (E8:3C) [20:03:40:668]: Product Code from property table before transforms: '{B584706B-0B5E-426D-8C87-A8E049718234}'
+MSI (s) (E8:3C) [20:03:40:668]: Product Code from property table after transforms:  '{B584706B-0B5E-426D-8C87-A8E049718234}'
+MSI (s) (E8:3C) [20:03:40:668]: Product not registered: beginning first-time install
+MSI (s) (E8:3C) [20:03:40:668]: PROPERTY CHANGE: Modifying ALLUSERS property. Its current value is '2'. Its new value: '1'.
+MSI (s) (E8:3C) [20:03:40:668]: Product {B584706B-0B5E-426D-8C87-A8E049718234} is not managed.
+MSI (s) (E8:3C) [20:03:40:668]: MSI_LUA: Credential prompt not required, user is an admin
+MSI (s) (E8:3C) [20:03:40:668]: PROPERTY CHANGE: Adding ProductState property. Its value is '-1'.
+MSI (s) (E8:3C) [20:03:40:668]: Entering CMsiConfigurationManager::SetLastUsedSource.
+MSI (s) (E8:3C) [20:03:40:668]: User policy value 'SearchOrder' is 'nmu'
+MSI (s) (E8:3C) [20:03:40:670]: Adding new sources is allowed.
+MSI (s) (E8:3C) [20:03:40:670]: PROPERTY CHANGE: Adding PackagecodeChanging property. Its value is '1'.
+MSI (s) (E8:3C) [20:03:40:670]: Package name extracted from package path: 'MiniMouseMacro.Setup.msi'
+MSI (s) (E8:3C) [20:03:40:670]: Package to be registered: 'MiniMouseMacro.Setup.msi'
+MSI (s) (E8:3C) [20:03:40:670]: Note: 1: 2262 2: Error 3: -2147287038 
+MSI (s) (E8:3C) [20:03:40:670]: Note: 1: 2262 2: AdminProperties 3: -2147287038 
+MSI (s) (E8:3C) [20:03:40:672]: Machine policy value 'DisableMsi' is 1
+MSI (s) (E8:3C) [20:03:40:672]: Machine policy value 'AlwaysInstallElevated' is 0
+MSI (s) (E8:3C) [20:03:40:672]: User policy value 'AlwaysInstallElevated' is 0
+MSI (s) (E8:3C) [20:03:40:672]: Product installation will be elevated because user is admin and product is being installed per-machine.
+MSI (s) (E8:3C) [20:03:40:672]: Running product '{B584706B-0B5E-426D-8C87-A8E049718234}' with elevated privileges: Product is assigned.
+MSI (s) (E8:3C) [20:03:40:672]: PROPERTY CHANGE: Adding REBOOT property. Its value is 'ReallySuppress'.
+MSI (s) (E8:3C) [20:03:40:672]: PROPERTY CHANGE: Adding INSTALLDIR property. Its value is 'D:\a\_temp\bench_tool\installed'.
+MSI (s) (E8:3C) [20:03:40:672]: PROPERTY CHANGE: Adding CURRENTDIRECTORY property. Its value is 'D:\a\mouse-macro-stocazz-superpower\mouse-macro-stocazz-superpower'.
+MSI (s) (E8:3C) [20:03:40:672]: PROPERTY CHANGE: Adding CLIENTUILEVEL property. Its value is '3'.
+MSI (s) (E8:3C) [20:03:40:672]: PROPERTY CHANGE: Adding CLIENTPROCESSID property. Its value is '8'.
+MSI (s) (E8:3C) [20:03:40:672]: Machine policy value 'DisableAutomaticApplicationShutdown' is 0
+MSI (s) (E8:3C) [20:03:40:692]: PROPERTY CHANGE: Adding MsiRestartManagerSessionKey property. Its value is '1e7278f447fa1f409550ec7e252506e5'.
+MSI (s) (E8:3C) [20:03:40:694]: RESTART MANAGER: Session opened.
+MSI (s) (E8:3C) [20:03:40:694]: TRANSFORMS property is now: 
+MSI (s) (E8:3C) [20:03:40:694]: PROPERTY CHANGE: Adding VersionDatabase property. Its value is '200'.
+MSI (s) (E8:3C) [20:03:40:699]: SHELL32::SHGetFolderPath returned: C:\Users\runneradmin\AppData\Roaming
+MSI (s) (E8:3C) [20:03:40:701]: SHELL32::SHGetFolderPath returned: C:\Users\runneradmin\Favorites
+MSI (s) (E8:3C) [20:03:40:701]: SHELL32::SHGetFolderPath returned: C:\Users\runneradmin\AppData\Roaming\Microsoft\Windows\Network Shortcuts
+MSI (s) (E8:3C) [20:03:40:703]: SHELL32::SHGetFolderPath returned: C:\Users\runneradmin\Documents
+MSI (s) (E8:3C) [20:03:40:705]: SHELL32::SHGetFolderPath returned: C:\Users\runneradmin\AppData\Roaming\Microsoft\Windows\Printer Shortcuts
+MSI (s) (E8:3C) [20:03:40:705]: SHELL32::SHGetFolderPath returned: C:\Users\runneradmin\AppData\Roaming\Microsoft\Windows\Recent
+MSI (s) (E8:3C) [20:03:40:708]: SHELL32::SHGetFolderPath returned: C:\Users\runneradmin\AppData\Roaming\Microsoft\Windows\SendTo
+MSI (s) (E8:3C) [20:03:40:710]: SHELL32::SHGetFolderPath returned: C:\Users\runneradmin\AppData\Roaming\Microsoft\Windows\Templates
+MSI (s) (E8:3C) [20:03:40:710]: SHELL32::SHGetFolderPath returned: C:\ProgramData
+MSI (s) (E8:3C) [20:03:40:711]: SHELL32::SHGetFolderPath returned: C:\Users\runneradmin\AppData\Local
+MSI (s) (E8:3C) [20:03:40:711]: SHELL32::SHGetFolderPath returned: C:\Users\runneradmin\Pictures
+MSI (s) (E8:3C) [20:03:40:715]: SHELL32::SHGetFolderPath returned: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Administrative Tools
+MSI (s) (E8:3C) [20:03:40:715]: SHELL32::SHGetFolderPath returned: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup
+MSI (s) (E8:3C) [20:03:40:717]: SHELL32::SHGetFolderPath returned: C:\ProgramData\Microsoft\Windows\Start Menu\Programs
+MSI (s) (E8:3C) [20:03:40:719]: SHELL32::SHGetFolderPath returned: C:\ProgramData\Microsoft\Windows\Start Menu
+MSI (s) (E8:3C) [20:03:40:719]: SHELL32::SHGetFolderPath returned: C:\Users\Public\Desktop
+MSI (s) (E8:3C) [20:03:40:723]: SHELL32::SHGetFolderPath returned: C:\Users\runneradmin\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Administrative Tools
+MSI (s) (E8:3C) [20:03:40:723]: SHELL32::SHGetFolderPath returned: C:\Users\runneradmin\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
+MSI (s) (E8:3C) [20:03:40:725]: SHELL32::SHGetFolderPath returned: C:\Users\runneradmin\AppData\Roaming\Microsoft\Windows\Start Menu\Programs
+MSI (s) (E8:3C) [20:03:40:728]: SHELL32::SHGetFolderPath returned: C:\Users\runneradmin\AppData\Roaming\Microsoft\Windows\Start Menu
+MSI (s) (E8:3C) [20:03:40:728]: SHELL32::SHGetFolderPath returned: C:\Users\runneradmin\Desktop
+MSI (s) (E8:3C) [20:03:40:730]: SHELL32::SHGetFolderPath returned: C:\ProgramData\Microsoft\Windows\Templates
+MSI (s) (E8:3C) [20:03:40:731]: SHELL32::SHGetFolderPath returned: C:\Windows\Fonts
+MSI (s) (E8:3C) [20:03:40:732]: Note: 1: 2898 2: MS Sans Serif 3: MS Sans Serif 4: 0 5: 16 
+MSI (s) (E8:3C) [20:03:40:738]: MSI_LUA: Setting MsiRunningElevated property to 1 because the install is already running elevated.
+MSI (s) (E8:3C) [20:03:40:738]: PROPERTY CHANGE: Adding MsiRunningElevated property. Its value is '1'.
+MSI (s) (E8:3C) [20:03:40:738]: PROPERTY CHANGE: Adding Privileged property. Its value is '1'.
+MSI (s) (E8:3C) [20:03:40:738]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\MS Setup (ACME)\User Info 3: 2 
+MSI (s) (E8:3C) [20:03:40:738]: Note: 1: 1402 2: HKEY_CURRENT_USER\Software\Microsoft\MS Setup (ACME)\User Info 3: 2 
+MSI (s) (E8:3C) [20:03:40:738]: PROPERTY CHANGE: Adding DATABASE property. Its value is 'C:\Windows\Installer\feb03.msi'.
+MSI (s) (E8:3C) [20:03:40:738]: PROPERTY CHANGE: Adding OriginalDatabase property. Its value is 'D:\a\_temp\bench_tool\MiniMouseMacro.Setup.msi'.
+MSI (s) (E8:3C) [20:03:40:738]: Machine policy value 'MsiDisableEmbeddedUI' is 0
+MSI (s) (E8:3C) [20:03:40:738]: EEUI - Disabling MsiEmbeddedUI for service because it's not a quiet/basic install
+MSI (s) (E8:3C) [20:03:40:739]: Note: 1: 2262 2: PatchPackage 3: -2147287038 
+MSI (s) (E8:3C) [20:03:40:739]: Machine policy value 'DisableRollback' is 0
+MSI (s) (E8:3C) [20:03:40:739]: User policy value 'DisableRollback' is 0
+MSI (s) (E8:3C) [20:03:40:739]: PROPERTY CHANGE: Adding UILevel property. Its value is '2'.
+MSI (s) (E8:3C) [20:03:40:739]: Note: 1: 2262 2: Font 3: -2147287038 
+=== Logging started: 11/16/2026  20:03:40 ===
+MSI (s) (E8:3C) [20:03:40:740]: Note: 1: 2203 2: C:\Windows\Installer\inprogressinstallinfo.ipi 3: -2147287038 
+MSI (s) (E8:3C) [20:03:40:740]: Note: 1: 2262 2: LaunchCondition 3: -2147287038 
+MSI (s) (E8:3C) [20:03:40:740]: APPCOMPAT: [DetectVersionLaunchCondition] Launch condition already passes.
+MSI (s) (E8:3C) [20:03:40:933]: PROPERTY CHANGE: Adding ACTION property. Its value is 'INSTALL'.
+MSI (s) (E8:3C) [20:03:40:933]: Doing action: INSTALL
+MSI (s) (E8:3C) [20:03:40:933]: Note: 1: 2262 2: ActionText 3: -2147287038 
+Action start 20:03:40: INSTALL.
+MSI (s) (E8:3C) [20:03:40:935]: Running ExecuteSequence
+MSI (s) (E8:3C) [20:03:40:935]: Doing action: DIRCA_CheckFX
+MSI (s) (E8:3C) [20:03:40:935]: Note: 1: 2235 2:  3: ExtendedType 4: SELECT `Action`,`Type`,`Source`,`Target`, NULL, `ExtendedType` FROM `CustomAction` WHERE `Action` = 'DIRCA_CheckFX' 
+MSI (s) (E8:8C) [20:03:40:937]: Invoking remote custom action. DLL: C:\Windows\Installer\MSIF062.tmp, Entrypoint: CheckFX
+MSI (s) (E8:1C) [20:03:40:939]: Generating random cookie.
+MSI (s) (E8:1C) [20:03:40:964]: Created Custom Action Server with PID 4136 (0x1028).
+MSI (s) (E8:68) [20:03:41:069]: Running as a service.
+MSI (s) (E8:C0) [20:03:41:245]: Hello, I'm your 32bit Impersonated custom action server.
+Action start 20:03:40: DIRCA_CheckFX.
+INFO   : [11/16/2026 20:03:41:280] [CheckFX                                 ]: Custom Action is starting...
+INFO   : [11/16/2026 20:03:41:280] [CheckFX                                 ]: CoInitializeEx - COM initialization Apartment Threaded...
+INFO   : [11/16/2026 20:03:41:284] [CheckFX                                 ]: MsiGetPropertyW - Determine size of property 'VSDFrameworkVersion'
+INFO   : [11/16/2026 20:03:41:284] [CheckFX                                 ]: Allocating space...
+INFO   : [11/16/2026 20:03:41:284] [CheckFX                                 ]: MsiGetPropertyW - Getting Property 'VSDFrameworkVersion'...
+INFO   : [11/16/2026 20:03:41:286] [CheckFX                                 ]: Property 'VSDFrameworkVersion'  retrieved with value 'v4.7.2'.
+INFO   : [11/16/2026 20:03:41:286] [CheckFX                                 ]: MsiGetPropertyW - Determine size of property 'VSDFrameworkProfile'
+INFO   : [11/16/2026 20:03:41:286] [CheckFX                                 ]: Property 'VSDFrameworkProfile'  retrieved with value ''.
+INFO   : [11/16/2026 20:03:41:286] [CheckFX                                 ]: Set VSDNETMSG with the FrameworkVersion.
+INFO   : [11/16/2026 20:03:41:286] [CheckFX                                 ]: MsiGetPropertyW - Determine size of property 'VSDNETMSG'
+INFO   : [11/16/2026 20:03:41:288] [CheckFX                                 ]: Allocating space...
+INFO   : [11/16/2026 20:03:41:288] [CheckFX                                 ]: MsiGetPropertyW - Getting Property 'VSDNETMSG'...
+INFO   : [11/16/2026 20:03:41:288] [CheckFX                                 ]: Property 'VSDNETMSG'  retrieved with value 'This setup requires the .NET Framework version [1].  Please install the .NET Framework and run this setup again.'.
+INFO   : [11/16/2026 20:03:41:288] [CheckFX                                 ]: MsiSetPropertyW - Setting Property Value...
+MSI (s) (E8!7C) [20:03:41:290]: PROPERTY CHANGE: Modifying VSDNETMSG property. Its current value is 'This setup requires the .NET Framework version [1].  Please install the .NET Framework and run this setup again.'. Its new value: 'This setup requires the .NET Framework version v4.7.2.  Please install the .NET Framework and run this setup again.'.
+INFO   : [11/16/2026 20:03:41:290] [CheckFX                                 ]: MsiSetPropertyW - Setting property 'VSDNETMSG' to 'This setup requires the .NET Framework version v4.7.2.  Please install the .NET Framework and run this setup again.'.
+INFO   : [11/16/2026 20:03:41:290] [CheckFX                                 ]: MsiGetPropertyW - Determine size of property 'VSDNETURLMSG'
+INFO   : [11/16/2026 20:03:41:290] [CheckFX                                 ]: Allocating space...
+INFO   : [11/16/2026 20:03:41:290] [CheckFX                                 ]: MsiGetPropertyW - Getting Property 'VSDNETURLMSG'...
+INFO   : [11/16/2026 20:03:41:290] [CheckFX                                 ]: Property 'VSDNETURLMSG'  retrieved with value 'This setup requires the .NET Framework version [1].  Please install the .NET Framework and run this setup again.  The .NET Framework can be obtained from the web.  Would you like to do this now?'.
+INFO   : [11/16/2026 20:03:41:292] [CheckFX                                 ]: MsiSetPropertyW - Setting Property Value...
+MSI (s) (E8!7C) [20:03:41:292]: PROPERTY CHANGE: Modifying VSDNETURLMSG property. Its current value is 'This setup requires the .NET Framework version [1].  Please install the .NET Framework and run this setup again.  The .NET Framework can be obtained from the web.  Would you like to do this now?'. Its new value: 'This setup requires the .NET Framework version v4.7.2.  Please install the .NET Framework and run this setup again.  The .NET Framework can be obtained from the web.  Would you like to do this now?'.
+INFO   : [11/16/2026 20:03:41:292] [CheckFX                                 ]: MsiSetPropertyW - Setting property 'VSDNETURLMSG' to 'This setup requires the .NET Framework version v4.7.2.  Please install the .NET Framework and run this setup again.  The .NET Framework can be obtained from the web.  Would you like to do this now?'.
+INFO   : [11/16/2026 20:03:41:292] [CheckFX                                 ]: MsiSetPropertyW - Setting Property Value...
+MSI (s) (E8!7C) [20:03:41:294]: PROPERTY CHANGE: Adding VSDFXAvailable property. Its value is 'TRUE'.
+INFO   : [11/16/2026 20:03:41:292] [CheckFX                                 ]: MsiSetPropertyW - Setting property 'VSDFXAvailable' to 'TRUE'.
+INFO   : [11/16/2026 20:03:41:294] [CheckFX                                 ]: Writing config file with version: '4.0'...
+INFO   : [11/16/2026 20:03:41:294] [CheckFX                                 ]: Creating Config File...
+DEBUG  : [11/16/2026 20:03:41:296] [CheckFX                                 ]: Calling MsiGetActiveDatabase...
+DEBUG  : [11/16/2026 20:03:41:296] [CheckFX                                 ]: Calling MsiDatabaseOpenView...
+DEBUG  : [11/16/2026 20:03:41:296] [CheckFX                                 ]: Calling MsiViewExecute...
+DEBUG  : [11/16/2026 20:03:41:296] [CheckFX                                 ]: Calling MsiViewFetch...
+DEBUG  : [11/16/2026 20:03:41:296] [CheckFX                                 ]: Calling MsiRecordDataSize...
+INFO   : [11/16/2026 20:03:41:298] [CheckFX                                 ]: MsiSetPropertyW - Setting Property Value...
+MSI (s) (E8!7C) [20:03:41:298]: PROPERTY CHANGE: Adding VSDFxConfigFile property. Its value is 'C:\Users\RUNNER~1\AppData\Local\Temp\CFGF1C9.tmp'.
+INFO   : [11/16/2026 20:03:41:298] [CheckFX                                 ]: MsiSetPropertyW - Setting property 'VSDFxConfigFile' to 'C:\Users\RUNNER~1\AppData\Local\Temp\CFGF1C9.tmp'.
+INFO   : [11/16/2026 20:03:41:300] [CheckFX                                 ]: Custom Action succeeded.
+INFO   : [11/16/2026 20:03:41:300] [CheckFX                                 ]: Custom Action completed with return code: '0'
+MSI (s) (E8:3C) [20:03:41:302]: Doing action: AppSearch
+Action ended 20:03:41: DIRCA_CheckFX. Return value 1.
+MSI (s) (E8:3C) [20:03:41:304]: Note: 1: 2262 2: AppSearch 3: -2147287038 
+Action start 20:03:41: AppSearch.
+MSI (s) (E8:3C) [20:03:41:304]: Doing action: FindRelatedProducts
+Action ended 20:03:41: AppSearch. Return value 1.
+Action start 20:03:41: FindRelatedProducts.
+MSI (s) (E8:3C) [20:03:41:306]: Skipping action: ERRCA_CANCELNEWERVERSION (condition is false)
+MSI (s) (E8:3C) [20:03:41:306]: Doing action: VSDCA_VsdLaunchConditions
+Action ended 20:03:41: FindRelatedProducts. Return value 1.
+MSI (s) (E8:3C) [20:03:41:306]: Note: 1: 2235 2:  3: ExtendedType 4: SELECT `Action`,`Type`,`Source`,`Target`, NULL, `ExtendedType` FROM `CustomAction` WHERE `Action` = 'VSDCA_VsdLaunchConditions' 
+MSI (s) (E8:6C) [20:03:41:308]: Invoking remote custom action. DLL: C:\Windows\Installer\MSIF1DA.tmp, Entrypoint: VsdLaunchConditions
+Action start 20:03:41: VSDCA_VsdLaunchConditions.
+INFO   : [11/16/2026 20:03:41:316] [VsdLaunchConditions                     ]: Custom Action is starting...
+INFO   : [11/16/2026 20:03:41:316] [VsdLaunchConditions                     ]: CoInitializeEx - COM initialization Apartment Threaded...
+INFO   : [11/16/2026 20:03:41:316] [VsdLaunchConditions                     ]: Enumerating table using SQL statement: 'SELECT * FROM `_VsdLaunchCondition`'
+INFO   : [11/16/2026 20:03:41:316] [VsdLaunchConditions                     ]: Calling MsiGetActiveDatabase...
+INFO   : [11/16/2026 20:03:41:316] [VsdLaunchConditions                     ]: MsiDatabaseOpenViewW - Prepare Database to view table...
+INFO   : [11/16/2026 20:03:41:318] [VsdLaunchConditions                     ]: TMsiViewExecute - Open Database view on table...
+INFO   : [11/16/2026 20:03:41:318] [VsdLaunchConditions                     ]: Checking a launch condition...
+INFO   : [11/16/2026 20:03:41:318] [VsdLaunchConditions                     ]: Getting the condition to evaluate...
+INFO   : [11/16/2026 20:03:41:318] [VsdLaunchConditions                     ]: MsiRecordGetStringW - Fetching value...
+INFO   : [11/16/2026 20:03:41:320] [VsdLaunchConditions                     ]: MsiRecordGetStringW - Getting value from column '1'...
+INFO   : [11/16/2026 20:03:41:320] [VsdLaunchConditions                     ]: Evaluating condition 'VSDFXAvailable'...
+INFO   : [11/16/2026 20:03:41:320] [VsdLaunchConditions                     ]: RESULT:	Condition is true. Nothing more to do.
+INFO   : [11/16/2026 20:03:41:320] [VsdLaunchConditions                     ]: Custom Action succeeded.
+INFO   : [11/16/2026 20:03:41:322] [VsdLaunchConditions                     ]: Custom Action completed with return code: '0'
+MSI (s) (E8:3C) [20:03:41:322]: Doing action: LaunchConditions
+Action ended 20:03:41: VSDCA_VsdLaunchConditions. Return value 1.
+MSI (s) (E8:3C) [20:03:41:324]: Note: 1: 2262 2: LaunchCondition 3: -2147287038 
+Action start 20:03:41: LaunchConditions.
+MSI (s) (E8:3C) [20:03:41:324]: Doing action: CCPSearch
+Action ended 20:03:41: LaunchConditions. Return value 1.
+MSI (s) (E8:3C) [20:03:41:324]: Note: 1: 2262 2: CCPSearch 3: -2147287038 
+Action start 20:03:41: CCPSearch.
+MSI (s) (E8:3C) [20:03:41:324]: Doing action: RMCCPSearch
+Action ended 20:03:41: CCPSearch. Return value 1.
+MSI (s) (E8:3C) [20:03:41:326]: Note: 1: 2262 2: CCPSearch 3: -2147287038 
+Action start 20:03:41: RMCCPSearch.
+MSI (s) (E8:3C) [20:03:41:326]: Doing action: ValidateProductID
+Action ended 20:03:41: RMCCPSearch. Return value 0.
+Action start 20:03:41: ValidateProductID.
+MSI (s) (E8:3C) [20:03:41:326]: Doing action: CustomCheckA_SetProperty_CHECKBOX1
+Action ended 20:03:41: ValidateProductID. Return value 1.
+MSI (s) (E8:3C) [20:03:41:326]: Note: 1: 2235 2:  3: ExtendedType 4: SELECT `Action`,`Type`,`Source`,`Target`, NULL, `ExtendedType` FROM `CustomAction` WHERE `Action` = 'CustomCheckA_SetProperty_CHECKBOX1' 
+MSI (s) (E8:3C) [20:03:41:326]: PROPERTY CHANGE: Adding LAUNCHMMM property. Its value is '1'.
+Action start 20:03:41: CustomCheckA_SetProperty_CHECKBOX1.
+MSI (s) (E8:3C) [20:03:41:326]: Doing action: CustomCheckA_SetProperty_CHECKBOX2
+Action ended 20:03:41: CustomCheckA_SetProperty_CHECKBOX1. Return value 1.
+MSI (s) (E8:3C) [20:03:41:328]: Note: 1: 2235 2:  3: ExtendedType 4: SELECT `Action`,`Type`,`Source`,`Target`, NULL, `ExtendedType` FROM `CustomAction` WHERE `Action` = 'CustomCheckA_SetProperty_CHECKBOX2' 
+Action start 20:03:41: CustomCheckA_SetProperty_CHECKBOX2.
+MSI (s) (E8:3C) [20:03:41:328]: Doing action: CustomCheckA_SetProperty_CHECKBOX3
+Action ended 20:03:41: CustomCheckA_SetProperty_CHECKBOX2. Return value 1.
+MSI (s) (E8:3C) [20:03:41:328]: Note: 1: 2235 2:  3: ExtendedType 4: SELECT `Action`,`Type`,`Source`,`Target`, NULL, `ExtendedType` FROM `CustomAction` WHERE `Action` = 'CustomCheckA_SetProperty_CHECKBOX3' 
+Action start 20:03:41: CustomCheckA_SetProperty_CHECKBOX3.
+MSI (s) (E8:3C) [20:03:41:328]: Doing action: CustomCheckA_SetProperty_CHECKBOX4
+Action ended 20:03:41: CustomCheckA_SetProperty_CHECKBOX3. Return value 1.
+MSI (s) (E8:3C) [20:03:41:328]: Note: 1: 2235 2:  3: ExtendedType 4: SELECT `Action`,`Type`,`Source`,`Target`, NULL, `ExtendedType` FROM `CustomAction` WHERE `Action` = 'CustomCheckA_SetProperty_CHECKBOX4' 
+Action start 20:03:41: CustomCheckA_SetProperty_CHECKBOX4.
+MSI (s) (E8:3C) [20:03:41:328]: Doing action: DIRCA_TARGETDIR
+Action ended 20:03:41: CustomCheckA_SetProperty_CHECKBOX4. Return value 1.
+MSI (s) (E8:3C) [20:03:41:328]: Note: 1: 2235 2:  3: ExtendedType 4: SELECT `Action`,`Type`,`Source`,`Target`, NULL, `ExtendedType` FROM `CustomAction` WHERE `Action` = 'DIRCA_TARGETDIR' 
+MSI (s) (E8:3C) [20:03:41:328]: PROPERTY CHANGE: Adding TARGETDIR property. Its value is 'C:\Program Files (x86)\MiniMouseMacro'.
+Action start 20:03:41: DIRCA_TARGETDIR.
+MSI (s) (E8:3C) [20:03:41:328]: Doing action: CostInitialize
+Action ended 20:03:41: DIRCA_TARGETDIR. Return value 1.
+MSI (s) (E8:3C) [20:03:41:330]: Machine policy value 'MaxPatchCacheSize' is 10
+Action start 20:03:41: CostInitialize.
+MSI (s) (E8:3C) [20:03:41:332]: PROPERTY CHANGE: Adding ROOTDRIVE property. Its value is 'D:\'.
+MSI (s) (E8:3C) [20:03:41:332]: PROPERTY CHANGE: Adding CostingComplete property. Its value is '0'.
+MSI (s) (E8:3C) [20:03:41:332]: Note: 1: 2262 2: Patch 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:332]: Note: 1: 2262 2: PatchPackage 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:332]: Note: 1: 2262 2: MsiPatchHeaders 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:332]: Note: 1: 2205 2:  3: __MsiPatchFileList 
+MSI (s) (E8:3C) [20:03:41:332]: Doing action: FileCost
+Action ended 20:03:41: CostInitialize. Return value 1.
+MSI (s) (E8:3C) [20:03:41:332]: Note: 1: 2262 2: RemoveFile 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:334]: Note: 1: 2262 2: MoveFile 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:334]: Note: 1: 2262 2: DuplicateFile 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:334]: Note: 1: 2262 2: Class 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:334]: Note: 1: 2262 2: TypeLib 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:334]: Note: 1: 2262 2: IniFile 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:334]: Note: 1: 2262 2: ReserveCost 3: -2147287038 
+Action start 20:03:41: FileCost.
+MSI (s) (E8:3C) [20:03:41:334]: Doing action: IsolateComponents
+Action ended 20:03:41: FileCost. Return value 1.
+MSI (s) (E8:3C) [20:03:41:334]: Note: 1: 2262 2: BindImage 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:334]: Note: 1: 2262 2: IsolatedComponent 3: -2147287038 
+Action start 20:03:41: IsolateComponents.
+MSI (s) (E8:3C) [20:03:41:334]: Doing action: CostFinalize
+Action ended 20:03:41: IsolateComponents. Return value 1.
+MSI (s) (E8:3C) [20:03:41:336]: PROPERTY CHANGE: Adding OutOfDiskSpace property. Its value is '0'.
+MSI (s) (E8:3C) [20:03:41:336]: PROPERTY CHANGE: Adding OutOfNoRbDiskSpace property. Its value is '0'.
+MSI (s) (E8:3C) [20:03:41:336]: PROPERTY CHANGE: Adding PrimaryVolumeSpaceAvailable property. Its value is '0'.
+MSI (s) (E8:3C) [20:03:41:336]: PROPERTY CHANGE: Adding PrimaryVolumeSpaceRequired property. Its value is '0'.
+MSI (s) (E8:3C) [20:03:41:336]: PROPERTY CHANGE: Adding PrimaryVolumeSpaceRemaining property. Its value is '0'.
+MSI (s) (E8:3C) [20:03:41:336]: Note: 1: 2262 2: Condition 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:336]: PROPERTY CHANGE: Modifying TARGETDIR property. Its current value is 'C:\Program Files (x86)\MiniMouseMacro'. Its new value: 'C:\Program Files (x86)\MiniMouseMacro\'.
+MSI (s) (E8:3C) [20:03:41:336]: PROPERTY CHANGE: Adding _0C670D654D6441E380FA560886AE298C property. Its value is 'C:\Program Files (x86)\MiniMouseMacro\logs\'.
+MSI (s) (E8:3C) [20:03:41:336]: PROPERTY CHANGE: Adding _37B8F40A1EAF4952875EAFE7B9EDD5C4 property. Its value is 'C:\Program Files (x86)\MiniMouseMacro\plugins\'.
+MSI (s) (E8:3C) [20:03:41:336]: PROPERTY CHANGE: Adding _6F53E76542084C1B9BF32987936EC7EE property. Its value is 'C:\Program Files (x86)\MiniMouseMacro\data\'.
+MSI (s) (E8:3C) [20:03:41:336]: PROPERTY CHANGE: Adding _1A92ACCA0CCC4F8094E610AD317DFE4C property. Its value is 'C:\Program Files (x86)\MiniMouseMacro\macros\'.
+MSI (s) (E8:3C) [20:03:41:336]: PROPERTY CHANGE: Adding _43190F37F9724BC2B5412794ACFCFE96 property. Its value is 'C:\Program Files (x86)\MiniMouseMacro\app\'.
+MSI (s) (E8:3C) [20:03:41:336]: PROPERTY CHANGE: Adding _53A936C89E264EF7AA4AED5B968EEBD5 property. Its value is 'C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\'.
+MSI (s) (E8:3C) [20:03:41:336]: PROPERTY CHANGE: Adding _7A1E0C9B5D4F4381A2B3C4D5E6F70819 property. Its value is 'C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\tessdata\'.
+MSI (s) (E8:3C) [20:03:41:336]: PROPERTY CHANGE: Adding _D8C707E3A6F2493BBA1D2E96BF83438D property. Its value is 'C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\x64\'.
+MSI (s) (E8:3C) [20:03:41:336]: Target path resolution complete. Dumping Directory table...
+MSI (s) (E8:3C) [20:03:41:336]: Note: target paths subject to change (via custom actions or browsing)
+MSI (s) (E8:3C) [20:03:41:336]: Dir (target): Key: TARGETDIR	, Object: C:\Program Files (x86)\MiniMouseMacro\
+MSI (s) (E8:3C) [20:03:41:336]: Dir (target): Key: WindowsFolder	, Object: C:\Windows\
+MSI (s) (E8:3C) [20:03:41:336]: Dir (target): Key: _0C670D654D6441E380FA560886AE298C	, Object: C:\Program Files (x86)\MiniMouseMacro\logs\
+MSI (s) (E8:3C) [20:03:41:336]: Dir (target): Key: _37B8F40A1EAF4952875EAFE7B9EDD5C4	, Object: C:\Program Files (x86)\MiniMouseMacro\plugins\
+MSI (s) (E8:3C) [20:03:41:336]: Dir (target): Key: ProgramMenuFolder	, Object: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\
+MSI (s) (E8:3C) [20:03:41:336]: Dir (target): Key: DesktopFolder	, Object: C:\Users\Public\Desktop\
+MSI (s) (E8:3C) [20:03:41:336]: Dir (target): Key: _6F53E76542084C1B9BF32987936EC7EE	, Object: C:\Program Files (x86)\MiniMouseMacro\data\
+MSI (s) (E8:3C) [20:03:41:336]: Dir (target): Key: _1A92ACCA0CCC4F8094E610AD317DFE4C	, Object: C:\Program Files (x86)\MiniMouseMacro\macros\
+MSI (s) (E8:3C) [20:03:41:336]: Dir (target): Key: _43190F37F9724BC2B5412794ACFCFE96	, Object: C:\Program Files (x86)\MiniMouseMacro\app\
+MSI (s) (E8:3C) [20:03:41:336]: Dir (target): Key: _53A936C89E264EF7AA4AED5B968EEBD5	, Object: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\
+MSI (s) (E8:3C) [20:03:41:336]: Dir (target): Key: _7A1E0C9B5D4F4381A2B3C4D5E6F70819	, Object: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\tessdata\
+MSI (s) (E8:3C) [20:03:41:336]: Dir (target): Key: _D8C707E3A6F2493BBA1D2E96BF83438D	, Object: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\x64\
+MSI (s) (E8:3C) [20:03:41:336]: PROPERTY CHANGE: Adding INSTALLLEVEL property. Its value is '1'.
+Action start 20:03:41: CostFinalize.
+MSI (s) (E8:3C) [20:03:41:336]: Doing action: SetODBCFolders
+Action ended 20:03:41: CostFinalize. Return value 1.
+MSI (s) (E8:3C) [20:03:41:338]: Note: 1: 2262 2: ODBCDriver 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:338]: Note: 1: 2262 2: ODBCTranslator 3: -2147287038 
+Action start 20:03:41: SetODBCFolders.
+MSI (s) (E8:3C) [20:03:41:338]: Doing action: InstallValidate
+Action ended 20:03:41: SetODBCFolders. Return value 1.
+MSI (s) (E8:3C) [20:03:41:338]: PROPERTY CHANGE: Deleting MsiRestartManagerSessionKey property. Its current value is '1e7278f447fa1f409550ec7e252506e5'.
+MSI (s) (E8:3C) [20:03:41:338]: Feature: DefaultFeature; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__03C979F6DA1BC5412D775F57AAE4D472; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__0F3F4E2D85FD90712DC493E0C99FADD2; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__1AB675D833CB7357F936D7B81A6EA2DF; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__210187BD2916BE2DFA879C963132D441; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__2935D3769A15DB8C241F4EAF603D0E9F; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__3618A09E34A9C31EEC3C9109405BEE47; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__37DB849BE17A318102EFF899479056A4; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__43E9A7DB653A4893B83278D7901E8F4C; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__4D2D658591F8D9F94C8292695E077F95; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__59571A6F69D4F6070FD183EE9E24CB28; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__695FEADD6E17403FA69522268C61A78A; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__6B5083D559749A80D7646352B7F3FD4B; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__6F1A3BB3E0AA49F6A5881677D9653E0A; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__816EF2F00C2B05FB80E172BD958AAEC4; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__87BDCF94B9DCE0DF46CDDADCFB57AAB2; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__915B2CDA68F64A6094111B4EC2CDD60D; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__9639D2682D414B8C90E84D1A15CDB978; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__A5E9F26CB0D074E532F2433DA6E5E42C; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__C7F8C62404E924B0E1320E7ACFF209D8; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__CC39DAB8925962300AEF936D66C93245; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__D396432C9A52ACB7A769360C69F52770; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__D69125D1C279F8D9D516D604203D0C67; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__D747E956491469935A631C78C24AC5E9; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__E99755F10E374D9D9E6804D392C9C9F1; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__EFAA023A6C6C40E58406B8F0A1EB89A1; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__F46B22665ED6103DFC9B7E0831E49FCA; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__F69256C819C06266622F429FDB80D0E9; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__FDA8C84E31D4D6F7364B22A7E9FE8AB1; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__F14E01001234567890ABCDEF01234567; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__F14E03001234567890ABCDEF01234567; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__F14E05001234567890ABCDEF01234567; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__F14E07001234567890ABCDEF01234567; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__F14E08001234567890ABCDEF01234567; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__F14E09001234567890ABCDEF01234567; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__F14E0B001234567890ABCDEF01234567; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: C__F14E0C001234567890ABCDEF01234567; Installed: Absent;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: __C__915B2CDA68F64A6094111B4EC2CDD60D65; Installed: Null;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: __C__915B2CDA68F64A6094111B4EC2CDD60D66; Installed: Null;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: __C__F14E01001234567890ABCDEF0123456765; Installed: Null;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: __C__F14E03001234567890ABCDEF0123456765; Installed: Null;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: __C__F14E05001234567890ABCDEF0123456765; Installed: Null;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: __C__F14E07001234567890ABCDEF0123456765; Installed: Null;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: __C__F14E08001234567890ABCDEF0123456765; Installed: Null;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: __C__F14E09001234567890ABCDEF0123456765; Installed: Null;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: __C__F14E0B001234567890ABCDEF0123456765; Installed: Null;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: __C__F14E0C001234567890ABCDEF0123456765; Installed: Null;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Component: __C__915B2CDA68F64A6094111B4EC2CDD60D67; Installed: Null;   Request: Local;   Action: Local
+MSI (s) (E8:3C) [20:03:41:338]: Note: 1: 2262 2: BindImage 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:338]: Note: 1: 2262 2: PublishComponent 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:338]: Note: 1: 2262 2: SelfReg 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:338]: Note: 1: 2262 2: Font 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:338]: Note: 1: 2262 2: Class 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:338]: Note: 1: 2262 2: TypeLib 3: -2147287038 
+Action start 20:03:41: InstallValidate.
+MSI (s) (E8:3C) [20:03:41:338]: Note: 1: 2262 2: RemoveFile 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:340]: Note: 1: 2205 2:  3: _RemoveFilePath 
+MSI (s) (E8:3C) [20:03:41:340]: Note: 1: 2262 2: DuplicateFile 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:340]: Note: 1: 2262 2: ReserveCost 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:346]: Note: 1: 2262 2: TypeLib 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:346]: Note: 1: 2262 2: Class 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:348]: Note: 1: 2262 2: Class 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:348]: Note: 1: 2262 2: Class 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:348]: Note: 1: 2262 2: Class 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:348]: Note: 1: 2262 2: Class 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:348]: Note: 1: 2262 2: Class 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:348]: Note: 1: 2262 2: Class 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:350]: Note: 1: 2262 2: Class 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:350]: Note: 1: 2262 2: Class 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:350]: PROPERTY CHANGE: Modifying CostingComplete property. Its current value is '0'. Its new value: '1'.
+MSI (s) (E8:3C) [20:03:41:350]: Note: 1: 2262 2: BindImage 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:350]: Note: 1: 2262 2: PublishComponent 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:350]: Note: 1: 2262 2: SelfReg 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:350]: Note: 1: 2262 2: Font 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:350]: Note: 1: 2262 2: Class 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:350]: Note: 1: 2727 2:  
+MSI (s) (E8:3C) [20:03:41:350]: Note: 1: 2205 2:  3: FilesInUse 
+MSI (s) (E8:3C) [20:03:41:356]: Note: 1: 2727 2:  
+MSI (s) (E8:3C) [20:03:41:356]: Doing action: InstallInitialize
+Action ended 20:03:41: InstallValidate. Return value 1.
+MSI (s) (E8:3C) [20:03:41:356]: Machine policy value 'AlwaysInstallElevated' is 0
+MSI (s) (E8:3C) [20:03:41:356]: User policy value 'AlwaysInstallElevated' is 0
+MSI (s) (E8:3C) [20:03:41:356]: BeginTransaction: Locking Server
+MSI (s) (E8:3C) [20:03:41:358]: Note: 1: 2203 2: C:\Windows\Installer\inprogressinstallinfo.ipi 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:358]: SRSetRestorePoint skipped for this transaction.
+MSI (s) (E8:3C) [20:03:41:358]: Note: 1: 2203 2: C:\Windows\Installer\inprogressinstallinfo.ipi 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:358]: Server not locked: locking for product {B584706B-0B5E-426D-8C87-A8E049718234}
+Action start 20:03:41: InstallInitialize.
+MSI (s) (E8:3C) [20:03:41:383]: Doing action: AllocateRegistrySpace
+Action ended 20:03:41: InstallInitialize. Return value 1.
+Action start 20:03:41: AllocateRegistrySpace.
+MSI (s) (E8:3C) [20:03:41:383]: Doing action: ProcessComponents
+Action ended 20:03:41: AllocateRegistrySpace. Return value 1.
+MSI (s) (E8:3C) [20:03:41:383]: Note: 1: 2205 2:  3: MsiPatchCertificate 
+MSI (s) (E8:3C) [20:03:41:383]: LUA patching is disabled: missing MsiPatchCertificate table
+MSI (s) (E8:3C) [20:03:41:383]: Resolving source.
+MSI (s) (E8:3C) [20:03:41:383]: Resolving source to launched-from source.
+MSI (s) (E8:3C) [20:03:41:383]: Setting launched-from source as last-used.
+MSI (s) (E8:3C) [20:03:41:383]: PROPERTY CHANGE: Adding SourceDir property. Its value is 'D:\a\_temp\bench_tool\'.
+MSI (s) (E8:3C) [20:03:41:383]: PROPERTY CHANGE: Adding SOURCEDIR property. Its value is 'D:\a\_temp\bench_tool\'.
+MSI (s) (E8:3C) [20:03:41:383]: PROPERTY CHANGE: Adding SourcedirProduct property. Its value is '{B584706B-0B5E-426D-8C87-A8E049718234}'.
+MSI (s) (E8:3C) [20:03:41:383]: SOURCEDIR ==> D:\a\_temp\bench_tool\
+MSI (s) (E8:3C) [20:03:41:383]: SOURCEDIR product ==> {B584706B-0B5E-426D-8C87-A8E049718234}
+MSI (s) (E8:3C) [20:03:41:383]: Determining source type
+MSI (s) (E8:3C) [20:03:41:385]: Source type from package 'MiniMouseMacro.Setup.msi': 2
+MSI (s) (E8:3C) [20:03:41:391]: SECREPAIR: Hash Database: C:\Windows\Installer\SourceHash{B584706B-0B5E-426D-8C87-A8E049718234}
+MSI (s) (E8:3C) [20:03:41:415]: Note: 1: 2262 2: SourceHash 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:429]: SECREPAIR: New Hash Database creation complete.
+MSI (s) (E8:3C) [20:03:41:449]: Source path resolution complete. Dumping Directory table...
+MSI (s) (E8:3C) [20:03:41:449]: Dir (source): Key: TARGETDIR	, Object: D:\a\_temp\bench_tool\	, LongSubPath: 	, ShortSubPath: 
+MSI (s) (E8:3C) [20:03:41:449]: Dir (source): Key: WindowsFolder	, Object: D:\a\_temp\bench_tool\	, LongSubPath: 	, ShortSubPath: 
+MSI (s) (E8:3C) [20:03:41:449]: Dir (source): Key: _0C670D654D6441E380FA560886AE298C	, Object: D:\a\_temp\bench_tool\	, LongSubPath: logs\	, ShortSubPath: LOGS\
+MSI (s) (E8:3C) [20:03:41:449]: Dir (source): Key: _37B8F40A1EAF4952875EAFE7B9EDD5C4	, Object: D:\a\_temp\bench_tool\	, LongSubPath: plugins\	, ShortSubPath: PLUGINS\
+MSI (s) (E8:3C) [20:03:41:449]: Dir (source): Key: ProgramMenuFolder	, Object: D:\a\_temp\bench_tool\	, LongSubPath: User's Programs Menu\	, ShortSubPath: USER'S~2\
+MSI (s) (E8:3C) [20:03:41:449]: Dir (source): Key: DesktopFolder	, Object: D:\a\_temp\bench_tool\	, LongSubPath: User's Desktop\	, ShortSubPath: USER'S~1\
+MSI (s) (E8:3C) [20:03:41:449]: Dir (source): Key: _6F53E76542084C1B9BF32987936EC7EE	, Object: D:\a\_temp\bench_tool\	, LongSubPath: data\	, ShortSubPath: DATA\
+MSI (s) (E8:3C) [20:03:41:449]: Dir (source): Key: _1A92ACCA0CCC4F8094E610AD317DFE4C	, Object: D:\a\_temp\bench_tool\	, LongSubPath: macros\	, ShortSubPath: MACROS\
+MSI (s) (E8:3C) [20:03:41:449]: Dir (source): Key: _43190F37F9724BC2B5412794ACFCFE96	, Object: D:\a\_temp\bench_tool\	, LongSubPath: app\	, ShortSubPath: APP\
+MSI (s) (E8:3C) [20:03:41:449]: Dir (source): Key: _53A936C89E264EF7AA4AED5B968EEBD5	, Object: D:\a\_temp\bench_tool\	, LongSubPath: app\9.0.0\	, ShortSubPath: APP\90~1.0\
+MSI (s) (E8:3C) [20:03:41:449]: Dir (source): Key: _7A1E0C9B5D4F4381A2B3C4D5E6F70819	, Object: D:\a\_temp\bench_tool\	, LongSubPath: app\9.0.0\tessdata\	, ShortSubPath: APP\90~1.0\TESSDATA\
+MSI (s) (E8:3C) [20:03:41:449]: Dir (source): Key: _D8C707E3A6F2493BBA1D2E96BF83438D	, Object: D:\a\_temp\bench_tool\	, LongSubPath: app\9.0.0\x64\	, ShortSubPath: APP\90~1.0\X64\
+Action start 20:03:41: ProcessComponents.
+MSI (s) (E8:3C) [20:03:41:457]: Doing action: MsiUnpublishAssemblies
+Action ended 20:03:41: ProcessComponents. Return value 1.
+Action start 20:03:41: MsiUnpublishAssemblies.
+MSI (s) (E8:3C) [20:03:41:457]: Doing action: UnpublishComponents
+Action ended 20:03:41: MsiUnpublishAssemblies. Return value 1.
+MSI (s) (E8:3C) [20:03:41:459]: Note: 1: 2262 2: PublishComponent 3: -2147287038 
+Action start 20:03:41: UnpublishComponents.
+MSI (s) (E8:3C) [20:03:41:459]: Doing action: UnpublishFeatures
+Action ended 20:03:41: UnpublishComponents. Return value 1.
+Action start 20:03:41: UnpublishFeatures.
+MSI (s) (E8:3C) [20:03:41:459]: Doing action: StopServices
+Action ended 20:03:41: UnpublishFeatures. Return value 1.
+MSI (s) (E8:3C) [20:03:41:459]: Note: 1: 2262 2: ServiceControl 3: -2147287038 
+Action start 20:03:41: StopServices.
+MSI (s) (E8:3C) [20:03:41:461]: Doing action: DeleteServices
+Action ended 20:03:41: StopServices. Return value 1.
+MSI (s) (E8:3C) [20:03:41:461]: Note: 1: 2262 2: ServiceControl 3: -2147287038 
+Action start 20:03:41: DeleteServices.
+MSI (s) (E8:3C) [20:03:41:461]: Doing action: UnregisterComPlus
+Action ended 20:03:41: DeleteServices. Return value 1.
+MSI (s) (E8:3C) [20:03:41:461]: Note: 1: 2262 2: Complus 3: -2147287038 
+Action start 20:03:41: UnregisterComPlus.
+MSI (s) (E8:3C) [20:03:41:462]: Doing action: SelfUnregModules
+Action ended 20:03:41: UnregisterComPlus. Return value 1.
+MSI (s) (E8:3C) [20:03:41:463]: Note: 1: 2262 2: SelfReg 3: -2147287038 
+Action start 20:03:41: SelfUnregModules.
+MSI (s) (E8:3C) [20:03:41:463]: Doing action: UnregisterTypeLibraries
+Action ended 20:03:41: SelfUnregModules. Return value 1.
+Action start 20:03:41: UnregisterTypeLibraries.
+MSI (s) (E8:3C) [20:03:41:463]: Doing action: RemoveODBC
+Action ended 20:03:41: UnregisterTypeLibraries. Return value 1.
+MSI (s) (E8:3C) [20:03:41:463]: Note: 1: 2262 2: ODBCDataSource 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:463]: Note: 1: 2262 2: ODBCDataSource 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:465]: Note: 1: 2262 2: ODBCTranslator 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:465]: Note: 1: 2262 2: ODBCTranslator 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:465]: Note: 1: 2262 2: ODBCDriver 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:465]: Note: 1: 2262 2: ODBCDriver 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:465]: Note: 1: 2711 2: ODBCDriverManager 
+Action start 20:03:41: RemoveODBC.
+MSI (s) (E8:3C) [20:03:41:465]: Note: 1: 2711 2: ODBCDriverManager64 
+MSI (s) (E8:3C) [20:03:41:465]: Doing action: UnregisterFonts
+Action ended 20:03:41: RemoveODBC. Return value 1.
+MSI (s) (E8:3C) [20:03:41:465]: Note: 1: 2262 2: Font 3: -2147287038 
+Action start 20:03:41: UnregisterFonts.
+MSI (s) (E8:3C) [20:03:41:465]: Doing action: RemoveRegistryValues
+Action ended 20:03:41: UnregisterFonts. Return value 1.
+MSI (s) (E8:3C) [20:03:41:467]: Note: 1: 2262 2: RemoveRegistry 3: -2147287038 
+Action start 20:03:41: RemoveRegistryValues.
+MSI (s) (E8:3C) [20:03:41:467]: Doing action: UnregisterClassInfo
+Action ended 20:03:41: RemoveRegistryValues. Return value 1.
+MSI (s) (E8:3C) [20:03:41:467]: Note: 1: 2262 2: Class 3: -2147287038 
+Action start 20:03:41: UnregisterClassInfo.
+MSI (s) (E8:3C) [20:03:41:467]: Doing action: UnregisterExtensionInfo
+Action ended 20:03:41: UnregisterClassInfo. Return value 1.
+Action start 20:03:41: UnregisterExtensionInfo.
+MSI (s) (E8:3C) [20:03:41:467]: Doing action: UnregisterProgIdInfo
+Action ended 20:03:41: UnregisterExtensionInfo. Return value 1.
+MSI (s) (E8:3C) [20:03:41:469]: Note: 1: 2262 2: Class 3: -2147287038 
+Action start 20:03:41: UnregisterProgIdInfo.
+MSI (s) (E8:3C) [20:03:41:469]: Doing action: UnregisterMIMEInfo
+Action ended 20:03:41: UnregisterProgIdInfo. Return value 1.
+MSI (s) (E8:3C) [20:03:41:470]: Note: 1: 2262 2: MIME 3: -2147287038 
+Action start 20:03:41: UnregisterMIMEInfo.
+MSI (s) (E8:3C) [20:03:41:470]: Doing action: RemoveIniValues
+Action ended 20:03:41: UnregisterMIMEInfo. Return value 1.
+MSI (s) (E8:3C) [20:03:41:470]: Note: 1: 2262 2: RemoveIniFile 3: -2147287038 
+Action start 20:03:41: RemoveIniValues.
+MSI (s) (E8:3C) [20:03:41:470]: Doing action: RemoveShortcuts
+Action ended 20:03:41: RemoveIniValues. Return value 1.
+Action start 20:03:41: RemoveShortcuts.
+MSI (s) (E8:3C) [20:03:41:470]: Doing action: RemoveEnvironmentStrings
+Action ended 20:03:41: RemoveShortcuts. Return value 1.
+MSI (s) (E8:3C) [20:03:41:472]: Note: 1: 2262 2: Environment 3: -2147287038 
+Action start 20:03:41: RemoveEnvironmentStrings.
+MSI (s) (E8:3C) [20:03:41:472]: Doing action: RemoveDuplicateFiles
+Action ended 20:03:41: RemoveEnvironmentStrings. Return value 1.
+Action start 20:03:41: RemoveDuplicateFiles.
+MSI (s) (E8:3C) [20:03:41:472]: Doing action: RemoveFiles
+Action ended 20:03:41: RemoveDuplicateFiles. Return value 1.
+Action start 20:03:41: RemoveFiles.
+MSI (s) (E8:3C) [20:03:41:472]: Doing action: RemoveFolders
+Action ended 20:03:41: RemoveFiles. Return value 1.
+MSI (s) (E8:3C) [20:03:41:474]: Note: 1: 2262 2: CreateFolder 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:474]: Note: 1: 2262 2: LockPermissions 3: -2147287038 
+Action start 20:03:41: RemoveFolders.
+MSI (s) (E8:3C) [20:03:41:474]: Doing action: CreateFolders
+Action ended 20:03:41: RemoveFolders. Return value 1.
+MSI (s) (E8:3C) [20:03:41:474]: Note: 1: 2262 2: CreateFolder 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:474]: Note: 1: 2262 2: LockPermissions 3: -2147287038 
+Action start 20:03:41: CreateFolders.
+MSI (s) (E8:3C) [20:03:41:474]: Doing action: MoveFiles
+Action ended 20:03:41: CreateFolders. Return value 1.
+Action start 20:03:41: MoveFiles.
+MSI (s) (E8:3C) [20:03:41:474]: Doing action: InstallFiles
+Action ended 20:03:41: MoveFiles. Return value 1.
+Action start 20:03:41: InstallFiles.
+MSI (s) (E8:3C) [20:03:41:476]: Note: 1: 2262 2: LockPermissions 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:476]: Note: 1: 2205 2:  3: MsiPatchOldAssemblyFile 
+MSI (s) (E8:3C) [20:03:41:476]: Note: 1: 2228 2:  3: MsiPatchOldAssemblyFile 4: SELECT `MsiPatchOldAssemblyFile`.`Assembly_` FROM `MsiPatchOldAssemblyFile` WHERE  `MsiPatchOldAssemblyFile`.`File_` = ? 
+MSI (s) (E8:3C) [20:03:41:476]: Note: 1: 2262 2: Error 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:476]: Note: 1: 2205 2:  3: MsiSFCBypass 
+MSI (s) (E8:3C) [20:03:41:476]: Note: 1: 2228 2:  3: MsiSFCBypass 4: SELECT `File_` FROM `MsiSFCBypass` WHERE `File_` = ? 
+MSI (s) (E8:3C) [20:03:41:484]: Doing action: PatchFiles
+Action ended 20:03:41: InstallFiles. Return value 1.
+MSI (s) (E8:3C) [20:03:41:486]: Note: 1: 2262 2: Error 3: -2147287038 
+Action start 20:03:41: PatchFiles.
+MSI (s) (E8:3C) [20:03:41:486]: Doing action: DuplicateFiles
+Action ended 20:03:41: PatchFiles. Return value 1.
+Action start 20:03:41: DuplicateFiles.
+MSI (s) (E8:3C) [20:03:41:486]: Doing action: BindImage
+Action ended 20:03:41: DuplicateFiles. Return value 1.
+MSI (s) (E8:3C) [20:03:41:486]: Note: 1: 2262 2: BindImage 3: -2147287038 
+Action start 20:03:41: BindImage.
+MSI (s) (E8:3C) [20:03:41:486]: Doing action: CreateShortcuts
+Action ended 20:03:41: BindImage. Return value 1.
+Action start 20:03:41: CreateShortcuts.
+MSI (s) (E8:3C) [20:03:41:488]: Note: 1: 2235 2:  3: DisplayResourceDLL 4: SELECT  `Shortcut`,`Name`, `FileName`, `Component`.`Directory_`, `Arguments`, `WkDir`, `Icon_`, `IconIndex`, `Hotkey`, `ShowCmd`, `Shortcut`.`Description`, `Shortcut`.`Directory_`, `Component`.`RuntimeFlags`, `Component`.`Action`, `Target`, `ComponentId`, `Feature`.`Action`, `Component`.`Installed`, `DisplayResourceDLL`, `DisplayResourceId`, `DescriptionResourceDLL`, `DescriptionResourceId` From `Shortcut`, `Feature`, `Component`, `File` WHERE `Target` = `Feature` AND `Shortcut`.`Component_` = `Component` AND `Component`.`KeyPath` = `File`.`File` AND ((`Feature`.`Action` = 1 OR `Feature`.`Action` = 2)  OR (`Feature`.`Action` = 4 AND `Feature`.`Installed` = 0) OR (`Feature`.`Action` = 3 AND (`Feature`.`Installed` = 1 OR `Feature`.`Installed` = 2 OR `Feature`.`Installed` = 4)) OR (`Feature`.`Action` = NULL AND (`Component`.`Action` = 1 OR `Component`.`Action` = 2) AND (`Feature`.`Installed` = 1 OR `Feature`.`Installed` = 2 OR `Feature`.`Installed` = 4))) 
+MSI (s) (E8:3C) [20:03:41:488]: Note: 1: 2205 2:  3: MsiShortcutProperty 
+MSI (s) (E8:3C) [20:03:41:490]: Note: 1: 2235 2:  3: DisplayResourceDLL 4: SELECT  `Shortcut`,`Name`, `Target`, null, `Arguments`, `WkDir`, `Icon_`, `IconIndex`, `Hotkey`, `ShowCmd`, `Shortcut`.`Description`, `Shortcut`.`Directory_`, `Component`.`RuntimeFlags`, null, null, null, null, null, `DisplayResourceDLL`, `DisplayResourceId`, `DescriptionResourceDLL`, `DescriptionResourceId` From `Shortcut`, `Component` WHERE `Shortcut`.`Component_` = `Component` AND (`Component`.`Action` = 1 OR `Component`.`Action` = 2) 
+MSI (s) (E8:3C) [20:03:41:490]: Note: 1: 2205 2:  3: MsiShortcutProperty 
+MSI (s) (E8:3C) [20:03:41:490]: Doing action: RegisterClassInfo
+Action ended 20:03:41: CreateShortcuts. Return value 1.
+MSI (s) (E8:3C) [20:03:41:490]: Note: 1: 2262 2: Class 3: -2147287038 
+Action start 20:03:41: RegisterClassInfo.
+MSI (s) (E8:3C) [20:03:41:492]: Doing action: RegisterExtensionInfo
+Action ended 20:03:41: RegisterClassInfo. Return value 1.
+Action start 20:03:41: RegisterExtensionInfo.
+MSI (s) (E8:3C) [20:03:41:492]: Doing action: RegisterProgIdInfo
+Action ended 20:03:41: RegisterExtensionInfo. Return value 1.
+MSI (s) (E8:3C) [20:03:41:492]: Note: 1: 2262 2: Class 3: -2147287038 
+Action start 20:03:41: RegisterProgIdInfo.
+MSI (s) (E8:3C) [20:03:41:494]: Doing action: RegisterMIMEInfo
+Action ended 20:03:41: RegisterProgIdInfo. Return value 1.
+MSI (s) (E8:3C) [20:03:41:494]: Note: 1: 2262 2: MIME 3: -2147287038 
+Action start 20:03:41: RegisterMIMEInfo.
+MSI (s) (E8:3C) [20:03:41:494]: Doing action: WriteRegistryValues
+Action ended 20:03:41: RegisterMIMEInfo. Return value 1.
+MSI (s) (E8:3C) [20:03:41:496]: Note: 1: 2262 2: LockPermissions 3: -2147287038 
+Action start 20:03:41: WriteRegistryValues.
+MSI (s) (E8:3C) [20:03:41:496]: Doing action: WriteIniValues
+Action ended 20:03:41: WriteRegistryValues. Return value 1.
+Action start 20:03:41: WriteIniValues.
+MSI (s) (E8:3C) [20:03:41:498]: Doing action: WriteEnvironmentStrings
+Action ended 20:03:41: WriteIniValues. Return value 1.
+MSI (s) (E8:3C) [20:03:41:498]: Note: 1: 2262 2: Environment 3: -2147287038 
+Action start 20:03:41: WriteEnvironmentStrings.
+MSI (s) (E8:3C) [20:03:41:498]: Doing action: RegisterFonts
+Action ended 20:03:41: WriteEnvironmentStrings. Return value 1.
+MSI (s) (E8:3C) [20:03:41:498]: Note: 1: 2262 2: Font 3: -2147287038 
+Action start 20:03:41: RegisterFonts.
+MSI (s) (E8:3C) [20:03:41:498]: Doing action: InstallODBC
+Action ended 20:03:41: RegisterFonts. Return value 1.
+MSI (s) (E8:3C) [20:03:41:500]: Note: 1: 2711 2: ODBCDriverManager 
+MSI (s) (E8:3C) [20:03:41:500]: Note: 1: 2711 2: ODBCDriverManager64 
+MSI (s) (E8:3C) [20:03:41:500]: Note: 1: 2262 2: ODBCDriver 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:500]: Note: 1: 2262 2: ODBCAttribute 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:500]: Note: 1: 2262 2: ODBCDriver 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:500]: Note: 1: 2262 2: ODBCAttribute 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:500]: Note: 1: 2262 2: ODBCTranslator 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:500]: Note: 1: 2262 2: ODBCTranslator 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:500]: Note: 1: 2262 2: ODBCDataSource 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:500]: Note: 1: 2262 2: ODBCSourceAttribute 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:500]: Note: 1: 2262 2: ODBCDataSource 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:500]: Note: 1: 2262 2: ODBCSourceAttribute 3: -2147287038 
+Action start 20:03:41: InstallODBC.
+MSI (s) (E8:3C) [20:03:41:500]: Doing action: RegisterTypeLibraries
+Action ended 20:03:41: InstallODBC. Return value 0.
+Action start 20:03:41: RegisterTypeLibraries.
+MSI (s) (E8:3C) [20:03:41:500]: Doing action: SelfRegModules
+Action ended 20:03:41: RegisterTypeLibraries. Return value 1.
+MSI (s) (E8:3C) [20:03:41:502]: Note: 1: 2262 2: SelfReg 3: -2147287038 
+Action start 20:03:41: SelfRegModules.
+MSI (s) (E8:3C) [20:03:41:502]: Doing action: RegisterComPlus
+Action ended 20:03:41: SelfRegModules. Return value 1.
+MSI (s) (E8:3C) [20:03:41:502]: Note: 1: 2262 2: Complus 3: -2147287038 
+Action start 20:03:41: RegisterComPlus.
+MSI (s) (E8:3C) [20:03:41:502]: Doing action: InstallServices
+Action ended 20:03:41: RegisterComPlus. Return value 1.
+MSI (s) (E8:3C) [20:03:41:502]: Note: 1: 2262 2: LockPermissions 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:502]: Note: 1: 2262 2: ServiceInstall 3: -2147287038 
+Action start 20:03:41: InstallServices.
+MSI (s) (E8:3C) [20:03:41:502]: Doing action: StartServices
+Action ended 20:03:41: InstallServices. Return value 1.
+MSI (s) (E8:3C) [20:03:41:504]: Note: 1: 2262 2: ServiceControl 3: -2147287038 
+Action start 20:03:41: StartServices.
+MSI (s) (E8:3C) [20:03:41:504]: Doing action: RegisterUser
+Action ended 20:03:41: StartServices. Return value 1.
+Action start 20:03:41: RegisterUser.
+MSI (s) (E8:3C) [20:03:41:504]: Doing action: RegisterProduct
+Action ended 20:03:41: RegisterUser. Return value 1.
+MSI (s) (E8:3C) [20:03:41:504]: Note: 1: 2262 2: Error 3: -2147287038 
+Action start 20:03:41: RegisterProduct.
+MSI (s) (E8:3C) [20:03:41:506]: PROPERTY CHANGE: Adding ProductToBeRegistered property. Its value is '1'.
+MSI (s) (E8:3C) [20:03:41:506]: Doing action: PublishComponents
+Action ended 20:03:41: RegisterProduct. Return value 1.
+MSI (s) (E8:3C) [20:03:41:506]: Note: 1: 2262 2: PublishComponent 3: -2147287038 
+Action start 20:03:41: PublishComponents.
+MSI (s) (E8:3C) [20:03:41:508]: Doing action: MsiPublishAssemblies
+Action ended 20:03:41: PublishComponents. Return value 1.
+Action start 20:03:41: MsiPublishAssemblies.
+MSI (s) (E8:3C) [20:03:41:512]: Doing action: PublishFeatures
+Action ended 20:03:41: MsiPublishAssemblies. Return value 1.
+Action start 20:03:41: PublishFeatures.
+MSI (s) (E8:3C) [20:03:41:514]: Doing action: PublishProduct
+Action ended 20:03:41: PublishFeatures. Return value 1.
+Action start 20:03:41: PublishProduct.
+MSI (s) (E8:3C) [20:03:41:516]: Doing action: InstallExecute
+Action ended 20:03:41: PublishProduct. Return value 1.
+MSI (s) (E8:3C) [20:03:41:516]: Running Script: C:\Windows\Installer\MSIF267.tmp
+MSI (s) (E8:3C) [20:03:41:516]: PROPERTY CHANGE: Adding UpdateStarted property. Its value is '1'.
+MSI (s) (E8:3C) [20:03:41:528]: Note: 1: 2265 2:  3: -2147287035 
+MSI (s) (E8:3C) [20:03:41:528]: Machine policy value 'DisableRollback' is 0
+MSI (s) (E8:3C) [20:03:41:528]: Note: 1: 2318 2:  
+MSI (s) (E8:3C) [20:03:41:532]: Note: 1: 2318 2:  
+MSI (s) (E8:3C) [20:03:41:532]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2 
+MSI (s) (E8:3C) [20:03:41:532]: Executing op: Header(Signature=1397708873,Version=500,Timestamp=1567662197,LangId=1033,Platform=589824,ScriptType=1,ScriptMajorVersion=21,ScriptMinorVersion=4,ScriptAttributes=1)
+Action start 20:03:41: InstallExecute.
+MSI (s) (E8:3C) [20:03:41:534]: Executing op: ProductInfo(ProductKey={B584706B-0B5E-426D-8C87-A8E049718234},ProductName=Mini Mouse Macro Installer,PackageName=MiniMouseMacro.Setup.msi,Language=1033,Version=150994944,Assignment=1,ObsoleteArg=0,ProductIcon=_112D608FD02CD87FDC7735.exe,,PackageCode={0BA9BFAE-8922-45FB-AB71-7A4C7FBCB478},,,InstanceType=0,LUASetting=0,RemoteURTInstalls=0,ProductDeploymentFlags=3)
+MSI (s) (E8:3C) [20:03:41:534]: Executing op: DialogInfo(Type=0,Argument=1033)
+MSI (s) (E8:3C) [20:03:41:534]: Executing op: DialogInfo(Type=1,Argument=Mini Mouse Macro Installer)
+MSI (s) (E8:3C) [20:03:41:534]: Executing op: RollbackInfo(,RollbackAction=Rollback,RollbackDescription=Rolling back action: [1],,CleanupAction=RollbackCleanup,CleanupDescription=Removing backup files File: [1],)
+MSI (s) (E8:3C) [20:03:41:534]: Executing op: SetBaseline(Baseline=0,)
+MSI (s) (E8:3C) [20:03:41:534]: Executing op: SetBaseline(Baseline=1,)
+MSI (s) (E8:3C) [20:03:41:534]: Executing op: ActionStart(Name=ProcessComponents,Description=Updating component registration,)
+MSI (s) (E8:3C) [20:03:41:536]: Executing op: ProgressTotal(Total=36,Type=1,ByteEquivalent=24000)
+MSI (s) (E8:3C) [20:03:41:536]: Executing op: ComponentRegister(ComponentId={06525048-8D76-3C86-05F4-CF0B72C63260},KeyPath=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\System.Runtime.CompilerServices.Unsafe.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:536]: Executing op: ComponentRegister(ComponentId={4F3D119E-1067-6386-D1EF-816BFF4B3CCC},KeyPath=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\System.IO.Compression.FileSystem.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:536]: Executing op: ComponentRegister(ComponentId={7431DD90-5998-A41E-68FD-5E3CB53A7B9D},KeyPath=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\K4os.Compression.LZ4.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:546]: Executing op: ComponentRegister(ComponentId={5EE7170F-31EE-8D63-AC68-E8AC1C70EDE1},KeyPath=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\System.Net.Http.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:546]: Executing op: ComponentRegister(ComponentId={3CAD611E-8F27-3B89-B3F2-FDF9F9474AA1},KeyPath=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\System.Numerics.Vectors.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:546]: Executing op: ComponentRegister(ComponentId={D1CA27BF-535C-88C5-7E14-9E8E0817C59D},KeyPath=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\System.Memory.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:546]: Executing op: ComponentRegister(ComponentId={95F4B3FE-FC20-02DD-5665-406213C59ECF},KeyPath=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\System.Buffers.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:546]: Executing op: ComponentRegister(ComponentId={CEA55F28-669A-7C22-8A3C-E2007907257A},KeyPath=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\x64\tesseract50.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:548]: Executing op: ComponentRegister(ComponentId={25DF80FF-31BE-0384-3E53-855D1BF0ED80},KeyPath=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\System.Threading.Tasks.Extensions.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:548]: Executing op: ComponentRegister(ComponentId={68D203CA-A602-274C-713B-A74F088B37CC},KeyPath=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\ZstdSharp.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:548]: Executing op: ComponentRegister(ComponentId={63908976-BD33-2994-32AF-97F53A7762D3},KeyPath=C:\Program Files (x86)\MiniMouseMacro\macros\Welcome.mmmacro,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:548]: Executing op: ComponentRegister(ComponentId={7C7706E5-C54C-9983-C03B-50E00BB12865},KeyPath=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\Newtonsoft.Json.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:549]: Executing op: ComponentRegister(ComponentId={FD26EF0C-9389-6ABD-0D25-2416998015C8},KeyPath=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\x64\leptonica-1.82.0.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:549]: Executing op: ComponentRegister(ComponentId={19ADEB19-EE8F-0B97-F416-54E9CC24B71C},KeyPath=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\Microsoft.Web.WebView2.Core.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:549]: Executing op: ComponentRegister(ComponentId={EB4FE5D8-C4E7-0CDD-DE28-B3CA2BD0F4A0},KeyPath=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\Chaos.NaCl.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:549]: Executing op: ComponentRegister(ComponentId={86C10B03-F483-EB6D-1B49-0EBD00099E48},KeyPath=C:\Program Files (x86)\MiniMouseMacro\MiniMouseMacro.exe,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:549]: Executing op: ComponentRegister(ComponentId={25C206BE-312F-8693-BA4A-4211592F32FF},KeyPath=C:\Program Files (x86)\MiniMouseMacro\config.ini,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:552]: Executing op: ComponentRegister(ComponentId={7C730132-D765-47E1-0DDF-5D80635994AE},KeyPath=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\System.IO.Compression.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:552]: Executing op: ComponentRegister(ComponentId={F77BB5C9-8DB2-F47D-FF9C-7C5E3E0DF380},KeyPath=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\K4os.Hash.xxHash.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:552]: Executing op: ComponentRegister(ComponentId={0B82D18C-8433-DCD6-1AD2-3D624588BEE4},KeyPath=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\K4os.Compression.LZ4.Streams.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:552]: Executing op: ComponentRegister(ComponentId={AA872F61-08BD-025B-F248-A6F35F3FD976},KeyPath=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\NetSparkleUpdater.UI.WinForms.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:552]: Executing op: ComponentRegister(ComponentId={9DD5AA04-366B-D6CE-85EB-08E03B5EC533},KeyPath=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\BouncyCastle.Cryptography.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:554]: Executing op: ComponentRegister(ComponentId={0969E7A7-6119-0B1D-1F30-45021913C21D},KeyPath=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\NetSparkle.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:554]: Executing op: ComponentRegister(ComponentId={D732BF03-7B03-E1C7-9E60-2F4B2EC2F8B6},KeyPath=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\MiniMouseMacro.exe,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:554]: Executing op: ComponentRegister(ComponentId={08E6E6F7-37BF-6817-B8B9-24C857AD404C},KeyPath=C:\Program Files (x86)\MiniMouseMacro\data\mmm_icon.ico,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:554]: Executing op: ComponentRegister(ComponentId={5CF9E403-EB0F-B42A-35F3-0EE05C660BFD},KeyPath=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\MySql.Data.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:554]: Executing op: ComponentRegister(ComponentId={A94BD855-3015-371D-7A04-42231CBA4B41},KeyPath=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\Microsoft.Web.WebView2.WinForms.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:556]: Executing op: ComponentRegister(ComponentId={C8BE4DF2-D22A-35A4-40B5-081A65AC48F4},KeyPath=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\Tesseract.dll,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:556]: Executing op: ComponentRegister(ComponentId={B01B2D89-AEF7-D787-38E7-6A03D87667FF},KeyPath=20:\.mmmacro\,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:556]: Executing op: ComponentRegister(ComponentId={F8E705C0-2E20-AC2A-35BF-336CB185B4BE},KeyPath=20:\MiniMouseMacro.mmmacro\,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:556]: Executing op: ComponentRegister(ComponentId={B536F714-FA33-3A7D-FA65-79042221E73E},KeyPath=20:\MiniMouseMacro.mmmacro\DefaultIcon\,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:556]: Executing op: ComponentRegister(ComponentId={05ACB47E-0E62-0957-007B-03F29F205FCE},KeyPath=20:\MiniMouseMacro.mmmacro\shell\,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:558]: Executing op: ComponentRegister(ComponentId={651FEADE-3F6E-1690-97EC-B17D3EED54E3},KeyPath=20:\MiniMouseMacro.mmmacro\shell\open\,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:558]: Executing op: ComponentRegister(ComponentId={FB73798E-5C70-FE46-ADAC-A301445056E0},KeyPath=20:\MiniMouseMacro.mmmacro\shell\open\command\,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:558]: Executing op: ComponentRegister(ComponentId={5BFC006A-5057-6104-B56D-368DB5D9CBCB},KeyPath=20:\MiniMouseMacro.mmmacro\shell\run\,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:558]: Executing op: ComponentRegister(ComponentId={49E9426C-1234-4B1E-B5D6-54C151CCA30B},KeyPath=20:\MiniMouseMacro.mmmacro\shell\run\command\,State=3,,Disk=1,SharedDllRefCount=0,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:558]: Executing op: ActionStart(Name=RemoveODBC,Description=Removing ODBC components,)
+MSI (s) (E8:3C) [20:03:41:560]: Executing op: ODBCDriverManager(,BinaryType=0)
+MSI (s) (E8:3C) [20:03:41:560]: Executing op: ODBCDriverManager(,BinaryType=1)
+MSI (s) (E8:3C) [20:03:41:560]: Executing op: ActionStart(Name=InstallFiles,Description=Copying new files File: [1],  Directory: [9],  Size: [6],)
+MSI (s) (E8:3C) [20:03:41:560]: Executing op: ProgressTotal(Total=22052664,Type=0,ByteEquivalent=1)
+MSI (s) (E8:3C) [20:03:41:560]: Executing op: SetTargetFolder(Folder=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\)
+MSI (s) (E8:3C) [20:03:41:560]: Executing op: SetSourceFolder(Folder=1\APP\90~1.0\|app\9.0.0\)
+MSI (s) (E8:3C) [20:03:41:560]: Executing op: ChangeMedia(,MediaPrompt=Please insert the disk: ,MediaCabinet=_4EC1ABF291688A972D8BCFCDE0D430C4,BytesPerTick=65536,CopierType=2,ModuleFileName=C:\Windows\Installer\feb03.msi,,,,,IsFirstPhysicalMedia=1)
+MSI (s) (E8:3C) [20:03:41:560]: Executing op: FileCopy(SourceName=SYSTEM~1.DLL|System.Runtime.CompilerServices.Unsafe.dll,SourceCabKey=_03C979F6DA1BC5412D775F57AAE4D472,DestName=System.Runtime.CompilerServices.Unsafe.dll,Attributes=512,FileSize=19256,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=6.100.225.20307,Language=0,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:615]: File: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\System.Runtime.CompilerServices.Unsafe.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:617]: Source for file '_03C979F6DA1BC5412D775F57AAE4D472' is compressed
+MSI (s) (E8:3C) [20:03:41:629]: Executing op: FileCopy(SourceName=SYSTEM~2.DLL|System.IO.Compression.FileSystem.dll,SourceCabKey=_0F3F4E2D85FD90712DC493E0C99FADD2,DestName=System.IO.Compression.FileSystem.dll,Attributes=512,FileSize=27704,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=4.8.9221.0,Language=0,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:629]: File: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\System.IO.Compression.FileSystem.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:629]: Source for file '_0F3F4E2D85FD90712DC493E0C99FADD2' is compressed
+MSI (s) (E8:3C) [20:03:41:631]: Executing op: FileCopy(SourceName=K4OSCO~1.DLL|K4os.Compression.LZ4.dll,SourceCabKey=_1AB675D833CB7357F936D7B81A6EA2DF,DestName=K4os.Compression.LZ4.dll,Attributes=512,FileSize=75264,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=1.3.8.0,Language=0,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:631]: File: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\K4os.Compression.LZ4.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:631]: Source for file '_1AB675D833CB7357F936D7B81A6EA2DF' is compressed
+MSI (s) (E8:3C) [20:03:41:633]: Executing op: FileCopy(SourceName=SYSTEM~3.DLL|System.Net.Http.dll,SourceCabKey=_210187BD2916BE2DFA879C963132D441,DestName=System.Net.Http.dll,Attributes=512,FileSize=200600,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=4.8.9221.0,Language=1033,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:633]: File: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\System.Net.Http.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:633]: Source for file '_210187BD2916BE2DFA879C963132D441' is compressed
+MSI (s) (E8:3C) [20:03:41:635]: Executing op: FileCopy(SourceName=SYSTEM~4.DLL|System.Numerics.Vectors.dll,SourceCabKey=_2935D3769A15DB8C241F4EAF603D0E9F,DestName=System.Numerics.Vectors.dll,Attributes=512,FileSize=110344,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=4.600.125.16908,Language=0,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:637]: File: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\System.Numerics.Vectors.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:637]: Source for file '_2935D3769A15DB8C241F4EAF603D0E9F' is compressed
+MSI (s) (E8:3C) [20:03:41:637]: Executing op: FileCopy(SourceName=SYSTEM~5.DLL|System.Memory.dll,SourceCabKey=_3618A09E34A9C31EEC3C9109405BEE47,DestName=System.Memory.dll,Attributes=512,FileSize=145200,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=4.600.325.20307,Language=0,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:637]: File: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\System.Memory.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:637]: Source for file '_3618A09E34A9C31EEC3C9109405BEE47' is compressed
+MSI (s) (E8:3C) [20:03:41:639]: Executing op: FileCopy(SourceName=SYSTEM~6.DLL|System.Buffers.dll,SourceCabKey=_37DB849BE17A318102EFF899479056A4,DestName=System.Buffers.dll,Attributes=512,FileSize=23816,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=4.600.125.16908,Language=0,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:639]: File: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\System.Buffers.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:639]: Source for file '_37DB849BE17A318102EFF899479056A4' is compressed
+MSI (s) (E8:3C) [20:03:41:641]: Executing op: SetTargetFolder(Folder=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\x64\)
+MSI (s) (E8:3C) [20:03:41:641]: Executing op: SetSourceFolder(Folder=1\APP\90~1.0\X64\|app\9.0.0\x64\)
+MSI (s) (E8:3C) [20:03:41:641]: Executing op: FileCopy(SourceName=TESSER~1.DLL|tesseract50.dll,SourceCabKey=_43E9A7DB653A4893B83278D7901E8F4C,DestName=tesseract50.dll,Attributes=512,FileSize=2788352,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:641]: File: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\x64\tesseract50.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:641]: Source for file '_43E9A7DB653A4893B83278D7901E8F4C' is compressed
+MSI (s) (E8:3C) [20:03:41:661]: Executing op: SetTargetFolder(Folder=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\)
+MSI (s) (E8:3C) [20:03:41:661]: Executing op: SetSourceFolder(Folder=1\APP\90~1.0\|app\9.0.0\)
+MSI (s) (E8:3C) [20:03:41:661]: Executing op: FileCopy(SourceName=SYSTEM~7.DLL|System.Threading.Tasks.Extensions.dll,SourceCabKey=_4D2D658591F8D9F94C8292695E077F95,DestName=System.Threading.Tasks.Extensions.dll,Attributes=512,FileSize=27960,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=4.600.325.20307,Language=0,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:661]: File: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\System.Threading.Tasks.Extensions.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:661]: Source for file '_4D2D658591F8D9F94C8292695E077F95' is compressed
+MSI (s) (E8:3C) [20:03:41:662]: Executing op: FileCopy(SourceName=ZSTDSH~1.DLL|ZstdSharp.dll,SourceCabKey=_59571A6F69D4F6070FD183EE9E24CB28,DestName=ZstdSharp.dll,Attributes=512,FileSize=429056,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=0.8.7.0,Language=0,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:662]: File: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\ZstdSharp.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:662]: Source for file '_59571A6F69D4F6070FD183EE9E24CB28' is compressed
+MSI (s) (E8:3C) [20:03:41:665]: Executing op: SetTargetFolder(Folder=C:\Program Files (x86)\MiniMouseMacro\macros\)
+MSI (s) (E8:3C) [20:03:41:665]: Executing op: SetSourceFolder(Folder=1\MACROS\|macros\)
+MSI (s) (E8:3C) [20:03:41:665]: Executing op: FileCopy(SourceName=WELCOM~1.MMM|Welcome.mmmacro,SourceCabKey=_695FEADD6E17403FA69522268C61A78A,DestName=Welcome.mmmacro,Attributes=512,FileSize=3138,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:665]: File: C:\Program Files (x86)\MiniMouseMacro\macros\Welcome.mmmacro;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:665]: Source for file '_695FEADD6E17403FA69522268C61A78A' is compressed
+MSI (s) (E8:3C) [20:03:41:669]: Executing op: SetTargetFolder(Folder=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\)
+MSI (s) (E8:3C) [20:03:41:669]: Executing op: SetSourceFolder(Folder=1\APP\90~1.0\|app\9.0.0\)
+MSI (s) (E8:3C) [20:03:41:669]: Executing op: FileCopy(SourceName=NEWTON~1.DLL|Newtonsoft.Json.dll,SourceCabKey=_6B5083D559749A80D7646352B7F3FD4B,DestName=Newtonsoft.Json.dll,Attributes=512,FileSize=721320,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=13.0.4.30916,Language=0,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:669]: File: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\Newtonsoft.Json.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:669]: Source for file '_6B5083D559749A80D7646352B7F3FD4B' is compressed
+MSI (s) (E8:3C) [20:03:41:673]: Executing op: SetTargetFolder(Folder=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\x64\)
+MSI (s) (E8:3C) [20:03:41:673]: Executing op: SetSourceFolder(Folder=1\APP\90~1.0\X64\|app\9.0.0\x64\)
+MSI (s) (E8:3C) [20:03:41:673]: Executing op: FileCopy(SourceName=LEPTON~1.DLL|leptonica-1.82.0.dll,SourceCabKey=_6F1A3BB3E0AA49F6A5881677D9653E0A,DestName=leptonica-1.82.0.dll,Attributes=512,FileSize=4168192,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:673]: File: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\x64\leptonica-1.82.0.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:673]: Source for file '_6F1A3BB3E0AA49F6A5881677D9653E0A' is compressed
+MSI (s) (E8:3C) [20:03:41:698]: Executing op: SetTargetFolder(Folder=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\)
+MSI (s) (E8:3C) [20:03:41:698]: Executing op: SetSourceFolder(Folder=1\APP\90~1.0\|app\9.0.0\)
+MSI (s) (E8:3C) [20:03:41:698]: Executing op: FileCopy(SourceName=MICROS~1.DLL|Microsoft.Web.WebView2.Core.dll,SourceCabKey=_816EF2F00C2B05FB80E172BD958AAEC4,DestName=Microsoft.Web.WebView2.Core.dll,Attributes=512,FileSize=649800,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=1.0.3856.49,Language=0,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:698]: File: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\Microsoft.Web.WebView2.Core.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:698]: Source for file '_816EF2F00C2B05FB80E172BD958AAEC4' is compressed
+MSI (s) (E8:3C) [20:03:41:701]: Executing op: FileCopy(SourceName=CHAOSN~1.DLL|Chaos.NaCl.dll,SourceCabKey=_87BDCF94B9DCE0DF46CDDADCFB57AAB2,DestName=Chaos.NaCl.dll,Attributes=512,FileSize=172032,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=0.1.0.0,Language=0,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:702]: File: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\Chaos.NaCl.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:702]: Source for file '_87BDCF94B9DCE0DF46CDDADCFB57AAB2' is compressed
+MSI (s) (E8:3C) [20:03:41:704]: Executing op: SetTargetFolder(Folder=C:\Program Files (x86)\MiniMouseMacro\)
+MSI (s) (E8:3C) [20:03:41:704]: Executing op: SetSourceFolder(Folder=1\)
+MSI (s) (E8:3C) [20:03:41:704]: Executing op: FileCopy(SourceName=MINIMO~1.EXE|MiniMouseMacro.exe,SourceCabKey=_915B2CDA68F64A6094111B4EC2CDD60D,DestName=MiniMouseMacro.exe,Attributes=512,FileSize=37216,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=1.0.0.0,Language=0,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:704]: File: C:\Program Files (x86)\MiniMouseMacro\MiniMouseMacro.exe;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:704]: Source for file '_915B2CDA68F64A6094111B4EC2CDD60D' is compressed
+MSI (s) (E8:3C) [20:03:41:705]: Executing op: FileCopy(SourceName=CONFIG.INI|config.ini,SourceCabKey=_9639D2682D414B8C90E84D1A15CDB978,DestName=config.ini,Attributes=512,FileSize=222,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:705]: File: C:\Program Files (x86)\MiniMouseMacro\config.ini;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:705]: Source for file '_9639D2682D414B8C90E84D1A15CDB978' is compressed
+MSI (s) (E8:3C) [20:03:41:706]: Executing op: SetTargetFolder(Folder=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\)
+MSI (s) (E8:3C) [20:03:41:707]: Executing op: SetSourceFolder(Folder=1\APP\90~1.0\|app\9.0.0\)
+MSI (s) (E8:3C) [20:03:41:707]: Executing op: FileCopy(SourceName=SYSTEM~8.DLL|System.IO.Compression.dll,SourceCabKey=_A5E9F26CB0D074E532F2433DA6E5E42C,DestName=System.IO.Compression.dll,Attributes=512,FileSize=68504,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=4.8.9221.0,Language=1033,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:707]: File: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\System.IO.Compression.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:707]: Source for file '_A5E9F26CB0D074E532F2433DA6E5E42C' is compressed
+MSI (s) (E8:3C) [20:03:41:708]: Executing op: FileCopy(SourceName=K4OSHA~1.DLL|K4os.Hash.xxHash.dll,SourceCabKey=_C7F8C62404E924B0E1320E7ACFF209D8,DestName=K4os.Hash.xxHash.dll,Attributes=512,FileSize=13312,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=1.0.8.0,Language=0,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:708]: File: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\K4os.Hash.xxHash.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:708]: Source for file '_C7F8C62404E924B0E1320E7ACFF209D8' is compressed
+MSI (s) (E8:3C) [20:03:41:708]: Executing op: FileCopy(SourceName=K4OSCO~2.DLL|K4os.Compression.LZ4.Streams.dll,SourceCabKey=_CC39DAB8925962300AEF936D66C93245,DestName=K4os.Compression.LZ4.Streams.dll,Attributes=512,FileSize=83456,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=1.3.8.0,Language=0,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:708]: File: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\K4os.Compression.LZ4.Streams.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:708]: Source for file '_CC39DAB8925962300AEF936D66C93245' is compressed
+MSI (s) (E8:3C) [20:03:41:710]: Executing op: FileCopy(SourceName=NETSPA~1.DLL|NetSparkleUpdater.UI.WinForms.dll,SourceCabKey=_D396432C9A52ACB7A769360C69F52770,DestName=NetSparkleUpdater.UI.WinForms.dll,Attributes=512,FileSize=121856,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=2.0.0.0,Language=0,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:710]: File: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\NetSparkleUpdater.UI.WinForms.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:710]: Source for file '_D396432C9A52ACB7A769360C69F52770' is compressed
+MSI (s) (E8:3C) [20:03:41:712]: Executing op: FileCopy(SourceName=BOUNCY~1.DLL|BouncyCastle.Cryptography.dll,SourceCabKey=_D69125D1C279F8D9D516D604203D0C67,DestName=BouncyCastle.Cryptography.dll,Attributes=512,FileSize=4694688,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=2.6.2.46322,Language=0,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:712]: File: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\BouncyCastle.Cryptography.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:712]: Source for file '_D69125D1C279F8D9D516D604203D0C67' is compressed
+MSI (s) (E8:3C) [20:03:41:734]: Executing op: FileCopy(SourceName=NETSPA~2.DLL|NetSparkle.dll,SourceCabKey=_D747E956491469935A631C78C24AC5E9,DestName=NetSparkle.dll,Attributes=512,FileSize=207360,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=3.0.4.0,Language=0,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:734]: File: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\NetSparkle.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:734]: Source for file '_D747E956491469935A631C78C24AC5E9' is compressed
+MSI (s) (E8:3C) [20:03:41:736]: Executing op: FileCopy(SourceName=MINIMO~2.EXE|MiniMouseMacro.exe,SourceCabKey=_E99755F10E374D9D9E6804D392C9C9F1,DestName=MiniMouseMacro.exe,Attributes=512,FileSize=5898592,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=9.0.0.0,Language=0,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:736]: File: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\MiniMouseMacro.exe;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:736]: Source for file '_E99755F10E374D9D9E6804D392C9C9F1' is compressed
+MSI (s) (E8:3C) [20:03:41:767]: Executing op: SetTargetFolder(Folder=C:\Program Files (x86)\MiniMouseMacro\data\)
+MSI (s) (E8:3C) [20:03:41:767]: Executing op: SetSourceFolder(Folder=1\DATA\|data\)
+MSI (s) (E8:3C) [20:03:41:767]: Executing op: FileCopy(SourceName=MMM_ICON.ICO|mmm_icon.ico,SourceCabKey=_EFAA023A6C6C40E58406B8F0A1EB89A1,DestName=mmm_icon.ico,Attributes=512,FileSize=4288,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,,,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:767]: File: C:\Program Files (x86)\MiniMouseMacro\data\mmm_icon.ico;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:767]: Source for file '_EFAA023A6C6C40E58406B8F0A1EB89A1' is compressed
+MSI (s) (E8:3C) [20:03:41:773]: Executing op: SetTargetFolder(Folder=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\)
+MSI (s) (E8:3C) [20:03:41:773]: Executing op: SetSourceFolder(Folder=1\APP\90~1.0\|app\9.0.0\)
+MSI (s) (E8:3C) [20:03:41:773]: Executing op: FileCopy(SourceName=MYSQLD~1.DLL|MySql.Data.dll,SourceCabKey=_F46B22665ED6103DFC9B7E0831E49FCA,DestName=MySql.Data.dll,Attributes=512,FileSize=1189000,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=9.6.0.0,Language=0,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:773]: File: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\MySql.Data.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:773]: Source for file '_F46B22665ED6103DFC9B7E0831E49FCA' is compressed
+MSI (s) (E8:3C) [20:03:41:779]: Executing op: FileCopy(SourceName=MICROS~2.DLL|Microsoft.Web.WebView2.WinForms.dll,SourceCabKey=_F69256C819C06266622F429FDB80D0E9,DestName=Microsoft.Web.WebView2.WinForms.dll,Attributes=512,FileSize=39016,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=1.0.3856.49,Language=0,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:781]: File: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\Microsoft.Web.WebView2.WinForms.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:781]: Source for file '_F69256C819C06266622F429FDB80D0E9' is compressed
+MSI (s) (E8:3C) [20:03:41:781]: Executing op: FileCopy(SourceName=TESSER~2.DLL|Tesseract.dll,SourceCabKey=_FDA8C84E31D4D6F7364B22A7E9FE8AB1,DestName=Tesseract.dll,Attributes=512,FileSize=133120,PerTick=65536,,VerifyMedia=1,,,,,CheckCRC=0,Version=5.2.0.0,Language=0,InstallMode=58982400,,,,,,,)
+MSI (s) (E8:3C) [20:03:41:781]: File: C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\Tesseract.dll;	To be installed;	Won't patch;	No existing file
+MSI (s) (E8:3C) [20:03:41:781]: Source for file '_FDA8C84E31D4D6F7364B22A7E9FE8AB1' is compressed
+MSI (s) (E8:3C) [20:03:41:783]: Executing op: CacheSizeFlush(,)
+MSI (s) (E8:3C) [20:03:41:783]: Executing op: ActionStart(Name=CreateShortcuts,Description=Creating shortcuts Shortcut: [1],)
+MSI (s) (E8:3C) [20:03:41:785]: Executing op: IconCreate(Icon=_853F67D554F05449430E7E.exe,Data=BinaryData)
+MSI (s) (E8:3C) [20:03:41:787]: Executing op: IconCreate(Icon=_112D608FD02CD87FDC7735.exe,Data=BinaryData)
+MSI (s) (E8:3C) [20:03:41:787]: Executing op: IconCreate(Icon=_FDF44DF228DB2422438122.exe,Data=BinaryData)
+MSI (s) (E8:3C) [20:03:41:791]: Executing op: IconCreate(Icon=_C07842E589BBE583E8262A.exe,Data=BinaryData)
+MSI (s) (E8:3C) [20:03:41:791]: Executing op: SetTargetFolder(Folder=25)
+MSI (s) (E8:3C) [20:03:41:793]: SHELL32::SHGetFolderPath returned: C:\Users\Public\Desktop
+MSI (s) (E8:3C) [20:03:41:793]: Executing op: ShortcutCreate(Name=MINIMO~1|MiniMouseMacro,Feature=DefaultFeature,Component={86C10B03-F483-EB6D-1B49-0EBD00099E48}[~]2,,,WorkingDir=C:\Program Files (x86)\MiniMouseMacro\,Icon=_FDF44DF228DB2422438122.exe,IconIndex=0,,ShowCmd=1,,,,,)
+MSI (s) (E8:3C) [20:03:41:813]: Executing op: SetTargetFolder(Folder=23)
+MSI (s) (E8:3C) [20:03:41:815]: SHELL32::SHGetFolderPath returned: C:\ProgramData\Microsoft\Windows\Start Menu\Programs
+MSI (s) (E8:3C) [20:03:41:815]: Executing op: ShortcutCreate(Name=MINIMO~2|MiniMouseMacro,Feature=DefaultFeature,Component={86C10B03-F483-EB6D-1B49-0EBD00099E48}[~]2,,,WorkingDir=C:\Program Files (x86)\MiniMouseMacro\,Icon=_C07842E589BBE583E8262A.exe,IconIndex=0,,ShowCmd=1,,,,,)
+MSI (s) (E8:3C) [20:03:41:825]: Executing op: SetTargetFolder(Folder=25)
+MSI (s) (E8:3C) [20:03:41:827]: SHELL32::SHGetFolderPath returned: C:\Users\Public\Desktop
+MSI (s) (E8:3C) [20:03:41:827]: Executing op: SetTargetFolder(Folder=23)
+MSI (s) (E8:3C) [20:03:41:829]: SHELL32::SHGetFolderPath returned: C:\ProgramData\Microsoft\Windows\Start Menu\Programs
+MSI (s) (E8:3C) [20:03:41:829]: Executing op: ActionStart(Name=RegisterExtensionInfo,Description=Registering extension servers Extension: [1],)
+MSI (s) (E8:3C) [20:03:41:831]: Executing op: RegExtensionInfoRegister64(Feature=DefaultFeature,Component={86C10B03-F483-EB6D-1B49-0EBD00099E48}[~]2,FileName=C:\Program Files (x86)\MiniMouseMacro\MiniMouseMacro.exe,Extension=mmmacro,ProgId=mmmacro,,,,Order=2)
+MSI (s) (E8:3C) [20:03:41:831]: Executing op: ActionStart(Name=RegisterProgIdInfo,Description=Registering program identifiers ProgId: [1],)
+MSI (s) (E8:3C) [20:03:41:833]: Executing op: RegProgIdInfoRegister64(ProgId=mmmacro,,Extension=mmmacro,Description=MiniMouseMacro Macro File,Icon=_853F67D554F05449430E7E.exe,IconIndex=0,,,,)
+MSI (s) (E8:3C) [20:03:41:833]: Executing op: ActionStart(Name=WriteRegistryValues,Description=Writing system registry values Key: [1], Name: [2], Value: [3],)
+MSI (s) (E8:3C) [20:03:41:833]: Executing op: ProgressTotal(Total=8,Type=1,ByteEquivalent=13200)
+MSI (s) (E8:3C) [20:03:41:833]: Executing op: RegOpenKey(,Key=.mmmacro,,BinaryType=1,,)
+MSI (s) (E8:3C) [20:03:41:833]: Executing op: RegOpenKey(,Key=MiniMouseMacro.mmmacro,,BinaryType=1,,)
+MSI (s) (E8:3C) [20:03:41:833]: Executing op: RegOpenKey(,Key=MiniMouseMacro.mmmacro\DefaultIcon,,BinaryType=1,,)
+MSI (s) (E8:3C) [20:03:41:833]: Executing op: RegOpenKey(,Key=MiniMouseMacro.mmmacro\shell,,BinaryType=1,,)
+MSI (s) (E8:3C) [20:03:41:833]: Executing op: RegOpenKey(,Key=MiniMouseMacro.mmmacro\shell\open,,BinaryType=1,,)
+MSI (s) (E8:3C) [20:03:41:833]: Executing op: RegOpenKey(,Key=MiniMouseMacro.mmmacro\shell\open\command,,BinaryType=1,,)
+MSI (s) (E8:3C) [20:03:41:833]: Executing op: RegOpenKey(,Key=MiniMouseMacro.mmmacro\shell\run,,BinaryType=1,,)
+MSI (s) (E8:3C) [20:03:41:833]: Executing op: RegOpenKey(,Key=MiniMouseMacro.mmmacro\shell\run\command,,BinaryType=1,,)
+MSI (s) (E8:3C) [20:03:41:833]: Executing op: ActionStart(Name=RegisterProduct,Description=Registering product [1],)
+MSI (s) (E8:3C) [20:03:41:835]: Executing op: ChangeMedia(,MediaPrompt=Please insert the disk: ,MediaCabinet=_4EC1ABF291688A972D8BCFCDE0D430C4,BytesPerTick=0,CopierType=2,ModuleFileName=C:\Windows\Installer\feb03.msi,,,,,IsFirstPhysicalMedia=1)
+MSI (s) (E8:3C) [20:03:41:835]: Executing op: DatabaseCopy(DatabasePath=C:\Windows\Installer\feb03.msi,ProductCode={B584706B-0B5E-426D-8C87-A8E049718234},,,)
+MSI (s) (E8:3C) [20:03:41:835]: Note: 1: 1402 2: UNKNOWN\Products\B607485BE5B0D624C8788A0E94172843\InstallProperties 3: 2 
+MSI (s) (E8:3C) [20:03:41:835]: Note: 1: 2318 2: C:\Windows\Installer\feb07.msi 
+MSI (s) (E8:3C) [20:03:41:835]: File will have security applied from OpCode.
+MSI (s) (E8:3C) [20:03:41:841]: Executing op: ProductRegister(UpgradeCode={7A428053-391E-483D-9AA4-221268961F83},VersionString=9.0.0,HelpLink=https://docs.minimousemacro.com/docs/installer,,,InstallSource=D:\a\_temp\bench_tool\,Publisher=MiniMouseMacro,URLInfoAbout=https://minimousemacro.com,,,,,,Comments=Mini Mouse Macro - Installer,Contact=Stephen Turner,,,,EstimatedSize=21569,,,,)
+MSI (s) (E8:3C) [20:03:41:843]: Executing op: ProductCPDisplayInfoRegister()
+MSI (s) (E8:3C) [20:03:41:845]: Executing op: ActionStart(Name=MsiPublishAssemblies,Description=Publishing assembly information Application Context:[1], Assembly Name:[2],)
+MSI (s) (E8:3C) [20:03:41:845]: Executing op: AssemblyPublish(Feature=DefaultFeature,Component={06525048-8D76-3C86-05F4-CF0B72C63260}[~]2,AssemblyType=3,AppCtx=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\System.Runtime.CompilerServices.Unsafe.dll,AssemblyName=System.Runtime.CompilerServices.Unsafe,Version="6.0.3.0",Culture="neutral",PublicKeyToken="B03F5F7F11D50A3A",ProcessorArchitecture="MSIL",)
+MSI (s) (E8:3C) [20:03:41:845]: Note: 1: 1402 2: UNKNOWN\Installer\Assemblies\C:|Program Files (x86)|MiniMouseMacro|app|9.0.0|System.Runtime.CompilerServices.Unsafe.dll 3: 2 
+MSI (s) (E8:3C) [20:03:41:845]: Executing op: AssemblyPublish(Feature=DefaultFeature,Component={4F3D119E-1067-6386-D1EF-816BFF4B3CCC}[~]2,AssemblyType=3,AppCtx=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\System.IO.Compression.FileSystem.dll,AssemblyName=System.IO.Compression.FileSystem,Version="4.0.0.0",Culture="neutral",PublicKeyToken="B77A5C561934E089",ProcessorArchitecture="MSIL",)
+MSI (s) (E8:3C) [20:03:41:845]: Note: 1: 1402 2: UNKNOWN\Installer\Assemblies\C:|Program Files (x86)|MiniMouseMacro|app|9.0.0|System.IO.Compression.FileSystem.dll 3: 2 
+MSI (s) (E8:3C) [20:03:41:845]: Executing op: AssemblyPublish(Feature=DefaultFeature,Component={7431DD90-5998-A41E-68FD-5E3CB53A7B9D}[~]2,AssemblyType=3,AppCtx=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\K4os.Compression.LZ4.dll,AssemblyName=K4os.Compression.LZ4,Version="1.3.8.0",Culture="neutral",PublicKeyToken="2186FA9121EF231D",ProcessorArchitecture="MSIL",)
+MSI (s) (E8:3C) [20:03:41:847]: Note: 1: 1402 2: UNKNOWN\Installer\Assemblies\C:|Program Files (x86)|MiniMouseMacro|app|9.0.0|K4os.Compression.LZ4.dll 3: 2 
+MSI (s) (E8:3C) [20:03:41:847]: Executing op: AssemblyPublish(Feature=DefaultFeature,Component={5EE7170F-31EE-8D63-AC68-E8AC1C70EDE1}[~]2,AssemblyType=3,AppCtx=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\System.Net.Http.dll,AssemblyName=System.Net.Http,Version="4.0.0.0",Culture="neutral",PublicKeyToken="B03F5F7F11D50A3A",ProcessorArchitecture="MSIL",)
+MSI (s) (E8:3C) [20:03:41:847]: Note: 1: 1402 2: UNKNOWN\Installer\Assemblies\C:|Program Files (x86)|MiniMouseMacro|app|9.0.0|System.Net.Http.dll 3: 2 
+MSI (s) (E8:3C) [20:03:41:847]: Executing op: AssemblyPublish(Feature=DefaultFeature,Component={3CAD611E-8F27-3B89-B3F2-FDF9F9474AA1}[~]2,AssemblyType=3,AppCtx=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\System.Numerics.Vectors.dll,AssemblyName=System.Numerics.Vectors,Version="4.1.6.0",Culture="neutral",PublicKeyToken="B03F5F7F11D50A3A",ProcessorArchitecture="MSIL",)
+MSI (s) (E8:3C) [20:03:41:847]: Note: 1: 1402 2: UNKNOWN\Installer\Assemblies\C:|Program Files (x86)|MiniMouseMacro|app|9.0.0|System.Numerics.Vectors.dll 3: 2 
+MSI (s) (E8:3C) [20:03:41:847]: Executing op: AssemblyPublish(Feature=DefaultFeature,Component={D1CA27BF-535C-88C5-7E14-9E8E0817C59D}[~]2,AssemblyType=3,AppCtx=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\System.Memory.dll,AssemblyName=System.Memory,Version="4.0.5.0",Culture="neutral",PublicKeyToken="CC7B13FFCD2DDD51",ProcessorArchitecture="MSIL",)
+MSI (s) (E8:3C) [20:03:41:847]: Note: 1: 1402 2: UNKNOWN\Installer\Assemblies\C:|Program Files (x86)|MiniMouseMacro|app|9.0.0|System.Memory.dll 3: 2 
+MSI (s) (E8:3C) [20:03:41:847]: Executing op: AssemblyPublish(Feature=DefaultFeature,Component={95F4B3FE-FC20-02DD-5665-406213C59ECF}[~]2,AssemblyType=3,AppCtx=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\System.Buffers.dll,AssemblyName=System.Buffers,Version="4.0.5.0",Culture="neutral",PublicKeyToken="CC7B13FFCD2DDD51",ProcessorArchitecture="MSIL",)
+MSI (s) (E8:3C) [20:03:41:849]: Note: 1: 1402 2: UNKNOWN\Installer\Assemblies\C:|Program Files (x86)|MiniMouseMacro|app|9.0.0|System.Buffers.dll 3: 2 
+MSI (s) (E8:3C) [20:03:41:849]: Executing op: AssemblyPublish(Feature=DefaultFeature,Component={25DF80FF-31BE-0384-3E53-855D1BF0ED80}[~]2,AssemblyType=3,AppCtx=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\System.Threading.Tasks.Extensions.dll,AssemblyName=System.Threading.Tasks.Extensions,Version="4.2.4.0",Culture="neutral",PublicKeyToken="CC7B13FFCD2DDD51",ProcessorArchitecture="MSIL",)
+MSI (s) (E8:3C) [20:03:41:849]: Note: 1: 1402 2: UNKNOWN\Installer\Assemblies\C:|Program Files (x86)|MiniMouseMacro|app|9.0.0|System.Threading.Tasks.Extensions.dll 3: 2 
+MSI (s) (E8:3C) [20:03:41:849]: Executing op: AssemblyPublish(Feature=DefaultFeature,Component={68D203CA-A602-274C-713B-A74F088B37CC}[~]2,AssemblyType=3,AppCtx=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\ZstdSharp.dll,AssemblyName=ZstdSharp,Version="0.8.7.0",Culture="neutral",PublicKeyToken="8D151AF33A4AD5CF",ProcessorArchitecture="MSIL",)
+MSI (s) (E8:3C) [20:03:41:849]: Note: 1: 1402 2: UNKNOWN\Installer\Assemblies\C:|Program Files (x86)|MiniMouseMacro|app|9.0.0|ZstdSharp.dll 3: 2 
+MSI (s) (E8:3C) [20:03:41:849]: Executing op: AssemblyPublish(Feature=DefaultFeature,Component={7C7706E5-C54C-9983-C03B-50E00BB12865}[~]2,AssemblyType=3,AppCtx=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\Newtonsoft.Json.dll,AssemblyName=Newtonsoft.Json,Version="13.0.0.0",Culture="neutral",PublicKeyToken="30AD4FE6B2A6AEED",ProcessorArchitecture="MSIL",)
+MSI (s) (E8:3C) [20:03:41:851]: Note: 1: 1402 2: UNKNOWN\Installer\Assemblies\C:|Program Files (x86)|MiniMouseMacro|app|9.0.0|Newtonsoft.Json.dll 3: 2 
+MSI (s) (E8:3C) [20:03:41:851]: Executing op: AssemblyPublish(Feature=DefaultFeature,Component={19ADEB19-EE8F-0B97-F416-54E9CC24B71C}[~]2,AssemblyType=3,AppCtx=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\Microsoft.Web.WebView2.Core.dll,AssemblyName=Microsoft.Web.WebView2.Core,Version="1.0.3856.49",Culture="neutral",PublicKeyToken="2A8AB48044D2601E",ProcessorArchitecture="MSIL",)
+MSI (s) (E8:3C) [20:03:41:851]: Note: 1: 1402 2: UNKNOWN\Installer\Assemblies\C:|Program Files (x86)|MiniMouseMacro|app|9.0.0|Microsoft.Web.WebView2.Core.dll 3: 2 
+MSI (s) (E8:3C) [20:03:41:851]: Executing op: AssemblyPublish(Feature=DefaultFeature,Component={EB4FE5D8-C4E7-0CDD-DE28-B3CA2BD0F4A0}[~]2,AssemblyType=3,AppCtx=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\Chaos.NaCl.dll,AssemblyName=Chaos.NaCl,Version="0.1.0.0",Culture="neutral",ProcessorArchitecture="MSIL",)
+MSI (s) (E8:3C) [20:03:41:851]: Note: 1: 1402 2: UNKNOWN\Installer\Assemblies\C:|Program Files (x86)|MiniMouseMacro|app|9.0.0|Chaos.NaCl.dll 3: 2 
+MSI (s) (E8:3C) [20:03:41:851]: Executing op: AssemblyPublish(Feature=DefaultFeature,Component={86C10B03-F483-EB6D-1B49-0EBD00099E48}[~]2,AssemblyType=3,AppCtx=C:\Program Files (x86)\MiniMouseMacro\MiniMouseMacro.exe,AssemblyName=MiniMouseMacro,Version="1.0.0.0",Culture="neutral",ProcessorArchitecture="MSIL",)
+MSI (s) (E8:3C) [20:03:41:851]: Note: 1: 1402 2: UNKNOWN\Installer\Assemblies\C:|Program Files (x86)|MiniMouseMacro|MiniMouseMacro.exe 3: 2 
+MSI (s) (E8:3C) [20:03:41:851]: Executing op: AssemblyPublish(Feature=DefaultFeature,Component={7C730132-D765-47E1-0DDF-5D80635994AE}[~]2,AssemblyType=3,AppCtx=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\System.IO.Compression.dll,AssemblyName=System.IO.Compression,Version="4.0.0.0",Culture="neutral",PublicKeyToken="B77A5C561934E089",ProcessorArchitecture="MSIL",)
+MSI (s) (E8:3C) [20:03:41:853]: Note: 1: 1402 2: UNKNOWN\Installer\Assemblies\C:|Program Files (x86)|MiniMouseMacro|app|9.0.0|System.IO.Compression.dll 3: 2 
+MSI (s) (E8:3C) [20:03:41:853]: Executing op: AssemblyPublish(Feature=DefaultFeature,Component={F77BB5C9-8DB2-F47D-FF9C-7C5E3E0DF380}[~]2,AssemblyType=3,AppCtx=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\K4os.Hash.xxHash.dll,AssemblyName=K4os.Hash.xxHash,Version="1.0.8.0",Culture="neutral",PublicKeyToken="32CD54395057CEC3",ProcessorArchitecture="MSIL",)
+MSI (s) (E8:3C) [20:03:41:853]: Note: 1: 1402 2: UNKNOWN\Installer\Assemblies\C:|Program Files (x86)|MiniMouseMacro|app|9.0.0|K4os.Hash.xxHash.dll 3: 2 
+MSI (s) (E8:3C) [20:03:41:853]: Executing op: AssemblyPublish(Feature=DefaultFeature,Component={0B82D18C-8433-DCD6-1AD2-3D624588BEE4}[~]2,AssemblyType=3,AppCtx=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\K4os.Compression.LZ4.Streams.dll,AssemblyName=K4os.Compression.LZ4.Streams,Version="1.3.8.0",Culture="neutral",PublicKeyToken="2186FA9121EF231D",ProcessorArchitecture="MSIL",)
+MSI (s) (E8:3C) [20:03:41:853]: Note: 1: 1402 2: UNKNOWN\Installer\Assemblies\C:|Program Files (x86)|MiniMouseMacro|app|9.0.0|K4os.Compression.LZ4.Streams.dll 3: 2 
+MSI (s) (E8:3C) [20:03:41:853]: Executing op: AssemblyPublish(Feature=DefaultFeature,Component={AA872F61-08BD-025B-F248-A6F35F3FD976}[~]2,AssemblyType=3,AppCtx=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\NetSparkleUpdater.UI.WinForms.dll,AssemblyName=NetSparkleUpdater.UI.WinForms,Version="2.0.0.0",Culture="neutral",ProcessorArchitecture="MSIL",)
+MSI (s) (E8:3C) [20:03:41:853]: Note: 1: 1402 2: UNKNOWN\Installer\Assemblies\C:|Program Files (x86)|MiniMouseMacro|app|9.0.0|NetSparkleUpdater.UI.WinForms.dll 3: 2 
+MSI (s) (E8:3C) [20:03:41:853]: Executing op: AssemblyPublish(Feature=DefaultFeature,Component={9DD5AA04-366B-D6CE-85EB-08E03B5EC533}[~]2,AssemblyType=3,AppCtx=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\BouncyCastle.Cryptography.dll,AssemblyName=BouncyCastle.Cryptography,Version="2.0.0.0",Culture="neutral",PublicKeyToken="072EDCF4A5328938",ProcessorArchitecture="MSIL",)
+MSI (s) (E8:3C) [20:03:41:855]: Note: 1: 1402 2: UNKNOWN\Installer\Assemblies\C:|Program Files (x86)|MiniMouseMacro|app|9.0.0|BouncyCastle.Cryptography.dll 3: 2 
+MSI (s) (E8:3C) [20:03:41:855]: Executing op: AssemblyPublish(Feature=DefaultFeature,Component={0969E7A7-6119-0B1D-1F30-45021913C21D}[~]2,AssemblyType=3,AppCtx=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\NetSparkle.dll,AssemblyName=NetSparkle,Version="3.0.4.0",Culture="neutral",ProcessorArchitecture="MSIL",)
+MSI (s) (E8:3C) [20:03:41:855]: Note: 1: 1402 2: UNKNOWN\Installer\Assemblies\C:|Program Files (x86)|MiniMouseMacro|app|9.0.0|NetSparkle.dll 3: 2 
+MSI (s) (E8:3C) [20:03:41:855]: Executing op: AssemblyPublish(Feature=DefaultFeature,Component={D732BF03-7B03-E1C7-9E60-2F4B2EC2F8B6}[~]2,AssemblyType=3,AppCtx=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\MiniMouseMacro.exe,AssemblyName=MiniMouseMacro,Version="9.0.0.0",Culture="neutral",ProcessorArchitecture="AMD64",)
+MSI (s) (E8:3C) [20:03:41:855]: Note: 1: 1402 2: UNKNOWN\Installer\Assemblies\C:|Program Files (x86)|MiniMouseMacro|app|9.0.0|MiniMouseMacro.exe 3: 2 
+MSI (s) (E8:3C) [20:03:41:855]: Executing op: AssemblyPublish(Feature=DefaultFeature,Component={5CF9E403-EB0F-B42A-35F3-0EE05C660BFD}[~]2,AssemblyType=3,AppCtx=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\MySql.Data.dll,AssemblyName=MySql.Data,Version="9.6.0.0",Culture="neutral",PublicKeyToken="C5687FC88969C44D",ProcessorArchitecture="MSIL",)
+MSI (s) (E8:3C) [20:03:41:855]: Note: 1: 1402 2: UNKNOWN\Installer\Assemblies\C:|Program Files (x86)|MiniMouseMacro|app|9.0.0|MySql.Data.dll 3: 2 
+MSI (s) (E8:3C) [20:03:41:857]: Executing op: AssemblyPublish(Feature=DefaultFeature,Component={A94BD855-3015-371D-7A04-42231CBA4B41}[~]2,AssemblyType=3,AppCtx=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\Microsoft.Web.WebView2.WinForms.dll,AssemblyName=Microsoft.Web.WebView2.WinForms,Version="1.0.3856.49",Culture="neutral",PublicKeyToken="2A8AB48044D2601E",ProcessorArchitecture="MSIL",)
+MSI (s) (E8:3C) [20:03:41:857]: Note: 1: 1402 2: UNKNOWN\Installer\Assemblies\C:|Program Files (x86)|MiniMouseMacro|app|9.0.0|Microsoft.Web.WebView2.WinForms.dll 3: 2 
+MSI (s) (E8:3C) [20:03:41:857]: Executing op: AssemblyPublish(Feature=DefaultFeature,Component={C8BE4DF2-D22A-35A4-40B5-081A65AC48F4}[~]2,AssemblyType=3,AppCtx=C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\Tesseract.dll,AssemblyName=Tesseract,Version="5.2.0.0",Culture="neutral",ProcessorArchitecture="MSIL",)
+MSI (s) (E8:3C) [20:03:41:857]: Note: 1: 1402 2: UNKNOWN\Installer\Assemblies\C:|Program Files (x86)|MiniMouseMacro|app|9.0.0|Tesseract.dll 3: 2 
+MSI (s) (E8:3C) [20:03:41:857]: Executing op: ActionStart(Name=PublishFeatures,Description=Publishing Product Features Feature: [1],)
+MSI (s) (E8:3C) [20:03:41:857]: Executing op: FeaturePublish(Feature=DefaultFeature,,Absent=2,Component=o?d%%DqQN7RNdl&Ih%wFeBeOA0Ws}G'{}VJ~WQ_j8]BEM-cUh]$~=J7,L6]Z?-_RF5fVMU!F`X`*Z*]q8&_R7N$R.7rtREyUq=p[Vq6Ll}ALzS9z0pUUI+eZfL^4X{jCw!,S-YGp+zfkzsDKks36uO~-0@!Hnq9OX=`20JK(.$G6t'FMp5MQ,$YcIDI]^0w@&[AkM}^jrV~~G'TyF1BrBxwfTlxl^m8!PWPqDYUT~*qsmVSHH}oFzno%BJ?4s,*v8)BiI6U9+IAff&rN?~sB6P7,x_O^tjsQ.'XTU0jeZ0g[$9DBSO@batX]lien-oD?%tR.0MEM9S&-RV(49b${KCn~O5)h+?H'p9Q!*C,aqC{Ux+g5YwJA?GF97iMQjkOd&=0'}o`0qXGDM&Tr@9_m_KzEi!S*8Bwm+n4NJgrfZp39&n(aH!qfbC_4%Z2%&v`_X&jl$g!0PzW,J+}1nP@&XqLd{1@teYmcKA4r%I^_NI-DdCief.S@gM!tEWH}ub@F%$qI7uCzKt}J_mY`e5bU5D.2lm}8EJ*TiTaQ85@h6G+x(XSwU3%[a)V&?na!G+$0UF*{zog~xMpED`hozjJ!]q@fviY8cdqxl6[Z7M$8*M68c*%o$N]1!&D7VkvlepCkw6]RH~iJ9*,1qIP3KN(rJ'Gny61Sfz~hkT!Ib_+q@QvWE1KI3Ge`jHUOZQRj`X2i?(f-0@v![.gJx}g&)
+MSI (s) (E8:3C) [20:03:41:859]: Executing op: ActionStart(Name=PublishProduct,Description=Publishing product information,)
+MSI (s) (E8:3C) [20:03:41:859]: Executing op: CleanupConfigData()
+MSI (s) (E8:3C) [20:03:41:859]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Products\B607485BE5B0D624C8788A0E94172843\Patches 3: 2 
+MSI (s) (E8:3C) [20:03:41:859]: Executing op: RegisterPatchOrder(Continue=0,SequenceType=1,Remove=0)
+MSI (s) (E8:3C) [20:03:41:859]: Note: 1: 1402 2: UNKNOWN\Products\B607485BE5B0D624C8788A0E94172843\Patches 3: 2 
+MSI (s) (E8:3C) [20:03:41:859]: Executing op: ProductPublish(PackageKey={0BA9BFAE-8922-45FB-AB71-7A4C7FBCB478})
+MSI (s) (E8:3C) [20:03:41:859]: Note: 1: 1402 2: UNKNOWN\Installer\Products\B607485BE5B0D624C8788A0E94172843 3: 2 
+MSI (s) (E8:3C) [20:03:41:859]: Note: 1: 1402 2: UNKNOWN\Installer\Products\B607485BE5B0D624C8788A0E94172843 3: 2 
+MSI (s) (E8:3C) [20:03:41:859]: Note: 1: 1402 2: UNKNOWN\Installer\Products\B607485BE5B0D624C8788A0E94172843 3: 2 
+MSI (s) (E8:3C) [20:03:41:859]: Note: 1: 1402 2: UNKNOWN\Installer\Products\B607485BE5B0D624C8788A0E94172843 3: 2 
+MSI (s) (E8:3C) [20:03:41:859]: Note: 1: 1402 2: UNKNOWN\Installer\Products\B607485BE5B0D624C8788A0E94172843 3: 2 
+MSI (s) (E8:3C) [20:03:41:859]: Note: 1: 1402 2: UNKNOWN\Installer\Products\B607485BE5B0D624C8788A0E94172843 3: 2 
+MSI (s) (E8:3C) [20:03:41:859]: Note: 1: 1402 2: UNKNOWN\Installer\Products\B607485BE5B0D624C8788A0E94172843 3: 2 
+MSI (s) (E8:3C) [20:03:41:859]: Note: 1: 1402 2: UNKNOWN\Installer\Products\B607485BE5B0D624C8788A0E94172843 3: 2 
+MSI (s) (E8:3C) [20:03:41:859]: Note: 1: 1402 2: UNKNOWN\Installer\Products\B607485BE5B0D624C8788A0E94172843 3: 2 
+MSI (s) (E8:3C) [20:03:41:859]: Note: 1: 1402 2: UNKNOWN\Installer\Products\B607485BE5B0D624C8788A0E94172843 3: 2 
+MSI (s) (E8:3C) [20:03:41:859]: Note: 1: 1402 2: UNKNOWN\Installer\Products\B607485BE5B0D624C8788A0E94172843 3: 2 
+MSI (s) (E8:3C) [20:03:41:859]: Executing op: UpgradeCodePublish(UpgradeCode={7A428053-391E-483D-9AA4-221268961F83})
+MSI (s) (E8:3C) [20:03:41:861]: Executing op: SourceListPublish(,,,,NumberOfDisks=1)
+MSI (s) (E8:3C) [20:03:41:861]: Note: 1: 1402 2: UNKNOWN\Installer\Products\B607485BE5B0D624C8788A0E94172843\SourceList 3: 2 
+MSI (s) (E8:3C) [20:03:41:861]: Executing op: ProductPublishClient(,,)
+MSI (s) (E8:3C) [20:03:41:861]: Executing op: SourceListRegisterLastUsed(SourceProduct={B584706B-0B5E-426D-8C87-A8E049718234},LastUsedSource=D:\a\_temp\bench_tool\)
+MSI (s) (E8:3C) [20:03:41:861]: Entering CMsiConfigurationManager::SetLastUsedSource.
+MSI (s) (E8:3C) [20:03:41:861]: Specifed source is already in a list.
+MSI (s) (E8:3C) [20:03:41:861]: User policy value 'SearchOrder' is 'nmu'
+MSI (s) (E8:3C) [20:03:41:861]: Adding new sources is allowed.
+MSI (s) (E8:3C) [20:03:41:861]: Set LastUsedSource to: D:\a\_temp\bench_tool\.
+MSI (s) (E8:3C) [20:03:41:861]: Set LastUsedType to: n.
+MSI (s) (E8:3C) [20:03:41:861]: Set LastUsedIndex to: 1.
+MSI (s) (E8:3C) [20:03:41:861]: Executing op: End(Checksum=0,ProgressTotalHDWord=0,ProgressTotalLDWord=33562296)
+MSI (s) (E8:3C) [20:03:41:868]: Doing action: RemoveExistingProducts
+Action ended 20:03:41: InstallExecute. Return value 1.
+MSI (s) (E8:3C) [20:03:41:868]: Note: 1: 2262 2: Error 3: -2147287038 
+Action start 20:03:41: RemoveExistingProducts.
+MSI (s) (E8:3C) [20:03:41:870]: Note: 1: 2262 2: Error 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:870]: Note: 1: 2262 2: Error 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:870]: Note: 1: 2262 2: Error 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:870]: Doing action: InstallFinalize
+Action ended 20:03:41: RemoveExistingProducts. Return value 1.
+MSI (s) (E8:3C) [20:03:41:882]: Note: 1: 2265 2:  3: -2147287035 
+MSI (s) (E8:3C) [20:03:41:882]: User policy value 'DisableRollback' is 0
+MSI (s) (E8:3C) [20:03:41:882]: Machine policy value 'DisableRollback' is 0
+Action start 20:03:41: InstallFinalize.
+MSI (s) (E8:3C) [20:03:41:890]: Note: 1: 2265 2:  3: -2147287035 
+MSI (s) (E8:3C) [20:03:41:892]: Note: 1: 2318 2:  
+MSI (s) (E8:3C) [20:03:41:894]: Note: 1: 2318 2:  
+MSI (s) (E8:3C) [20:03:41:896]: No System Restore sequence number for this installation.
+MSI (s) (E8:3C) [20:03:41:896]: Unlocking Server
+MSI (s) (E8:3C) [20:03:41:904]: PROPERTY CHANGE: Deleting UpdateStarted property. Its current value is '1'.
+Action ended 20:03:41: InstallFinalize. Return value 1.
+Action ended 20:03:41: INSTALL. Return value 1.
+Property(S): UpgradeCode = {7A428053-391E-483D-9AA4-221268961F83}
+Property(S): TARGETDIR = C:\Program Files (x86)\MiniMouseMacro\
+Property(S): _53A936C89E264EF7AA4AED5B968EEBD5 = C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\
+Property(S): _D8C707E3A6F2493BBA1D2E96BF83438D = C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\x64\
+Property(S): _1A92ACCA0CCC4F8094E610AD317DFE4C = C:\Program Files (x86)\MiniMouseMacro\macros\
+Property(S): _6F53E76542084C1B9BF32987936EC7EE = C:\Program Files (x86)\MiniMouseMacro\data\
+Property(S): DesktopFolder = C:\Users\Public\Desktop\
+Property(S): ProgramMenuFolder = C:\ProgramData\Microsoft\Windows\Start Menu\Programs\
+Property(S): SourceDir = D:\a\_temp\bench_tool\
+Property(S): _43190F37F9724BC2B5412794ACFCFE96 = C:\Program Files (x86)\MiniMouseMacro\app\
+Property(S): _7A1E0C9B5D4F4381A2B3C4D5E6F70819 = C:\Program Files (x86)\MiniMouseMacro\app\9.0.0\tessdata\
+Property(S): _37B8F40A1EAF4952875EAFE7B9EDD5C4 = C:\Program Files (x86)\MiniMouseMacro\plugins\
+Property(S): _0C670D654D6441E380FA560886AE298C = C:\Program Files (x86)\MiniMouseMacro\logs\
+Property(S): VSDFXAvailable = TRUE
+Property(S): VSDFrameworkVersion = v4.7.2
+Property(S): VSDAllowLaterFrameworkVersions = False
+Property(S): ProductName = Mini Mouse Macro Installer
+Property(S): ProductCode = {B584706B-0B5E-426D-8C87-A8E049718234}
+Property(S): ProductVersion = 9.0.0
+Property(S): Manufacturer = MiniMouseMacro
+Property(S): ARPHELPLINK = https://docs.minimousemacro.com/docs/installer
+Property(S): ARPCONTACT = Stephen Turner
+Property(S): ARPCOMMENTS = Mini Mouse Macro - Installer
+Property(S): ARPURLINFOABOUT = https://minimousemacro.com
+Property(S): ProductLanguage = 1033
+Property(S): ALLUSERS = 1
+Property(S): ARPPRODUCTICON = _112D608FD02CD87FDC7735.exe
+Property(S): SecureCustomProperties = PREVIOUSVERSIONSINSTALLED;NEWERPRODUCTFOUND
+Property(S): RedirectedDllSupport = 2
+Property(S): VersionNT = 603
+Property(S): VSDNETRTNAME = .NET Runtime
+Property(S): VSDNETDESKTOPRTNAME = .NET Desktop Runtime
+Property(S): VSDNETCOREDESKTOPRTNAME = .NET Core Desktop Runtime
+Property(S): VSDNETCORERTNAME = .NET Core Runtime
+Property(S): VSDNETCOREMSG = This setup requires the [2] [3] version [1].  Please install the [3] and run this setup again.
+Property(S): VSDNETCOREURLMSG = This setup requires the [2] [3] version [1].  Please install the [3] and run this setup again.  The [3] can be obtained from the web.  Would you like to do this now?
+Property(S): VSDNETURLMSG = This setup requires the .NET Framework version v4.7.2.  Please install the .NET Framework and run this setup again.  The .NET Framework can be obtained from the web.  Would you like to do this now?
+Property(S): VSDIISMSG = This setup requires Internet Information Server 5.1 or higher.  Please install Internet Information Server and run this setup again.
+Property(S): VSDUIANDADVERTISED = This advertised application will not be installed because it might be unsafe. Contact your administrator to change the installation user interface option of the package to basic.
+Property(S): VSDNETMSG = This setup requires the .NET Framework version v4.7.2.  Please install the .NET Framework and run this setup again.
+Property(S): VSDINVALIDURLMSG = The specified path '[2]' is unavailable. The Internet Information Server might not be running or the path exists and is redirected to another machine. Please check the status of this virtual directory in the Internet Services Manager.
+Property(S): VSDVERSIONMSG = Unable to install because a newer version of this product is already installed.
+Property(S): CHECKBOXA4 = 1
+Property(S): CHECKBOXA3 = 1
+Property(S): CHECKBOXA2 = 1
+Property(S): CHECKBOXA1 = 1
+Property(S): LAUNCHMMM = 1
+Property(S): FolderForm_AllUsers = ME
+Property(S): FolderForm_AllUsersVisible = 1
+Property(S): AdminMaintenanceForm_Action = Repair
+Property(S): MaintenanceForm_Action = Repair
+Property(S): DefaultUIFont = VsdDefaultUIFont.524F4245_5254_5341_4C45_534153783400
+Property(S): ErrorDialog = ErrorDialog
+Property(S): SFF_UpFldrBtn = UpFldrBtn
+Property(S): SFF_NewFldrBtn = NewFldrBtn
+Property(S): WelcomeForm_NextArgs = CustomCheckA
+Property(S): CustomCheckA_PrevArgs = WelcomeForm
+Property(S): FolderForm_NextArgs = ConfirmInstallForm
+Property(S): ConfirmInstallForm_PrevArgs = FolderForm
+Property(S): AdminWelcomeForm_NextArgs = AdminFolderForm
+Property(S): AdminFolderForm_PrevArgs = AdminWelcomeForm
+Property(S): AdminFolderForm_NextArgs = AdminConfirmInstallForm
+Property(S): AdminConfirmInstallForm_PrevArgs = AdminFolderForm
+Property(S): MsiLogFileLocation = D:\a\mouse-macro-stocazz-superpower\mouse-macro-stocazz-superpower\results\minimouse\install.log
+Property(S): PackageCode = {0BA9BFAE-8922-45FB-AB71-7A4C7FBCB478}
+Property(S): ProductState = -1
+Property(S): PackagecodeChanging = 1
+Property(S): REBOOT = ReallySuppress
+Property(S): INSTALLDIR = D:\a\_temp\bench_tool\installed
+Property(S): CURRENTDIRECTORY = D:\a\mouse-macro-stocazz-superpower\mouse-macro-stocazz-superpower
+Property(S): CLIENTUILEVEL = 3
+Property(S): CLIENTPROCESSID = 8
+Property(S): VersionDatabase = 200
+Property(S): VersionMsi = 5.00
+Property(S): VersionNT64 = 603
+Property(S): WindowsBuild = 9600
+Property(S): ServicePackLevel = 0
+Property(S): ServicePackLevelMinor = 0
+Property(S): MsiNTProductType = 3
+Property(S): MsiNTSuiteDataCenter = 1
+Property(S): WindowsFolder = C:\Windows\
+Property(S): WindowsVolume = C:\
+Property(S): System64Folder = C:\Windows\system32\
+Property(S): SystemFolder = C:\Windows\SysWOW64\
+Property(S): RemoteAdminTS = 1
+Property(S): TempFolder = C:\Users\RUNNER~1\AppData\Local\Temp\
+Property(S): ProgramFilesFolder = C:\Program Files (x86)\
+Property(S): CommonFilesFolder = C:\Program Files (x86)\Common Files\
+Property(S): ProgramFiles64Folder = C:\Program Files\
+Property(S): CommonFiles64Folder = C:\Program Files\Common Files\
+Property(S): AppDataFolder = C:\Users\runneradmin\AppData\Roaming\
+Property(S): FavoritesFolder = C:\Users\runneradmin\Favorites\
+Property(S): NetHoodFolder = C:\Users\runneradmin\AppData\Roaming\Microsoft\Windows\Network Shortcuts\
+Property(S): PersonalFolder = C:\Users\runneradmin\Documents\
+Property(S): PrintHoodFolder = C:\Users\runneradmin\AppData\Roaming\Microsoft\Windows\Printer Shortcuts\
+Property(S): RecentFolder = C:\Users\runneradmin\AppData\Roaming\Microsoft\Windows\Recent\
+Property(S): SendToFolder = C:\Users\runneradmin\AppData\Roaming\Microsoft\Windows\SendTo\
+Property(S): TemplateFolder = C:\ProgramData\Microsoft\Windows\Templates\
+Property(S): CommonAppDataFolder = C:\ProgramData\
+Property(S): LocalAppDataFolder = C:\Users\runneradmin\AppData\Local\
+Property(S): MyPicturesFolder = C:\Users\runneradmin\Pictures\
+Property(S): AdminToolsFolder = C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Administrative Tools\
+Property(S): StartupFolder = C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\
+Property(S): StartMenuFolder = C:\ProgramData\Microsoft\Windows\Start Menu\
+Property(S): FontsFolder = C:\Windows\Fonts\
+Property(S): GPTSupport = 1
+Property(S): OLEAdvtSupport = 1
+Property(S): ShellAdvtSupport = 1
+Property(S): MsiAMD64 = 25
+Property(S): Msix64 = 25
+Property(S): Intel = 25
+Property(S): PhysicalMemory = 16379
+Property(S): VirtualMemory = 16776
+Property(S): AdminUser = 1
+Property(S): MsiTrueAdminUser = 1
+Property(S): LogonUser = runneradmin
+Property(S): UserSID = S-1-5-21-3289802278-1561746829-1498425070-500
+Property(S): UserLanguageID = 1033
+Property(S): ComputerName = runnervmm7ud1
+Property(S): SystemLanguageID = 1033
+Property(S): ScreenX = 1024
+Property(S): ScreenY = 768
+Property(S): CaptionHeight = 23
+Property(S): BorderTop = 1
+Property(S): BorderSide = 1
+Property(S): TextHeight = 16
+Property(S): TextInternalLeading = 3
+Property(S): ColorBits = 32
+Property(S): TTCSupport = 1
+Property(S): Time = 20:03:41
+Property(S): Date = 11/16/2026
+Property(S): MsiNetAssemblySupport = 4.8.9221.0
+Property(S): MsiWin32AssemblySupport = 6.3.26100.33648
+Property(S): MsiRunningElevated = 1
+Property(S): Privileged = 1
+Property(S): DATABASE = C:\Windows\Installer\feb03.msi
+Property(S): OriginalDatabase = D:\a\_temp\bench_tool\MiniMouseMacro.Setup.msi
+Property(S): UILevel = 2
+Property(S): ACTION = INSTALL
+Property(S): VSDFxConfigFile = C:\Users\RUNNER~1\AppData\Local\Temp\CFGF1C9.tmp
+Property(S): ROOTDRIVE = D:\
+Property(S): CostingComplete = 1
+Property(S): OutOfDiskSpace = 0
+Property(S): OutOfNoRbDiskSpace = 0
+Property(S): PrimaryVolumeSpaceAvailable = 0
+Property(S): PrimaryVolumeSpaceRequired = 0
+Property(S): PrimaryVolumeSpaceRemaining = 0
+Property(S): INSTALLLEVEL = 1
+Property(S): SOURCEDIR = D:\a\_temp\bench_tool\
+Property(S): SourcedirProduct = {B584706B-0B5E-426D-8C87-A8E049718234}
+Property(S): ProductToBeRegistered = 1
+MSI (s) (E8:3C) [20:03:41:928]: Note: 1: 1707 
+MSI (s) (E8:3C) [20:03:41:928]: Note: 1: 2262 2: Error 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:928]: Note: 1: 2262 2: Error 3: -2147287038 
+MSI (s) (E8:3C) [20:03:41:928]: Product: Mini Mouse Macro Installer -- Installation completed successfully.
+
+MSI (s) (E8:3C) [20:03:41:928]: Windows Installer installed the product. Product Name: Mini Mouse Macro Installer. Product Version: 9.0.0. Product Language: 1033. Manufacturer: MiniMouseMacro. Installation success or error status: 0.
+
+MSI (s) (E8:3C) [20:03:41:932]: Deferring clean up of packages/files, if any exist
+MSI (s) (E8:3C) [20:03:41:934]: MainEngineThread is returning 0
+MSI (s) (E8:38) [20:03:41:934]: RESTART MANAGER: Session closed.
+MSI (s) (E8:38) [20:03:41:934]: No System Restore sequence number for this installation.
+=== Logging stopped: 11/16/2026  20:03:41 ===
+MSI (s) (E8:38) [20:03:41:944]: User policy value 'DisableRollback' is 0
+MSI (s) (E8:38) [20:03:41:944]: Machine policy value 'DisableRollback' is 0
+MSI (s) (E8:38) [20:03:41:946]: Incrementing counter to disable shutdown. Counter after increment: 0
+MSI (s) (E8:38) [20:03:41:946]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2 
+MSI (s) (E8:38) [20:03:41:956]: Note: 1: 2265 2:  3: -2147287035 
+MSI (s) (E8:38) [20:03:41:956]: Note: 1: 1402 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\Rollback\Scripts 3: 2 
+MSI (s) (E8:38) [20:03:41:956]: Decrementing counter to disable shutdown. If counter >= 0, shutdown will be denied.  Counter after decrement: -1
+MSI (s) (E8:38) [20:03:41:956]: Destroying RemoteAPI object.
+MSI (s) (E8:1C) [20:03:41:956]: Custom Action Manager thread ending.
+MSI (c) (08:D8) [20:03:41:958]: Decrementing counter to disable shutdown. If counter >= 0, shutdown will be denied.  Counter after decrement: -1
+MSI (c) (08:D8) [20:03:41:958]: MainEngineThread is returning 0
+=== Verbose logging stopped: 11/16/2026  20:03:41 ===
+

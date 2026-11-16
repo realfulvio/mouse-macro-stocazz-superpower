@@ -1,0 +1,32 @@
+name: Risorse dei rivali Windows (prova)
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ['bench/ci/resource_tools.py', 'bench/ci/run_tool.py', '.github/workflows/rivals.yml']
+permissions:
+  contents: read
+concurrency:
+  group: rivals-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  resources:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        tool: [pulover, jitbit, minimouse, opautoclicker, actiona]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Test delle statistiche e dei dati mancanti
+        run: python -m unittest discover -s bench/tests
+      - name: Peso, installazione, avvio e risorse a riposo
+        run: python bench/ci/run_tool.py --tool ${{ matrix.tool }} --startups 15 --idle-s 60 --out results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: risorse-${{ matrix.tool }}
+          path: results/

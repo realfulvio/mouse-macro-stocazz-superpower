@@ -1,0 +1,64 @@
+{
+  "tool": "actiona",
+  "fidelity": "non misurato",
+  "source": "https://github.com/Jmgr/actiona/releases/tag/v3.11.5",
+  "version_declared": "3.11.5",
+  "inventory": {
+    "tool": "actiona",
+    "url": "https://github.com/Jmgr/actiona/releases/download/v3.11.5/actiona-3.11.5-windows.exe",
+    "bytes": 75835384,
+    "sha256": "9f50ed804fa0cc91d82202c0393fcebb7c0865781695cdf8b9c4f017d6c7e17c",
+    "expected": "9f50ed804fa0cc91d82202c0393fcebb7c0865781695cdf8b9c4f017d6c7e17c",
+    "hash_ok": true,
+    "hash_source": "digest SHA-256 della release ufficiale GitHub v3.11.5",
+    "screen": [
+      1920,
+      1080
+    ],
+    "os": "win32",
+    "cpu": "AMD64 Family 25 Model 1 Stepping 1, AuthenticAMD"
+  },
+  "run_id": "43945606448",
+  "commit": "53e3b1d34d293b4cf1a8123b69638dff3568eeb4",
+  "status": "misurato",
+  "exe": "D:\\a\\_temp\\bench_tool\\installed\\actiona.exe",
+  "binary": {
+    "company": null,
+    "product_version": null,
+    "file_version": null,
+    "product": null
+  },
+  "startup": {
+    "successful": 15,
+    "total": 15,
+    "warm_s": {
+      "n": 14,
+      "median": 1.091,
+      "p95": 1.1876,
+      "mean": 1.106857142857143,
+      "stdev": 0.03588841069172638,
+      "variance": 0.0012879780219780203,
+      "min": 1.085,
+      "max": 1.198
+    },
+    "note": "prima finestra visibile e reattiva, anche se dialogo iniziale; cold=1 indica solo il primo della serie"
+  },
+  "visible_windows": [
+    "Automatic updates",
+    "untitled.ascr"
+  ],
+  "pid": 9488,
+  "orchestrator_integrity": "Mandatory Label\\High Mandatory Level                          Label            S-1-16-12288",
+  "idle": {
+    "samples": 57,
+    "observed_seconds": 59.260000000000005,
+    "cpu_core_pct_mean": 0.0,
+    "private_mib_max": 24.61
+  },
+  "checks": {
+    "package": false,
+    "idle_cpu": true,
+    "idle_memory": true,
+    "startup": true
+  }
+}
