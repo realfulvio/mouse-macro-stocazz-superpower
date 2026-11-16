@@ -139,7 +139,7 @@ def uipi_controller(panel):
         result["caricata"] = bool(panel.session.load(a.macro))
         panel.repeats, panel.infinite = 1, False
         panel.post("play")
-        result["partita"] = wait_state(panel, (S.PLAYING, S.ERROR), 15)
+        result["partita"] = wait_state(panel, (S.PLAYING, S.ERROR), 15) and panel.session.state == S.PLAYING
         wait_state(panel, (S.READY, S.ERROR), 90)
         result.update(stato=panel.session.state.value, messaggio=panel.session.message, eventi=len(panel.session.macro.events),
                       giri_completati=getattr(panel.session, "completed", None))
