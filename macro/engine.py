@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import math
 import random
+import sys
 import threading
 import time
 from dataclasses import dataclass, replace
@@ -212,7 +213,17 @@ def _wait_until(deadline: Callable[[], float], stop_event: threading.Event) -> b
             return True
         if stop_event.is_set():
             return False
-        if remaining > 0.003:
+        if sys.platform == "win32" and remaining > 0.0003:
+            # CPython 3.11+ uses a high-resolution waitable timer on Windows.
+            # Sleep until 0.3 ms before the original deadline instead of burning
+            # the final 2-3 ms of every event. Short slices bound emergency-stop
+            # latency to 10 ms; long waits remain interruptible via the Event.
+            if remaining > 0.020:
+                if stop_event.wait(remaining - 0.015):
+                    return False
+            else:
+                time.sleep(min(0.010, remaining - 0.0003))
+        elif remaining > 0.003 and sys.platform != "win32":
             if stop_event.wait(remaining - 0.002):
                 return False
         elif remaining > 0.00005:

@@ -1,0 +1,62 @@
+name: CPU dei pacchetti sullo stesso host
+on:
+  pull_request:
+    paths: ['.github/workflows/playback-paired.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  paired:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13.16'
+      - run: pip install -r requirements-windows.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-portable-candidate
+          path: candidate
+          run-id: 43960296764
+          github-token: ${{ github.token }}
+      - name: Tre coppie alternate, stesso schermo e stesso host
+        shell: python
+        run: |
+          import hashlib,json,pathlib,subprocess,sys,urllib.request,zipfile
+          root=pathlib.Path.cwd();out=root/'paired';out.mkdir()
+          baseline=root/'baseline.zip'
+          baseline.write_bytes(urllib.request.urlopen('https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.5/MouseMacroStocazzSuperpower-Windows-v1.2.5.zip').read())
+          candidate=root/'candidate/MouseMacroStocazzSuperpower-Windows-v1.2.5.zip'
+          roots={}
+          for kind,archive,digest in [('baseline',baseline,'def843426d25dc0d12a5344c750a156e81f3b5567390df816337908c09174975'),('candidate',candidate,'1bfeecda34a77dc8ca2e79ee3f2c7843107cbcd4cf6bac79396fcd9729b9b80f')]:
+              assert hashlib.sha256(archive.read_bytes()).hexdigest()==digest
+              with zipfile.ZipFile(archive) as z:
+                  z.extractall(root/kind/'extracted')
+                  roots[kind]=root/kind/'extracted'/z.namelist()[0].split('/')[0]
+          sys.path.insert(0,str(root/'bench/ci'))
+          import run_tool,reference_macro
+          w,h=run_tool.set_display()
+          macro=out/'reference.mmr';macro.write_text(json.dumps(reference_macro.to_mmr(reference_macro.build(w,h),w,h,0,0)))
+          results=[]
+          for i in range(3):
+              for kind in (('baseline','candidate') if i%2==0 else ('candidate','baseline')):
+                  app=roots[kind]
+                  cmd=[str(app/'runtime/python.exe'),str(root/'bench/ci/profile_idle.py'),'--app-root',str(app/'app'),'--mode','active','--warm','8','--window','15','--macro',str(macro)]
+                  p=subprocess.run(cmd,capture_output=True,text=True,timeout=180)
+                  (out/f'{i}-{kind}.txt').write_text(p.stdout+p.stderr)
+                  assert p.returncode==0,p.stderr
+                  records=[json.loads(l.split(' ',1)[1]) for l in p.stdout.splitlines() if l.startswith('RISULTATO ')]
+                  assert len(records)==1 and 'error' not in records[0] and 'riferimento_errore' not in records[0]
+                  results.append(dict(pair=i,kind=kind,**records[0]))
+                  (out/'paired.json').write_text(json.dumps(results,indent=2))
+                  print('PAIRED',json.dumps(results[-1]),flush=True)
+          import platform
+          (out/'host.json').write_text(json.dumps(dict(processor=platform.processor(),platform=platform.platform())))
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playback-paired
+          path: paired/
