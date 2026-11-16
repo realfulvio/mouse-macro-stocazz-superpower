@@ -1,0 +1,25 @@
+{
+  "tool": "minimouse",
+  "fidelity": "non misurato",
+  "source": "https://sourceforge.net/projects/minimousemacro/files/",
+  "version_declared": "da leggere dal binario",
+  "inventory": {
+    "tool": "minimouse",
+    "url": "https://downloads.sourceforge.net/project/minimousemacro/MiniMouseMacro.Setup.msi",
+    "bytes": 10540032,
+    "sha256": "e5d5974a1a69cbe35dbf47eb2bde833075622b813cbfd133c245b3657907c3ea",
+    "expected": "e5d5974a1a69cbe35dbf47eb2bde833075622b813cbfd133c245b3657907c3ea",
+    "hash_ok": true,
+    "hash_source": "SHA-256 pubblicato dalla pagina download SourceForge del progetto turnssoft",
+    "screen": [
+      1920,
+      1080
+    ],
+    "os": "win32",
+    "cpu": "AMD64 Family 25 Model 17 Stepping 1, AuthenticAMD"
+  },
+  "run_id": "43945606448",
+  "commit": "53e3b1d34d293b4cf1a8123b69638dff3568eeb4",
+  "status": "misura incompleta",
+  "error": "RuntimeError: eseguibile non identificato univocamente: ['C:\\\\Program Files (x86)\\\\MiniMouseMacro\\\\MiniMouseMacro.exe', 'C:\\\\Program Files (x86)\\\\MiniMouseMacro\\\\app\\\\9.0.0\\\\MiniMouseMacro.exe']"
+}

@@ -109,7 +109,13 @@ def install(cfg, package, dest, out):
     if method == "msi":  # INSTALLDIR may be ignored by the package
         roots += [Path(os.environ[n]) for n in ("ProgramFiles", "ProgramFiles(x86)") if n in os.environ]
         roots += [Path(os.environ["LOCALAPPDATA"]) / "Programs"]
-    matches = [p for root in roots if root.exists() for p in root.rglob(cfg["exe"])]
+    if cfg.get("installed_exe"):
+        # The MSI installs a public launcher and a versioned internal executable.
+        # Use the launcher path also selected by its Start menu shortcut.
+        matches = [root / cfg["installed_exe"] for root in roots
+                   if (root / cfg["installed_exe"]).is_file()]
+    else:
+        matches = [p for root in roots if root.exists() for p in root.rglob(cfg["exe"])]
     if len(matches) != 1:
         raise RuntimeError("eseguibile non identificato univocamente: " + repr([str(p) for p in matches]))
     return matches[0]
