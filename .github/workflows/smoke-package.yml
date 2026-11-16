@@ -1,0 +1,68 @@
+name: Prova del pacchetto candidato (Windows)
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Run di "Build native Windows candidate" da provare'
+        required: true
+      baseline_tag:
+        description: 'Release precedente da confrontare'
+        default: 'v1.2.3'
+jobs:
+  smoke:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-portable-candidate
+          run-id: ${{ inputs.run_id }}
+          github-token: ${{ github.token }}
+          path: cand
+      - name: Scarica la release precedente
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download "${{ inputs.baseline_tag }}" --repo "${{ github.repository }}" --pattern 'MouseMacroStocazzSuperpower-Windows-v*.zip' --dir base
+          Get-ChildItem cand, base -Recurse | Select-Object FullName, Length
+      - name: Verifica SHA-256 e estrai
+        shell: pwsh
+        run: |
+          $zip = Get-ChildItem cand -Recurse -Filter 'MouseMacroStocazzSuperpower-Windows-v*.zip' | Select-Object -First 1
+          $sums = Get-ChildItem cand -Recurse -Filter 'SHA256SUMS-*.txt' | Select-Object -First 1
+          $h = (Get-FileHash $zip.FullName -Algorithm SHA256).Hash.ToLower()
+          Write-Host "ZIP $($zip.Name) SHA-256 $h"
+          if (-not (Select-String -Path $sums.FullName -Pattern $h -Quiet)) { throw "SHA-256 non presente in $($sums.Name)" }
+          Expand-Archive $zip.FullName -DestinationPath pkg_new
+          Expand-Archive (Get-ChildItem base -Filter *.zip | Select-Object -First 1).FullName -DestinationPath pkg_old
+      - name: CPU e avvio, candidata contro precedente (stesso runner, stessa sessione)
+        shell: pwsh
+        run: |
+          function Measure-Pkg($root, $label) {
+            $dir = (Get-ChildItem $root -Directory | Select-Object -First 1).FullName
+            if (-not (Test-Path "$dir\runtime\pythonw.exe")) { $dir = $root }
+            $env:LOCALAPPDATA = Join-Path $PWD "appdata-$label"; New-Item -ItemType Directory -Force $env:LOCALAPPDATA | Out-Null
+            $p = Start-Process "$dir\runtime\pythonw.exe" -ArgumentList '-B', "`"$dir\app\windows_main.py`"" -PassThru -WorkingDirectory $dir
+            Start-Sleep 12
+            if ($p.HasExited) { throw "$label: il processo e' uscito (codice $($p.ExitCode))" }
+            $out = @()
+            foreach ($i in 1..3) {
+              $p.Refresh(); $t0 = $p.TotalProcessorTime.TotalSeconds; $w0 = Get-Date
+              Start-Sleep 20
+              $p.Refresh(); $t1 = $p.TotalProcessorTime.TotalSeconds
+              $out += [math]::Round(100 * ($t1 - $t0) / ((Get-Date) - $w0).TotalSeconds, 2)
+            }
+            $title = $p.MainWindowTitle
+            $logs = Get-ChildItem $env:LOCALAPPDATA, $dir -Recurse -Include 'errore*.log' -ErrorAction SilentlyContinue
+            Stop-Process $p -Force
+            Write-Host "RISULTATO $label CPU% di un core (3 finestre da 20 s): $($out -join ' · ') · titolo: '$title' · log di errore: $($logs.Count)"
+            if ($logs) { $logs | ForEach-Object { Get-Content $_.FullName } }
+          }
+          Measure-Pkg pkg_old base
+          Measure-Pkg pkg_new candidata
+          Measure-Pkg pkg_old base2
+          Measure-Pkg pkg_new candidata2
