@@ -1,0 +1,77 @@
+{
+  "run_id": 43941664269,
+  "head_sha": "f146f7cb6ca7b3945424927b68094bda1869fbf3",
+  "integrita_orchestratore": [
+    "Mandatory",
+    "Label\\High",
+    "Mandatory",
+    "Level"
+  ],
+  "attesi": {
+    "ldown": 13,
+    "lup": 13,
+    "wheel": 3
+  },
+  "casi": [
+    {
+      "caso": "A_iniettore_alto_verso_alto",
+      "arrivati": {
+        "ldown": 13,
+        "lup": 13,
+        "wheel": 3
+      },
+      "durata_s": 16.3,
+      "uscita": 0
+    },
+    {
+      "caso": "B_iniettore_medio_verso_alto",
+      "arrivati": {
+        "ldown": 0,
+        "lup": 0,
+        "wheel": 0
+      },
+      "durata_s": 16.3,
+      "uscita": 0
+    },
+    {
+      "caso": "C_mmss_alto_verso_alto",
+      "arrivati": {
+        "ldown": 13,
+        "lup": 13,
+        "wheel": 3
+      },
+      "durata_s": 21.3,
+      "uscita": 0,
+      "pannello": {
+        "caricata": true,
+        "partita": true,
+        "stato": "pronto",
+        "messaggio": "Completati 1 giri.",
+        "eventi": 44,
+        "giri_completati": 1
+      }
+    },
+    {
+      "caso": "D_mmss_medio_verso_alto",
+      "arrivati": {
+        "ldown": 0,
+        "lup": 0,
+        "wheel": 0
+      },
+      "durata_s": 21.2,
+      "uscita": 0,
+      "pannello": {
+        "caricata": true,
+        "partita": true,
+        "stato": "pronto",
+        "messaggio": "Completati 1 giri.",
+        "eventi": 44,
+        "giri_completati": 1
+      }
+    }
+  ],
+  "schermo": [
+    1920,
+    1080
+  ]
+}
