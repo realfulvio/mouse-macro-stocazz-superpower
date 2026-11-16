@@ -77,6 +77,12 @@ Run `43951916704`, build `43951421876`: stessa procedura su due runner, esatto Z
 
 Riposo 60 s: CPU media 1,5481→1,8094%, memoria privata massima 47,98→48,15 MiB. Avvio caldo mediana 0,277→0,361 s, p95 0,37445→0,37270 s, 15/15 avvii per lato. Exe, cmd, installazione per utente e pixel 97/97 passano. Il candidato avvisa e non parte verso il bersaglio elevato; controllo alto→alto 13/13/3. [Rapporto completo, limiti e dati](../docs/ESITO-COLLAUDO-v1.2.5.md). Le prove CPU usano runtime e file estratti dallo ZIP, la fedeltà il suo pythonw.exe: non sono più soltanto misure del checkout. Restano esclusi RAM attiva e prove hardware elencate sopra.
 
+### Ottimizzazione delle attese Windows (PR #48)
+
+Su richiesta successiva di Luca, il candidato riduce lo spin finale del player a 0,3 ms usando il timer ad alta risoluzione del runtime incluso. Scadenze, coordinate, velocità e protezioni dei gesti conservate. Stesso host, tre coppie AB/BA/AB: CPU densa **11,7367→5,1733%** (−55,9%, ancora poco sopra soglia), rada **2,57→1,8767%**. Con logger esterno e 30 ripetizioni per ZIP: posizione 0 px, eventi persi/extra zero; intervallo mediano **4,3175→0,6935 ms**, p95 **28,7270→26,9566 ms**, deriva p95 **34,1407→29,1881 ms**. Il p95 resta non validabile sui runner condivisi.
+
+La registrazione supera la soglia nelle finestre brevi del candidato: il dato è conservato. La diagnosi isolata sullo stesso host, tre finestre da 60 s per lato, dà **4,47→4,4933%**, tutte sotto il 5%, senza aumento sostenuto rilevato. Nessuna promessa di rispetto stabile delle soglie su ogni PC. [Tutti i risultati, fallimenti iniziali e limiti](data/runner-github/ottimizzazione-attese-risultati.md). Il candidato sperimentale non sostituisce la release pubblicata 1.2.5.
+
 ## 2. Rivali e perché
 
 Famiglie coperte (dettaglio e fonti in `RIVALI.md`): registratore minimale (TinyTask, Mini Mouse Macro), scripting (AutoHotkey), registratore + generatore (Pulover), commerciale (Jitbit), auto-clicker (OP Auto Clicker), automazione visuale/JS (Actiona).

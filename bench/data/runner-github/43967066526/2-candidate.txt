@@ -1,0 +1,2 @@
+RISULTATO {"registrazione_cpu_pct": 4.92, "eventi_registrati": 7465, "window_s": 60.0, "skin": "bambola", "dpi": 96}
+PROVENIENZA {"app": "D:\\a\\mouse-macro-stocazz-superpower\\mouse-macro-stocazz-superpower\\candidate\\extracted\\MouseMacroStocazzSuperpower-Windows-v1.2.5\\app\\windows_main.py", "interprete": "D:\\a\\mouse-macro-stocazz-superpower\\mouse-macro-stocazz-superpower\\candidate\\extracted\\MouseMacroStocazzSuperpower-Windows-v1.2.5\\runtime\\python.exe"}
