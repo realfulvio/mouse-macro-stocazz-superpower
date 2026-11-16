@@ -106,7 +106,5 @@ def ensure_input_integrity(events):
         level = api.integrity(pid)
         if level is not None and level > own_level:
             raise ValueError(
-                'Una finestra bersaglio ha privilegi più alti di Mouse Macro. '
-                'Windows bloccherebbe i clic o i tasti. '
-                'Chiudi Mouse Macro e riaprilo con «Esegui come amministratore», '
-                'poi riprova.')
+                'Bersaglio con privilegi più alti. Riapri Mouse Macro con '
+                '«Esegui come amministratore» per riprodurre.')
