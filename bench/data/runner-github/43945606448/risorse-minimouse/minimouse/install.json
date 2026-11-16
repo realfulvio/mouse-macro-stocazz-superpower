@@ -1,0 +1,16 @@
+{
+  "method": "msi",
+  "command": [
+    "msiexec.exe",
+    "/i",
+    "D:\\a\\_temp\\bench_tool\\MiniMouseMacro.Setup.msi",
+    "/qn",
+    "/norestart",
+    "INSTALLDIR=D:\\a\\_temp\\bench_tool\\installed",
+    "/L*v",
+    "D:\\a\\mouse-macro-stocazz-superpower\\mouse-macro-stocazz-superpower\\results\\minimouse\\install.log"
+  ],
+  "exit_code": 0,
+  "stdout": "",
+  "stderr": ""
+}
