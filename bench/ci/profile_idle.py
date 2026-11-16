@@ -8,7 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-ap = argparse.ArgumentParser(); ap.add_argument("--mode", choices=("cpu", "prof", "verify", "active", "jitter"), required=True)
+ap = argparse.ArgumentParser(); ap.add_argument("--mode", choices=("cpu", "prof", "verify", "active", "jitter", "uipi"), required=True)
 ap.add_argument("--warm", type=float, default=12); ap.add_argument("--window", type=float, default=30); ap.add_argument("--top", type=int, default=28)
 a = ap.parse_args()
 
@@ -122,6 +122,22 @@ def active_controller(panel):
         u.PostThreadMessageW(tid, 0x12, 0, 0)
 
 
+def uipi_controller(panel):
+    """Una riproduzione della macro di riferimento (1 giro) e come la racconta il pannello: serve alla prova delle finestre elevate."""
+    S = wm.State
+    try:
+        time.sleep(a.warm)
+        result["caricata"] = bool(panel.session.load(ROOT / "bench" / "macros" / "reference.mmr"))
+        panel.repeats, panel.infinite = 1, False
+        panel.post("play")
+        result["partita"] = wait_state(panel, (S.PLAYING, S.ERROR), 15)
+        wait_state(panel, (S.READY, S.ERROR), 90)
+        result.update(stato=panel.session.state.value, messaggio=panel.session.message, eventi=len(panel.session.macro.events),
+                      giri_completati=getattr(panel.session, "completed", None))
+    finally:
+        u.PostThreadMessageW(tid, 0x12, 0, 0)
+
+
 def verify():
     """Il fotogramma della mascotte ridisegnato dal percorso rapido (Layer) deve essere IDENTICO, pixel per pixel,
     a quello del percorso completo, per ogni fotogramma dello sprite sheet. Indice del fotogramma fissato a mano."""
@@ -171,7 +187,7 @@ def verify():
 panel = wm.Panel()
 if a.mode == "verify": verify()
 prof = cProfile.Profile() if a.mode == "prof" else None
-threading.Thread(target=active_controller if a.mode == "active" else controller, args=(panel,) if a.mode == "active" else (panel, prof), daemon=True).start()
+threading.Thread(target={"active": active_controller, "uipi": uipi_controller}.get(a.mode, controller), args=(panel,) if a.mode in ("active", "uipi") else (panel, prof), daemon=True).start()
 if prof: prof.enable()      # nel thread dell'interfaccia: comprende anche le prime pitture e l'assestamento
 panel.run()
 if prof: prof.disable()
