@@ -1,21 +1,27 @@
-# Stato delle misure (2026-11-16)
+# Stato delle misure (aggiornato 2026-11-16, sera)
 
 Regola: una cella vuota o "non misurato" significa che **non** è stata fatta la misura. Nessun numero stimato.
+Ambiente delle misure: runner GitHub Actions `windows-latest` (Windows Server 2025, AMD EPYC, 2 vCPU condivisi, 1920×1080 a 96 DPI, un monitor). Non è una VM dedicata: vedi i limiti in `RAPPORTO.md` §1b.
 
-| Prova | Stato | Perché |
+| Prova | Stato | Dove / perché |
 |---|---|---|
-| Fedeltà px/ms (30 rip. per strumento e scenario) | **non misurato** | serve una VM Windows con sessione grafica. Il container di analisi non ha Windows; il PC di lavoro non è una VM pulita e la prova muove il mouse reale dell'utente; l'accesso SSH al PC di collaudo con le VM è stato negato dalle regole di sicurezza della sessione |
-| CPU/RAM a riposo e in esecuzione dei rivali | **non misurato** | idem |
-| Tempo di avvio | **non misurato** | idem |
-| DPI misto, multi-monitor, finestre elevate, giochi | **non misurato** | idem (più hardware/monitor reali) |
-| Macro di più ore | **non misurato** | idem |
-| VirusTotal / SmartScreen | **non misurato** | il container non raggiunge virustotal.com (proxy) e SmartScreen richiede Windows |
-| Test di usabilità | **non eseguito** | servono persone; protocollo pronto |
+| Fedeltà px/ms, 30 rip., MMSS 1.2.3 e AutoHotkey 2.0.31 | **misurato** (2 esecuzioni) | `runner-github/43912272395/`, `runner-github/43918554473/` |
+| Riferimento ideale (SendInput + QPC) | **misurato** (1 esecuzione) | `runner-github/43918554473/ideal/` |
+| Fedeltà TinyTask 1.77 | **non misurato**: non riproduce la macro in questo ambiente, causa non accertata | `runner-github/43912272395/tinytask/` (870 eventi persi su 870) |
+| Fedeltà Pulover, Jitbit, Mini Mouse Macro, OP Auto Clicker, Actiona | **non misurato** | non girati |
+| p95 dell'errore di intervallo (soglia 16 ms) | **non valutabile** qui: il riferimento ideale fa 28,2 ms | serve hardware reale o VM con core dedicati |
+| CPU/RAM a riposo (60 s) | **misurato** per MMSS, AutoHotkey, TinyTask | `risorse_riposo.csv` |
+| CPU/RAM in esecuzione | **non misurato** | non ancora nel banco |
+| Tempo di avvio | **non misurato**: lo script non ha prodotto dati per MMSS; per TinyTask la finestra non è stata rilevata (30 s, 15 su 15) | da correggere `tools/measure_startup.ps1` |
+| Peso | **misurato** (MMSS 19.049.731 byte; AHK 3.160.453; TinyTask 5.678.424) | `inventario.json` |
+| DPI misto, multi-monitor, finestre elevate, giochi | **non misurato** | servono hardware reale, più monitor, un gioco |
+| Macro di più ore | **non misurato** | il job CI ha un limite di 45 minuti |
+| VirusTotal / SmartScreen | **non misurato** | il container non raggiunge virustotal.com (proxy); SmartScreen richiede un Windows con reputazione/Mark-of-the-Web reale |
+| Test di usabilità | **non eseguito** | servono persone; protocollo pronto in `USABILITA.md` |
 | Matrice funzioni | **parziale** | colonne dei rivali: solo fatti letti su fonti ufficiali, il resto "non verificato" |
-| Test degli script di analisi | **eseguiti** (11 test, dati sintetici su Linux) | verificano le statistiche e i verdetti, non il logger |
-| Sintassi del logger e degli script PowerShell/Python | Python compilato; **logger non ancora eseguito su Windows** | |
+| Test degli script di analisi | **eseguiti** (11 test, dati sintetici) | verificano statistiche e verdetti |
+| Logger esterno su Windows | **collaudato** (0 px di errore sul riferimento ideale) | job `smoke` e riga `ideal` |
 
-## Numeri che esistono già (misure di altre sessioni, metodo diverso, **non conformi a questa procedura**)
+## Misure di altre sessioni (metodo diverso, **non conformi a questa procedura**)
 
-Da `project-state` (1/11/2026, VM VM-TEST senza GPU, % di un core pronto, versione 1.2.3): pannello pronto 9,3 · Copertina 13,2 · Micro in registrazione 7,1 · Micro in riproduzione 6,0.
-Peso ZIP v1.1.1: 12.114.231 byte (`docs/ESITO-COLLAUDO-v1.1.1.md`). Servono come riferimento di partenza, non come verdetto.
+Da `project-state` (1/11/2026, VM VM-TEST senza GPU, % di un core pronto, versione 1.2.3): pannello pronto 9,3 · Copertina 13,2 · Micro in registrazione 7,1 · Micro in riproduzione 6,0. Peso ZIP v1.1.1: 12.114.231 byte (`docs/ESITO-COLLAUDO-v1.1.1.md`). Riferimento di partenza, non verdetto.
