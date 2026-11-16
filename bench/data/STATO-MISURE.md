@@ -11,13 +11,15 @@ Ambiente delle misure: runner GitHub Actions `windows-latest` (Windows Server 20
 | Fedeltà Pulover, Jitbit, Mini Mouse Macro, OP Auto Clicker, Actiona | **non misurato** | non girati |
 | p95 dell'errore di intervallo (soglia 16 ms) | **non valutabile** qui: il riferimento ideale fa 28,2 ms | serve hardware reale o VM con core dedicati |
 | CPU/RAM a riposo (60 s) | **misurato** per MMSS, AutoHotkey, TinyTask | `risorse_riposo.csv` |
-| CPU a riposo MMSS dopo l'ottimizzazione Bambola | **misurato dal sorgente**: 1,48 · 1,48 · 1,33 % (prima 4,22–4,61 %), pixel identici 97/97, 24 fps invariati. **Non** misurato sull'exe impacchettato | `runner-github/ottimizzazione-cpu-bambola.md` |
-| CPU/RAM in esecuzione | **non misurato** | non ancora nel banco |
+| CPU a riposo MMSS dopo l'ottimizzazione Bambola | **misurato dal sorgente**: 1,48 · 1,48 · 1,33 % (prima 4,22–4,61 %), pixel identici 97/97, 24 fps invariati. Nuova tornata a codice app invariato: **2,11 · 2,73 · 2,50%, non passa ≤2**; soglia non stabilmente rispettata. **Non** misurato sull'exe impacchettato | `runner-github/ottimizzazione-cpu-bambola.md` |
+| CPU in registrazione/riproduzione | **misurato dal sorgente**: seconda tornata registrazione 9,06 · 7,71 · 7,40% (non passa ≤5); riproduzione densa 14,37 · 14,58 · 14,37% (non passa), rada 3,12 · 3,33 · 3,02% (passa). Prima tornata registrazione sotto soglia: risultato non stabile | `runner-github/cpu-attiva-uipi.md` |
+| RAM attiva / CPU attiva exe | **non misurato** | il profilo attivo misura solo CPU dal sorgente |
 | Tempo di avvio | **misurato per MMSS** (run 43927100173, ramo `bench-data/43927100173-mmss`): 15 avvii, 14 a caldo: mediana 0,378 s, p95 0,402 s, primo avvio a freddo 0,452 s (soglia 2 s / 3 s). Dal CreateProcess alla finestra visibile e reattiva, su runner condiviso. **Non misurato** per AutoHotkey e TinyTask (finestra non rilevata) | `avvio.csv` |
 | Peso | **misurato** (MMSS 19.049.731 byte; AHK 3.160.453; TinyTask 5.678.424) | `inventario.json` |
-| DPI misto, multi-monitor, finestre elevate, giochi | **non misurato** | servono hardware reale, più monitor, un gioco |
+| Finestre elevate (UIPI) | **misurato dal sorgente**: C alto→alto 13/13/3 (passa); D medio→alto 0/0/0 ma «Completati 1 giri.» (**non passa la segnalazione**) | `runner-github/43941664269/uipi.json`, `runner-github/cpu-attiva-uipi.md` |
+| DPI misto, multi-monitor, giochi | **non misurato** | servono hardware reale, più monitor, un gioco |
 | Macro di più ore | **non misurato** | il job CI ha un limite di 45 minuti |
-| VirusTotal / SmartScreen | **non misurato** | il container non raggiunge virustotal.com (proxy); SmartScreen richiede un Windows con reputazione/Mark-of-the-Web reale |
+| VirusTotal / SmartScreen | **non misurato** | nessuna `VT_API_KEY` disponibile nella sessione corrente; nessun esito VirusTotal acquisito. SmartScreen richiede un Windows con reputazione/Mark-of-the-Web reale |
 | Test di usabilità | **non eseguito** | servono persone; protocollo pronto in `USABILITA.md` |
 | Matrice funzioni | **parziale** | colonne dei rivali: solo fatti letti su fonti ufficiali, il resto "non verificato" |
 | Test degli script di analisi | **eseguiti** (11 test, dati sintetici) | verificano statistiche e verdetti |
