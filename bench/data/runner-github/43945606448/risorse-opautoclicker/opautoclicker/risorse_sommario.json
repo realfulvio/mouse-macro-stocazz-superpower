@@ -1,0 +1,63 @@
+{
+  "tool": "opautoclicker",
+  "fidelity": "non misurato",
+  "source": "https://www.opautoclicker.com/downloads.html",
+  "version_declared": "da leggere dal binario",
+  "inventory": {
+    "tool": "opautoclicker",
+    "url": "https://downloads.sourceforge.net/project/orphamielautoclicker/4.1/AutoClicker.exe",
+    "bytes": 1187192,
+    "sha256": "1ce7da6f2813c2ad1d2e496be6714e08cd618e6d9fe2df26c2bd4d894c9a6ec1",
+    "expected": "1ce7da6f2813c2ad1d2e496be6714e08cd618e6d9fe2df26c2bd4d894c9a6ec1",
+    "hash_ok": true,
+    "hash_source": "SHA-256 pubblicato dalla pagina download SourceForge collegata dal sito ufficiale",
+    "screen": [
+      1920,
+      1080
+    ],
+    "os": "win32",
+    "cpu": "AMD64 Family 25 Model 17 Stepping 1, AuthenticAMD"
+  },
+  "run_id": "43945606448",
+  "commit": "53e3b1d34d293b4cf1a8123b69638dff3568eeb4",
+  "status": "misurato",
+  "exe": "D:\\a\\_temp\\bench_tool\\installed\\AutoClicker.exe",
+  "binary": {
+    "company": "",
+    "product_version": "4.1",
+    "product": "OP Auto Clicker",
+    "file_version": "4.1"
+  },
+  "startup": {
+    "successful": 15,
+    "total": 15,
+    "warm_s": {
+      "n": 14,
+      "median": 0.1625,
+      "p95": 0.17934999999999998,
+      "mean": 0.16435714285714287,
+      "stdev": 0.00980272444748941,
+      "variance": 9.609340659340657e-05,
+      "min": 0.149,
+      "max": 0.18
+    },
+    "note": "prima finestra visibile e reattiva, anche se dialogo iniziale; cold=1 indica solo il primo della serie"
+  },
+  "visible_windows": [
+    "OP Auto Clicker 4.1"
+  ],
+  "pid": 8864,
+  "orchestrator_integrity": "Mandatory Label\\High Mandatory Level                          Label            S-1-16-12288",
+  "idle": {
+    "samples": 57,
+    "observed_seconds": 59.08,
+    "cpu_core_pct_mean": 0.10555225677019779,
+    "private_mib_max": 19.52
+  },
+  "checks": {
+    "package": true,
+    "idle_cpu": true,
+    "idle_memory": true,
+    "startup": true
+  }
+}

@@ -1,0 +1,15 @@
+{
+ "tool": "actiona",
+ "url": "https://github.com/Jmgr/actiona/releases/download/v3.11.5/actiona-3.11.5-windows.exe",
+ "bytes": 75835384,
+ "sha256": "9f50ed804fa0cc91d82202c0393fcebb7c0865781695cdf8b9c4f017d6c7e17c",
+ "expected": "9f50ed804fa0cc91d82202c0393fcebb7c0865781695cdf8b9c4f017d6c7e17c",
+ "hash_ok": true,
+ "hash_source": "digest SHA-256 della release ufficiale GitHub v3.11.5",
+ "screen": [
+  1920,
+  1080
+ ],
+ "os": "win32",
+ "cpu": "AMD64 Family 25 Model 1 Stepping 1, AuthenticAMD"
+}
