@@ -43,6 +43,17 @@ def metadata(exe):
     return json.loads(p.stdout)
 
 
+def launch(exe):
+    # ShellExecute handles executables with a requireAdministrator manifest,
+    # matching Start-Process used by the startup benchmark (CreateProcess may
+    # reject the same executable with WinError 740).
+    env = {**os.environ, "BENCH_EXE_PATH": str(exe)}
+    cmd = "$ErrorActionPreference='Stop'; $p=Start-Process -FilePath $env:BENCH_EXE_PATH -WorkingDirectory (Split-Path $env:BENCH_EXE_PATH) -PassThru; $p.Id"
+    p = subprocess.run(["pwsh", "-NoProfile", "-Command", cmd], env=env,
+                       text=True, capture_output=True, check=True, timeout=30)
+    return int(p.stdout.strip())
+
+
 def windows_for(pid):
     u = ctypes.windll.user32
     callback_type = ctypes.WINFUNCTYPE(W.BOOL, W.HWND, W.LPARAM)
@@ -110,7 +121,7 @@ def run_resources(args, cfg, package, work, out, inv):
               "version_declared": cfg["version_declared"], "inventory": inv,
               "run_id": os.environ.get("GITHUB_RUN_ID"), "commit": os.environ.get("GITHUB_SHA"),
               "status": "in corso"}
-    pr = None
+    pid = None
     try:
         exe = install(cfg, package, work / "installed", out)
         result.update(exe=str(exe), binary=metadata(exe))
@@ -122,10 +133,12 @@ def run_resources(args, cfg, package, work, out, inv):
         result["startup"] = {"successful": sum(r["ok"] == "1" for r in starts), "total": len(starts),
                              "warm_s": analyze.summary(warm),
                              "note": "prima finestra visibile e reattiva, anche se dialogo iniziale; cold=1 indica solo il primo della serie"}
-        pr = subprocess.Popen([str(exe)], cwd=exe.parent)
+        pid = launch(exe)
         time.sleep(10)
-        result["visible_windows"] = windows_for(pr.pid)
-        result["launcher_exit"] = pr.poll()
+        result["visible_windows"] = windows_for(pid)
+        result["pid"] = pid
+        groups = subprocess.run(["whoami", "/groups"], text=True, capture_output=True, check=True).stdout
+        result["orchestrator_integrity"] = next((line.strip() for line in groups.splitlines() if "Mandatory Label" in line), "non rilevato")
         ps(ROOT / "bench/tools/measure_resources.ps1", "-Name", exe.stem,
            "-Seconds", args.idle_s, "-Out", out / "risorse_riposo.csv")
         result["idle"] = summarize_resources(read_csv(out / "risorse_riposo.csv"))
@@ -144,7 +157,7 @@ def run_resources(args, cfg, package, work, out, inv):
         result.update(status="misura incompleta", error=f"{type(error).__name__}: {error}")
         raise
     finally:
-        if pr is not None and pr.poll() is None:
-            subprocess.run(["taskkill", "/PID", str(pr.pid), "/T", "/F"], capture_output=True)
+        if pid is not None:
+            subprocess.run(["taskkill", "/PID", str(pid), "/T", "/F"], capture_output=True)
         (out / "risorse_sommario.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
         print("RISORSE_RIVALE", json.dumps(result, ensure_ascii=False), flush=True)
