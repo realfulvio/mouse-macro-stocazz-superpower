@@ -73,9 +73,9 @@ jobs:
           PACKAGE_KIND: ${{ matrix.package }}
         run: |
           if ($env:PACKAGE_KIND -eq 'baseline') {
-            $archive = Join-Path $pwd 'baseline-v1.2.4.zip'
-            Invoke-WebRequest 'https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.4/MouseMacroStocazzSuperpower-Windows-v1.2.4.zip' -OutFile $archive
-            $digest = 'b4be1b44f5f49611438a1090d5a2c708236183be0a2bf02b01d53cb1e29814dd'
+            $archive = Join-Path $pwd 'baseline-v1.2.5.zip'
+            Invoke-WebRequest 'https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.5/MouseMacroStocazzSuperpower-Windows-v1.2.5.zip' -OutFile $archive
+            $digest = 'def843426d25dc0d12a5344c750a156e81f3b5567390df816337908c09174975'
           } else {
             $version = python -c "from macro.session import VERSION; print(VERSION)"
             $archive = Join-Path $pwd "candidate/MouseMacroStocazzSuperpower-Windows-v$version.zip"
@@ -86,6 +86,14 @@ jobs:
           if ((Get-FileHash $archive -Algorithm SHA256).Hash.ToLower() -ne $digest) { throw 'Hash ZIP diverso' }
           "PACKAGE_ARCHIVE=$archive" >> $env:GITHUB_ENV
           "PACKAGE_SHA256=$digest" >> $env:GITHUB_ENV
+      - name: Confronto delle attese sullo stesso host (30 coppie AB/BA)
+        if: matrix.package == 'candidate'
+        shell: pwsh
+        run: |
+          Invoke-WebRequest 'https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.5/MouseMacroStocazzSuperpower-Windows-v1.2.5.zip' -OutFile before.zip
+          if ((Get-FileHash before.zip -Algorithm SHA256).Hash.ToLower() -ne 'def843426d25dc0d12a5344c750a156e81f3b5567390df816337908c09174975') { throw 'Hash baseline diverso' }
+          python bench/ci/wait_probe.py --baseline before.zip --candidate $env:PACKAGE_ARCHIVE --out wait-probe
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Launcher, installazione, pixel, CPU e UIPI del pacchetto
         shell: pwsh
         run: |
@@ -102,3 +110,4 @@ jobs:
           path: |
             acceptance/
             results/
+            wait-probe/wait-probe.json
