@@ -5,13 +5,13 @@
  Se l'app parte nel tray senza finestra usa -TimeoutS e leggi la colonna ok=0: NON inventare un tempo.
 #>
 param([Parameter(Mandatory)][string]$Exe, [Parameter(Mandatory)][string]$ProcName, [int]$Runs = 30,
-      [Parameter(Mandatory)][string]$Out, [int]$TimeoutS = 20, [string]$Args = "")
+      [Parameter(Mandatory)][string]$Out, [int]$TimeoutS = 20, [string]$ArgumentList = "")
 Add-Type -Namespace W -Name U -MemberDefinition '[DllImport("user32.dll")] public static extern bool IsWindowVisible(System.IntPtr h);'
 $rows = @()
 for ($i = 1; $i -le $Runs; $i++) {
   Get-Process -Name $ProcName -ErrorAction SilentlyContinue | Stop-Process -Force; Start-Sleep -Milliseconds 800
   $sw = [Diagnostics.Stopwatch]::StartNew()
-  $p = if ($Args) { Start-Process -FilePath $Exe -ArgumentList $Args -PassThru } else { Start-Process -FilePath $Exe -PassThru }
+  $p = if ($ArgumentList) { Start-Process -FilePath $Exe -ArgumentList $ArgumentList -PassThru } else { Start-Process -FilePath $Exe -PassThru }
   $ok = 0
   while ($sw.Elapsed.TotalSeconds -lt $TimeoutS) {
     $q = Get-Process -Name $ProcName -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowHandle -ne 0 -and [W.U]::IsWindowVisible($_.MainWindowHandle) -and $_.Responding } | Select-Object -First 1
