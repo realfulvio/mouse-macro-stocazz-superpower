@@ -45,7 +45,7 @@ jobs:
             $env:LOCALAPPDATA = Join-Path $PWD "appdata-$label"; New-Item -ItemType Directory -Force $env:LOCALAPPDATA | Out-Null
             $p = Start-Process "$dir\runtime\pythonw.exe" -ArgumentList '-B', "`"$dir\app\windows_main.py`"" -PassThru -WorkingDirectory $dir
             Start-Sleep 12
-            if ($p.HasExited) { throw "$label: il processo e' uscito (codice $($p.ExitCode))" }
+            if ($p.HasExited) { throw "${label}: il processo e' uscito (codice $($p.ExitCode))" }
             $out = @()
             foreach ($i in 1..3) {
               $p.Refresh(); $t0 = $p.TotalProcessorTime.TotalSeconds; $w0 = Get-Date
