@@ -3,7 +3,8 @@
 esegue N ripetizioni della macro di riferimento con il logger esterno, poi misura risorse a riposo e avvio.
   python bench/ci/run_tool.py --tool mmss|ahk|tinytask|ideal --runs 30 --out results
 Stampa i CSV grezzi nel log tra marcatori RAW (il job non puo' fare push) e li salva come artifact."""
-import argparse, ctypes, hashlib, json, os, shutil, struct, subprocess, sys, time, urllib.request, zipfile
+import argparse, ctypes, hashlib, json, os, shutil, struct, subprocess, sys, time, urllib.request, urllib.parse, zipfile
+from html.parser import HTMLParser
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -57,14 +58,32 @@ def press(*keys):
 
 def download(url, dest):
     dest.parent.mkdir(parents=True, exist_ok=True)
-    req = urllib.request.Request(url, headers={
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) bench-download",
-        "Referer": "https://tinytask.net/download.html"})
-    with urllib.request.urlopen(req, timeout=120) as r, open(dest, "wb") as f:
-        if "text/html" in r.headers.get("Content-Type", "").lower():
-            raise ValueError("il server ha restituito HTML invece del pacchetto: " + r.url)
-        shutil.copyfileobj(r, f)
-    return hashlib.sha256(dest.read_bytes()).hexdigest()
+    class Refresh(HTMLParser):
+        target = None
+        def handle_starttag(self, tag, attrs):
+            attrs = dict(attrs)
+            if tag == "meta" and attrs.get("http-equiv", "").lower() == "refresh":
+                value = attrs.get("content", "")
+                if "url=" in value.lower():
+                    self.target = value[value.lower().index("url=") + 4:].strip().strip("\"'")
+    for _ in range(3):
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) bench-download",
+            "Referer": "https://sourceforge.net/" if "sourceforge.net" in url else "https://tinytask.net/download.html"})
+        with urllib.request.urlopen(req, timeout=120) as r:
+            if "text/html" in r.headers.get("Content-Type", "").lower():
+                parser = Refresh(); parser.feed(r.read(1024 * 1024).decode("utf-8", errors="replace"))
+                target = urllib.parse.urljoin(r.url, parser.target or "")
+                host = urllib.parse.urlparse(target).hostname or ""
+                if parser.target and target.startswith("https://") and (host == "downloads.sourceforge.net" or host.endswith(".dl.sourceforge.net")):
+                    print("redirect HTML del download ufficiale SourceForge", host, flush=True)
+                    url = target
+                    continue
+                raise ValueError("il server ha restituito HTML invece del pacchetto: " + r.url)
+            with open(dest, "wb") as f:
+                shutil.copyfileobj(r, f)
+            return hashlib.sha256(dest.read_bytes()).hexdigest()
+    raise ValueError("troppi redirect HTML, nessun binario scaricato")
 
 
 def set_display():
@@ -85,7 +104,13 @@ def set_display():
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--tool", required=True, choices=TOOLS); ap.add_argument("--runs", type=int, default=30)
     ap.add_argument("--out", default="results"); ap.add_argument("--idle-s", type=int, default=60); ap.add_argument("--startups", type=int, default=15)
-    a = ap.parse_args(); cfg = TOOLS[a.tool]
+    ap.add_argument("--mmss-zip", help="Misura questo ZIP candidato invece della release baseline")
+    ap.add_argument("--sha256", help="SHA-256 atteso dello ZIP candidato, da SHA256SUMS dell'artifact")
+    a = ap.parse_args(); cfg = dict(TOOLS[a.tool])
+    if a.mmss_zip:
+        if a.tool != "mmss" or not a.sha256 or len(a.sha256) != 64 or any(c not in "0123456789abcdefABCDEF" for c in a.sha256):
+            ap.error("--mmss-zip richiede --tool mmss e --sha256 con 64 cifre esadecimali")
+        cfg.update(url=Path(a.mmss_zip).resolve().as_uri(), sha256=a.sha256.lower(), hash_source="SHA256SUMS dell'artifact candidato, verificato prima della misura")
     out = Path(a.out) / a.tool; out.mkdir(parents=True, exist_ok=True)
     u.SetProcessDpiAwarenessContext(ctypes.c_void_p(-4))
     w, h = set_display(); print(f"schermo di prova {w}x{h}", flush=True)
