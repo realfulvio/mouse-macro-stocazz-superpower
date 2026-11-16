@@ -17,18 +17,51 @@ k = ctypes.windll.kernel32; u = ctypes.windll.user32
 tid = k.GetCurrentThreadId(); result = {}
 
 
+k.GetCurrentProcess.restype = ctypes.c_void_p
+k.GetProcessTimes.argtypes = [ctypes.c_void_p] + [ctypes.POINTER(ctypes.c_ulonglong)] * 4
+
+
 def cpu_seconds():
     c, e, kt, ut = (ctypes.c_ulonglong() for _ in range(4))
-    k.GetProcessTimes(k.GetCurrentProcess(), ctypes.byref(c), ctypes.byref(e), ctypes.byref(kt), ctypes.byref(ut))
+    if not k.GetProcessTimes(k.GetCurrentProcess(), ctypes.byref(c), ctypes.byref(e), ctypes.byref(kt), ctypes.byref(ut)): raise OSError("GetProcessTimes")
     return (kt.value + ut.value) / 1e7
+
+
+STATS = {}   # strumentazione leggera (perf_counter): chiave -> [chiamate, secondi]
+
+
+def timed(key_of):
+    def deco(fn):
+        def wrapper(*args, **kw):
+            t = time.perf_counter()
+            try: return fn(*args, **kw)
+            finally:
+                e = STATS.setdefault(key_of(args), [0, 0.0]); e[0] += 1; e[1] += time.perf_counter() - t
+        return wrapper
+    return deco
+
+
+if a.mode == "cpu":   # conteggi e tempi per messaggio e per tela (costo del timer: ~1 microsecondo a chiamata)
+    wm.Panel.wndproc = timed(lambda args: "msg 0x%X%s" % (args[2], " id%d" % args[3] if args[2] == 0x113 else ""))(wm.Panel.wndproc)
+    wm.Panel.render = timed(lambda args: "render")(wm.Panel.render)
+    wm.Panel.paint = timed(lambda args: "paint")(wm.Panel.paint)
+    wm.Panel.draw_control = timed(lambda args: "draw_control")(wm.Panel.draw_control)
+    _init, _close = wm.Canvas.__init__, wm.Canvas.close
+    def c_init(self, *x, **kw):
+        _init(self, *x, **kw); self._t = time.perf_counter()
+    def c_close(self):
+        e = STATS.setdefault("tela %s" % ("parziale" if self.clip else "intera"), [0, 0.0]); e[0] += 1; e[1] += time.perf_counter() - self._t
+        _close(self)
+    wm.Canvas.__init__, wm.Canvas.close = c_init, c_close
 
 
 def controller(panel, prof):
     time.sleep(a.warm)
-    c0, t0 = cpu_seconds(), time.perf_counter()
+    STATS.clear(); c0, t0 = cpu_seconds(), time.perf_counter()
     time.sleep(a.window)
     c1, t1 = cpu_seconds(), time.perf_counter()
-    result.update(cpu_pct_of_core=round(100 * (c1 - c0) / (t1 - t0), 2), window_s=round(t1 - t0, 1),
+    snap = {key: [v[0], round(v[1] * 1000, 1)] for key, v in sorted(STATS.items())}
+    result.update(stats_calls_ms=snap, cpu_pct_of_core=round(100 * (c1 - c0) / (t1 - t0), 2), window_s=round(t1 - t0, 1),
                   shown=panel.shown, animating=panel.animating, skin=wm.CURRENT["skin"], dpi=panel.dpi)
     u.PostThreadMessageW(tid, 0x12, 0, 0)   # WM_QUIT: esce da GetMessageW
 
