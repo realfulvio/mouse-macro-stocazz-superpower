@@ -1,0 +1,15 @@
+{
+ "tool": "ideal",
+ "url": null,
+ "bytes": 0,
+ "sha256": null,
+ "expected": null,
+ "hash_ok": true,
+ "hash_source": "nessun programma: riproduzione con SendInput e attese QPC (riferimento del runner)",
+ "screen": [
+  1920,
+  1080
+ ],
+ "os": "win32",
+ "cpu": "AMD64 Family 25 Model 17 Stepping 1, AuthenticAMD"
+}
