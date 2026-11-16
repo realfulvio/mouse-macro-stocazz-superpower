@@ -11,6 +11,7 @@ sys.path.insert(0, str(ROOT))
 ap = argparse.ArgumentParser(); ap.add_argument("--mode", choices=("cpu", "prof", "verify", "active", "jitter", "uipi"), required=True)
 ap.add_argument("--warm", type=float, default=12); ap.add_argument("--window", type=float, default=30); ap.add_argument("--top", type=int, default=28); ap.add_argument("--macro", default=str(ROOT / "bench" / "macros" / "reference.mmr"))
 ap.add_argument("--app-root", help="Cartella app di un pacchetto estratto; usare il suo runtime per misurare l'exe distribuito")
+ap.add_argument("--record-only", action="store_true")
 a = ap.parse_args()
 if a.app_root:
     sys.path.insert(0, str(Path(a.app_root).resolve()))
@@ -124,6 +125,9 @@ def active_controller(panel):
         if not wait_state(panel, (S.READY, S.ERROR)): result["error"] = "registrazione non fermata"; return
         if panel.session.state == S.ERROR: result["error"] = "registrazione: " + panel.session.message; return
         result["eventi_registrati"] = len(panel.session.macro.events)
+        if a.record_only:
+            result.update(window_s=a.window, skin=wm.CURRENT["skin"], dpi=panel.dpi)
+            return
         panel.infinite = True
         panel.post("play")
         if not wait_state(panel, (S.PLAYING, S.ERROR)) or panel.session.state == S.ERROR: result["error"] = "riproduzione non partita: %s" % panel.session.message; return
