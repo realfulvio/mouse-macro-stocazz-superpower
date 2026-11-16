@@ -1,0 +1,81 @@
+{
+  "run_id": 43947163037,
+  "commit": "d1761c3752db3ad20f35966719134b713c82ab9b",
+  "records": [
+    {
+      "integrita_orchestratore": [
+        "Mandatory",
+        "Label\\High",
+        "Mandatory",
+        "Level"
+      ],
+      "attesi": {
+        "ldown": 13,
+        "lup": 13,
+        "wheel": 3
+      },
+      "casi": [
+        {
+          "caso": "A_iniettore_alto_verso_alto",
+          "arrivati": {
+            "ldown": 13,
+            "lup": 13,
+            "wheel": 3
+          },
+          "durata_s": 16.4,
+          "uscita": 0
+        },
+        {
+          "caso": "B_iniettore_medio_verso_alto",
+          "arrivati": {
+            "ldown": 0,
+            "lup": 0,
+            "wheel": 0
+          },
+          "durata_s": 16.4,
+          "uscita": 0
+        },
+        {
+          "caso": "C_mmss_alto_verso_alto",
+          "arrivati": {
+            "ldown": 13,
+            "lup": 13,
+            "wheel": 3
+          },
+          "durata_s": 21.4,
+          "uscita": 0,
+          "pannello": {
+            "caricata": true,
+            "partita": true,
+            "stato": "pronto",
+            "messaggio": "Completati 1 giri.",
+            "eventi": 44,
+            "giri_completati": 1
+          }
+        },
+        {
+          "caso": "D_mmss_medio_verso_alto",
+          "arrivati": {
+            "ldown": 0,
+            "lup": 0,
+            "wheel": 0
+          },
+          "durata_s": 4.3,
+          "uscita": 0,
+          "pannello": {
+            "caricata": true,
+            "partita": false,
+            "stato": "errore",
+            "messaggio": "Bersaglio con privilegi più alti. Riapri Mouse Macro con «Esegui come amministratore» per riprodurre.",
+            "eventi": 44,
+            "giri_completati": 0
+          }
+        }
+      ],
+      "schermo": [
+        1920,
+        1080
+      ]
+    }
+  ]
+}
