@@ -41,7 +41,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        tool: [mmss, ahk, tinytask]
+        tool: [mmss, ahk, tinytask, ideal]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
