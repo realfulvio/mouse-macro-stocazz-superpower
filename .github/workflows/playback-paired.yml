@@ -1,5 +1,7 @@
 name: CPU dei pacchetti sullo stesso host
 on:
+  pull_request:
+    paths: ['.github/workflows/playback-paired.yml']
   workflow_dispatch:
 permissions:
   contents: read
