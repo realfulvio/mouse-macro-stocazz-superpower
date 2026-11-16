@@ -9,7 +9,8 @@ la finestra attiva. Il pannello viene prima spostato fuori dai bersagli.
 Il controllo è applicato anche all'avvio `.mmr`/`--run`, prima della creazione
 del player. Un bersaglio di integrità superiore impedisce l'avvio e produce:
 
-> Bersaglio con privilegi più alti. Riapri Mouse Macro con «Esegui come amministratore» per riprodurre.
+> Bersaglio elevato.
+> Riapri con «Esegui come amministratore».
 
 Nessuna elevazione automatica. Nessuna chiamata aggiunta al ciclo temporizzato;
 `macro/engine.py` e `macro/windows_backend.py` invariati. Cache di punti e PID
@@ -55,3 +56,7 @@ Nessuna soglia cambia da passa a non passa. Il verdetto meccanico globale resta 
 ## Conferma del testo finale e CPU
 
 Sul commit `d1761c3`, il run `43947163037` conferma ancora C=13/13/3, pronto, un giro; D=0/0/0, errore, zero giri, `partita=false` e testo abbreviato completo. Il run `43947162655` completa la verifica pixel (97/97) e le misure con rifiuto automatico della proposta di aggiornamento nel banco: idle 1,48 · 0,70 · 2,19%; registrazione 3,75 · 3,44 · 3,44%; densa 13,02 · 8,02 · 8,65%; rada 1,15 · 3,23 · 1,56%. Densa sopra soglia, rada sotto; idle non stabile fra le finestre. La variabilità tra runner impedisce di attribuire un miglioramento CPU al preflight; il confronto del pacchetto usa una procedura identica fra baseline e candidato. I 480 WM_PAINT per 20 s rimangono in tutte le tre finestre idle. La misura con cProfile (0,81% su 25 s) è esclusa dai confronti.
+
+Il secondo A/B dal sorgente, sul testo finale (`43947162649`, baseline `6ecbf002`, dopo `60ff47e8`), conferma 30 ripetizioni, posizione 0/0 px e zero eventi persi/extra. Mediana intervalli 4,8515→4,7195 ms (passa ≤5); p95 28,3683→28,6431 ms (sopra soglia in entrambi, non validabile qui); deriva p95 29,5413→40,4686 ms (passa ≤50 in entrambi). Quindi nessuna soglia passa→non passa, ma i numeri non migliorano tutti: nessuna pretesa di aumento prestazionale. Hash di motore/backend ancora identici. Sommario nella cartella del run.
+
+Il testo finale è ridotto a due frasi brevi, con a capo esplicito, per il riquadro del pannello compatto (172×64, font effettivo 16). La prova UIPI con avviso acquisisce `warning-medium.png` dal vero pannello a integrità media prima della chiusura. La pausa di un secondo è nel banco dopo il risultato, non nella riproduzione.

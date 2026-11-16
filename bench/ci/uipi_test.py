@@ -8,7 +8,7 @@ Chi inietta gira a integrita' alta (controllo) oppure MEDIA (token duplicato con
   D) Mouse Macro, medio -> alto                                      (cosa dice il pannello quando l'input non arriva?)
   python bench/ci/uipi_test.py --out results/uipi
 Se il runner non e' davvero ad integrita' alta il test lo dichiara e non conclude nulla."""
-import argparse, csv, ctypes, json, subprocess, sys, time
+import argparse, csv, ctypes, json, subprocess, sys, time, threading
 from ctypes import wintypes as W
 from pathlib import Path
 
@@ -80,6 +80,32 @@ def case(name, out, launcher, expected_note=""):
     return r
 
 
+def capture_warning(path, stop, errors):
+    """Observe the real medium-integrity panel, without changing its state."""
+    try:
+        from PIL import ImageGrab
+        u = ctypes.windll.user32
+        u.FindWindowW.argtypes = [W.LPCWSTR, W.LPCWSTR]; u.FindWindowW.restype = W.HWND
+        u.GetWindowTextW.argtypes = [W.HWND, W.LPWSTR, ctypes.c_int]
+        u.GetWindowRect.argtypes = [W.HWND, ctypes.POINTER(W.RECT)]
+        end = time.monotonic() + 30
+        while not stop.is_set() and time.monotonic() < end:
+            hwnd = u.FindWindowW("MouseMacroSuperpower017", None)
+            if hwnd:
+                title = ctypes.create_unicode_buffer(1024)
+                u.GetWindowTextW(hwnd, title, len(title))
+                if "errore" in title.value:
+                    time.sleep(.25)
+                    rect = W.RECT()
+                    if not u.GetWindowRect(hwnd, ctypes.byref(rect)):
+                        raise RuntimeError("GetWindowRect")
+                    ImageGrab.grab(bbox=(rect.left, rect.top, rect.right, rect.bottom), all_screens=True).save(path)
+                    return
+            stop.wait(.02)
+    except Exception as error:
+        errors.append(str(error))
+
+
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--out", default="results/uipi")
     ap.add_argument("--expect-warning", action="store_true", help="Richiede il blocco esplicito prima della riproduzione medio→alto")
@@ -110,7 +136,20 @@ def main():
                 txt, code = p.stdout + p.stderr, p.returncode
             else:
                 f = out / f"mmss_{runner}.txt"
-                code = run_medium(f'cmd /c "{mm} > "{f}" 2>&1"', 150); txt = f.read_text(encoding="utf-8", errors="replace") if f.exists() else ""
+                stop, errors = threading.Event(), []
+                snapshot = out / "warning-medium.png"
+                observer = threading.Thread(target=capture_warning, args=(snapshot, stop, errors), daemon=True) if a.expect_warning else None
+                if observer:
+                    observer.start()
+                try:
+                    code = run_medium(f'cmd /c "{mm} > "{f}" 2>&1"', 150)
+                finally:
+                    stop.set()
+                    if observer:
+                        observer.join(timeout=2)
+                txt = f.read_text(encoding="utf-8", errors="replace") if f.exists() else ""
+                if errors:
+                    print("SNAPSHOT_ERROR", errors, flush=True)
             line = next((l for l in txt.splitlines() if l.startswith("RISULTATO")), "")
             return {"uscita": code, "pannello": json.loads(line[len("RISULTATO"):]) if line else {"errore": txt[-600:]}}
         return go
@@ -123,7 +162,7 @@ def main():
     if a.expect_warning:
         cases = res["casi"]
         zero = dict.fromkeys(exp, 0)
-        valid = ("S-1-16-12288" in raw and all(c["uscita"] == 0 for c in cases)
+        valid = ((out / "warning-medium.png").is_file() and "S-1-16-12288" in raw and all(c["uscita"] == 0 for c in cases)
                  and cases[0]["arrivati"] == cases[2]["arrivati"] == exp
                  and cases[1]["arrivati"] == cases[3]["arrivati"] == zero
                  and cases[2]["pannello"].get("giri_completati") == 1
