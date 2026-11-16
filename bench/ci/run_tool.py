@@ -146,7 +146,7 @@ def main():
     ps(str(ROOT / "bench/tools/measure_resources.ps1"), "-Name", proc_name, "-Seconds", str(a.idle_s), "-Out", str(out / "risorse_riposo.csv")); pr.kill()
     time.sleep(2)
     if a.tool != "ahk":   # AutoHotkey non ha una finestra principale: il tempo di avvio "finestra visibile" non e' definito
-        ps(str(ROOT / "bench/tools/measure_startup.ps1"), "-Exe", startup[0], "-ProcName", startup[1], "-ArgumentList", startup[2], "-Runs", str(a.startups),
+        ps(str(ROOT / "bench/tools/measure_startup.ps1"), "-Exe", startup[0], "-ProcName", startup[1], *(["-ArgumentList:" + startup[2]] if startup[2] else []), "-Runs", str(a.startups),
            "-Out", str(out / "avvio.csv"), "-TimeoutS", "30")
     for name in ("risorse_riposo.csv", "avvio.csv"):
         p = out / name
