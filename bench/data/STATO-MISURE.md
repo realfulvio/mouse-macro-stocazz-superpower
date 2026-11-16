@@ -11,6 +11,7 @@ Ambiente delle misure: runner GitHub Actions `windows-latest` (Windows Server 20
 | Fedeltà Pulover, Jitbit, Mini Mouse Macro, OP Auto Clicker, Actiona | **non misurato** | non girati |
 | p95 dell'errore di intervallo (soglia 16 ms) | **non valutabile** qui: il riferimento ideale fa 28,2 ms | serve hardware reale o VM con core dedicati |
 | CPU/RAM a riposo (60 s) | **misurato** per MMSS, AutoHotkey, TinyTask | `risorse_riposo.csv` |
+| CPU a riposo MMSS dopo l'ottimizzazione Bambola | **misurato dal sorgente**: 1,48 · 1,48 · 1,33 % (prima 4,22–4,61 %), pixel identici 97/97, 24 fps invariati. **Non** misurato sull'exe impacchettato | `runner-github/ottimizzazione-cpu-bambola.md` |
 | CPU/RAM in esecuzione | **non misurato** | non ancora nel banco |
 | Tempo di avvio | **non misurato**: lo script non ha prodotto dati per MMSS; per TinyTask la finestra non è stata rilevata (30 s, 15 su 15) | da correggere `tools/measure_startup.ps1` |
 | Peso | **misurato** (MMSS 19.049.731 byte; AHK 3.160.453; TinyTask 5.678.424) | `inventario.json` |
