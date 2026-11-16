@@ -1,0 +1,104 @@
+name: Collaudo ZIP Windows prima e dopo
+on:
+  pull_request:
+    types: [ready_for_review]
+  workflow_dispatch:
+    inputs:
+      build_run:
+        description: 'Run del candidato Windows da collaudare senza ricompilare'
+        required: true
+        type: string
+permissions:
+  contents: read
+  actions: read
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    outputs:
+      run_id: ${{ steps.select.outputs.run_id }}
+    steps:
+      - name: Individua il build riuscito dell'esatto commit candidato
+        id: select
+        shell: python
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_RUN: ${{ inputs.build_run }}
+        run: |
+          import json, os, subprocess
+          event = json.load(open(os.environ['GITHUB_EVENT_PATH']))
+          pr = event.get('pull_request')
+          sha = pr['head']['sha'] if pr else os.environ['GITHUB_SHA']
+          repo = os.environ['GITHUB_REPOSITORY']
+          def api(path, *args):
+              return json.loads(subprocess.check_output(['gh', 'api', path, *args], text=True))
+          requested = os.environ.get('REQUESTED_RUN', '')
+          if requested:
+              assert requested.isdecimal(), 'Run ID non valido'
+              run = api(f'repos/{repo}/actions/runs/{requested}')
+          else:
+              assert pr and pr['head']['repo']['full_name'] == repo
+              runs = api(f'repos/{repo}/actions/workflows/release.yml/runs', '--method', 'GET',
+                         '-f', 'branch=' + pr['head']['ref'], '-f', 'per_page=50')['workflow_runs']
+              matching = [r for r in runs if r['head_sha'] == sha and r['conclusion'] == 'success']
+              assert matching, 'Costruire prima il candidato di questo commit con release.yml'
+              run = matching[0]
+          assert run['head_sha'] == sha and run['status'] == 'completed' and run['conclusion'] == 'success', run['id']
+          assert run['path'] == '.github/workflows/release.yml', run['path']
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"run_id={run['id']}\n")
+          print('Artifact selezionato:', run['id'], 'commit:', sha)
+  acceptance:
+    needs: candidate
+    runs-on: windows-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [baseline, candidate]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13.16'
+      - run: pip install -r requirements-windows.txt pillow==11.3.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-portable-candidate
+          path: candidate
+          run-id: ${{ needs.candidate.outputs.run_id }}
+          github-token: ${{ github.token }}
+      - name: Seleziona esatto ZIP e checksum
+        shell: pwsh
+        env:
+          PACKAGE_KIND: ${{ matrix.package }}
+        run: |
+          if ($env:PACKAGE_KIND -eq 'baseline') {
+            $archive = Join-Path $pwd 'baseline-v1.2.4.zip'
+            Invoke-WebRequest 'https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.4/MouseMacroStocazzSuperpower-Windows-v1.2.4.zip' -OutFile $archive
+            $digest = 'b4be1b44f5f49611438a1090d5a2c708236183be0a2bf02b01d53cb1e29814dd'
+          } else {
+            $version = python -c "from macro.session import VERSION; print(VERSION)"
+            $archive = Join-Path $pwd "candidate/MouseMacroStocazzSuperpower-Windows-v$version.zip"
+            $line = Get-Content "candidate/SHA256SUMS-v$version.txt" | Where-Object { $_ -match "Windows-v$([regex]::Escape($version))\.zip$" }
+            if (@($line).Count -ne 1) { throw 'Checksum candidato non univoco' }
+            $digest = ($line -split '\s+')[0]
+          }
+          if ((Get-FileHash $archive -Algorithm SHA256).Hash.ToLower() -ne $digest) { throw 'Hash ZIP diverso' }
+          "PACKAGE_ARCHIVE=$archive" >> $env:GITHUB_ENV
+          "PACKAGE_SHA256=$digest" >> $env:GITHUB_ENV
+      - name: Launcher, installazione, pixel, CPU e UIPI del pacchetto
+        shell: pwsh
+        run: |
+          $extra = @()
+          if ('${{ matrix.package }}' -eq 'candidate') { $extra += '--expect-warning' }
+          python bench/ci/package_acceptance.py --archive $env:PACKAGE_ARCHIVE --sha256 $env:PACKAGE_SHA256 --out acceptance @extra
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Fedeltà, risorse e avvio dello stesso ZIP (30 ripetizioni)
+        run: python bench/ci/run_tool.py --tool mmss --mmss-zip "$env:PACKAGE_ARCHIVE" --sha256 "$env:PACKAGE_SHA256" --runs 30 --out results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: package-acceptance-${{ matrix.package }}
+          path: |
+            acceptance/
+            results/
