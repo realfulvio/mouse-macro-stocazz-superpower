@@ -1,0 +1,15 @@
+{
+ "tool": "jitbit",
+ "url": "https://static.jitbit.com/mr/MacroRecorderSetup.exe",
+ "bytes": 2724984,
+ "sha256": "864d70dd755dab8431c2465531067cf8130166585e55dd4c4bb7de3df54a1967",
+ "expected": null,
+ "hash_ok": true,
+ "hash_source": "nessun hash pubblicato dall'autore: registrato qui",
+ "screen": [
+  1920,
+  1080
+ ],
+ "os": "win32",
+ "cpu": "Intel64 Family 6 Model 207 Stepping 2, GenuineIntel"
+}
