@@ -87,13 +87,17 @@ def main():
     for e in spec["events"]: exp[e["kind"]] += 1
     print("INTEGRITA' di questo processo:", il, flush=True)
     res = {"integrita_orchestratore": il, "attesi": exp, "casi": []}
+    sys.path.insert(0, str(ROOT / "bench")); import reference_macro
+    w, h = ctypes.windll.user32.GetSystemMetrics(0), ctypes.windll.user32.GetSystemMetrics(1)
+    mmr = (out / "reference.mmr").resolve(); mmr.write_text(json.dumps(reference_macro.to_mmr(spec["events"], w, h, 0, 0)), encoding="utf-8")
+    res["schermo"] = [w, h]
     inj = f'"{PY}" "{ROOT / "bench" / "ci" / "injector.py"}" "{ROOT / "bench" / "macros" / "reference.spec.json"}"'
-    mm = f'"{PY}" "{ROOT / "bench" / "ci" / "profile_idle.py"}" --mode uipi --warm 4'
+    mm = f'"{PY}" "{ROOT / "bench" / "ci" / "profile_idle.py"}" --mode uipi --warm 4 --macro "{mmr}"'
     def high(cmd_args): return lambda: {"uscita": subprocess.run(cmd_args, capture_output=True, text=True, timeout=120).returncode}
     def mmss(runner):
         def go():
             if runner == "alto":
-                p = subprocess.run([PY, str(ROOT / "bench" / "ci" / "profile_idle.py"), "--mode", "uipi", "--warm", "4"], capture_output=True, text=True, timeout=150)
+                p = subprocess.run([PY, str(ROOT / "bench" / "ci" / "profile_idle.py"), "--mode", "uipi", "--warm", "4", "--macro", str(mmr)], capture_output=True, text=True, timeout=150)
                 txt, code = p.stdout + p.stderr, p.returncode
             else:
                 f = out / f"mmss_{runner}.txt"
