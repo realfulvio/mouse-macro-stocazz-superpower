@@ -1,13 +1,10 @@
 name: Prova del pacchetto candidato (Windows)
 on:
-  workflow_dispatch:
-    inputs:
-      run_id:
-        description: 'Run di "Build native Windows candidate" da provare'
-        required: true
-      baseline_tag:
-        description: 'Release precedente da confrontare'
-        default: 'v1.2.3'
+  push:
+    branches: ['claude/smoke-124']
+env:
+  RUN_ID: '43937822565'
+  BASELINE_TAG: v1.2.3
 jobs:
   smoke:
     runs-on: windows-latest
@@ -19,7 +16,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: windows-portable-candidate
-          run-id: ${{ inputs.run_id }}
+          run-id: ${{ env.RUN_ID }}
           github-token: ${{ github.token }}
           path: cand
       - name: Scarica la release precedente
@@ -27,7 +24,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release download "${{ inputs.baseline_tag }}" --repo "${{ github.repository }}" --pattern 'MouseMacroStocazzSuperpower-Windows-v*.zip' --dir base
+          gh release download "${{ env.BASELINE_TAG }}" --repo "${{ github.repository }}" --pattern 'MouseMacroStocazzSuperpower-Windows-v*.zip' --dir base
           Get-ChildItem cand, base -Recurse | Select-Object FullName, Length
       - name: Verifica SHA-256 e estrai
         shell: pwsh
