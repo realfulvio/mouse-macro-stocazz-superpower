@@ -21,7 +21,6 @@ $sw = [Diagnostics.Stopwatch]::StartNew()
 while ($sw.Elapsed.TotalSeconds -lt $Seconds) {
   $ids = Get-Tree $roots
   $procs = foreach ($id in $ids) { Get-Process -Id $id -ErrorAction SilentlyContinue }
-  $cpu = ($procs | Measure-Object -Property TotalProcessorTime.TotalSeconds -Sum -ErrorAction SilentlyContinue)
   $cpuSec = 0.0; foreach ($p in $procs) { try { $cpuSec += $p.TotalProcessorTime.TotalSeconds } catch {} }
   $t = $sw.Elapsed.TotalSeconds
   $pct = if ($null -ne $prevCpu -and $t -gt $prevT) { 100.0 * ($cpuSec - $prevCpu) / ($t - $prevT) } else { $null }
