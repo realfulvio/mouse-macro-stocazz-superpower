@@ -1,0 +1,36 @@
+name: Fedeltà prima e dopo il controllo UIPI
+on:
+  pull_request:
+    paths: ['macro/windows_integrity.py', 'bench/ci/preflight_fidelity.py', '.github/workflows/preflight-regression.yml']
+permissions:
+  contents: read
+concurrency:
+  group: preflight-regression-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  fidelity:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [before, after]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: candidate
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: baseline
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pip install -r candidate/requirements-windows.txt
+      - name: Stesso logger esterno, macro e analisi (30 ripetizioni)
+        run: python candidate/bench/ci/preflight_fidelity.py --source ${{ matrix.source == 'before' && 'baseline' || 'candidate' }} --out results/${{ matrix.source }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: source-fidelity-${{ matrix.source }}
+          path: results/
