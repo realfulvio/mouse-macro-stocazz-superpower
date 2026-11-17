@@ -8,7 +8,7 @@ A small always-on-top panel for Windows and Linux: Python is bundled, nothing to
 </p>
 
 <p align="center">
-<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.2.5"><b>⬇ Download for Windows</b></a>
+<a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.2.6"><b>⬇ Download for Windows</b></a>
 · <a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.2.0"><b>⬇ Download for Linux</b></a>
 · <a href="GUIDA-ITALIANA.md">Italian guide</a>
 · <a href="docs/ESITO-COLLAUDO-v1.1.1.md">Test report</a>
@@ -40,19 +40,19 @@ The script downloads the official release from GitHub, verifies its SHA-256, ext
 
 ## Other ways to install
 
-1. Download `MouseMacroStocazzSuperpower-Windows-v1.2.5.zip` from the [release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.2.5).
+1. Download `MouseMacroStocazzSuperpower-Windows-v1.2.6.zip` from the [release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.2.6).
 2. Extract the **whole** ZIP into a folder.
-3. Run `Mouse Macro v1.2.5.exe` and answer **Yes** (*Sì*) to install it: it is copied to your user folder (`%LOCALAPPDATA%\MouseMacroStocazzSuperpower`, no administrator rights), with **Start menu** and **Desktop** shortcuts and an entry in *Settings → Installed apps* to uninstall it. **No** runs it from the ZIP without installing. If Windows blocks the exe, run `Mouse Macro v1.2.5 (senza exe).cmd` instead (runs without installing).
+3. Run `Mouse Macro v1.2.6.exe` and answer **Yes** (*Sì*) to install it: it is copied to your user folder (`%LOCALAPPDATA%\MouseMacroStocazzSuperpower`, no administrator rights), with **Start menu** and **Desktop** shortcuts and an entry in *Settings → Installed apps* to uninstall it. **No** runs it from the ZIP without installing. If Windows blocks the exe, run `Mouse Macro v1.2.6 (senza exe).cmd` instead (runs without installing).
 
 Requires x64 Windows; the exe also needs .NET Framework 4 (included in Windows 10/11), the `.cmd` does not. Python is bundled. The interface is in Italian. The SHA-256 of the ZIP is published with each release.
 
 ### Windows blocks the exe?
 
-The `.exe` launcher is not code-signed, so SmartScreen or Windows 11 *Smart App Control* may block it (*"An application control policy has blocked this file"*). The two exe-free ways, the PowerShell command above and the **`Mouse Macro v1.2.5 (senza exe).cmd`** file in the ZIP, were tested with Smart App Control in v1.1.0 (Windows 11 build 26300, [previous report](docs/ESITO-COLLAUDO-v1.1.0.md)); SAC acceptance was not repeated from v1.1.1 on. The `.cmd` starts the PSF-signed `pythonw.exe` directly with the same files. If SmartScreen warns, choose *More info → Run anyway*; if it still blocks, right-click the ZIP → *Properties* → **Unblock** before extracting.
+The `.exe` launcher is not code-signed, so SmartScreen or Windows 11 *Smart App Control* may block it (*"An application control policy has blocked this file"*). The two exe-free ways, the PowerShell command above and the **`Mouse Macro v1.2.6 (senza exe).cmd`** file in the ZIP, were tested with Smart App Control in v1.1.0 (Windows 11 build 26300, [previous report](docs/ESITO-COLLAUDO-v1.1.0.md)); SAC acceptance was not repeated from v1.1.1 on. The `.cmd` starts the PSF-signed `pythonw.exe` directly with the same files. If SmartScreen warns, choose *More info → Run anyway*; if it still blocks, right-click the ZIP → *Properties* → **Unblock** before extracting.
 
 If these are blocked on your PC too, please open an [issue](https://github.com/realfulvio/mouse-macro-stocazz-superpower/issues).
 
-Version 1.2.5 (Windows only) detects visible targets with higher privileges before playback and explains how to restart as administrator. Version 1.2.4 cuts the idle CPU cost of the Bambola animation further (same pixels, still 24 fps); 1.2.3 made it lighter on the CPU, 1.2.2 made it much smoother (24 frames per second) and 1.2.1 had animated it and fixed the Settings window. Version 1.2.0 was a single release for Windows and Linux: Bambola skin by default, tray icon, Settings window, data-only `.mmmod` mods, optional keyboard recording (off at every start), double-click launchable macros (`.cmd` on Windows, `.sh` on Linux) and infinite loops on Windows. Exe installation and the startup update prompt work as in 1.1.4; the mouse engine is unchanged. [Portable download](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.5/MouseMacroStocazzSuperpower-Windows-Portable.zip).
+Version 1.2.6 reduces Windows playback CPU through high-resolution timer waits; [measurements and limits](bench/data/runner-github/ottimizzazione-attese-risultati.md). Version 1.2.5 detects visible targets with higher privileges before playback and explains how to restart as administrator. Version 1.2.4 cuts the idle CPU cost of the Bambola animation further (same pixels, still 24 fps); 1.2.3 made it lighter on the CPU, 1.2.2 made it much smoother (24 frames per second) and 1.2.1 had animated it and fixed the Settings window. Version 1.2.0 was a single release for Windows and Linux: Bambola skin by default, tray icon, Settings window, data-only `.mmmod` mods, optional keyboard recording (off at every start), double-click launchable macros (`.cmd` on Windows, `.sh` on Linux) and infinite loops on Windows. Exe installation and the startup update prompt work as in 1.1.4; event deadlines and coordinates are preserved by the Windows wait optimization. [Portable download](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.6/MouseMacroStocazzSuperpower-Windows-Portable.zip).
 
 ## What it does
 
@@ -149,6 +149,6 @@ python -m unittest discover -v
 python build_native_windows.py
 ```
 
-Details in [BUILD-v1.2.5.md](BUILD-v1.2.5.md). On Linux: `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt 'pyinstaller==6.22.3'`, then `.venv/bin/python build_release.py && .venv/bin/python package_linux.py` (package, `install.sh` and SHA256SUMS in `dist/linux`). The old Linux v0.14 stays in the [v0.14 release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.14-beta); the current one is [linux-v1.2.0](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.2.0).
+Details in [BUILD-v1.2.6.md](BUILD-v1.2.6.md). On Linux: `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt 'pyinstaller==6.22.3'`, then `.venv/bin/python build_release.py && .venv/bin/python package_linux.py` (package, `install.sh` and SHA256SUMS in `dist/linux`). The old Linux v0.14 stays in the [v0.14 release](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v0.14-beta); the current one is [linux-v1.2.0](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.2.0).
 
 [All releases](https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases) · [Press kit](docs/promo/PRESENTATION.en.md) · [Design notes](docs/design/README.md) · [PolyForm Noncommercial License](LICENSE): free for personal and non-commercial use, no commercial resale · [Third-party notices](THIRD-PARTY-NOTICES.md) · Project and design: **hcok**
