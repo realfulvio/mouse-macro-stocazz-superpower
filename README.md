@@ -10,6 +10,7 @@ Un piccolo pannello sempre in primo piano per Windows e Linux: Python è incluso
 <p align="center">
 <a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.2.6"><b>⬇ Scarica per Windows</b></a>
 · <a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.2.0"><b>⬇ Scarica per Linux</b></a>
+· <a href="https://realfulvio.github.io/mouse-macro-stocazz-superpower/">Sito</a>
 · <a href="GUIDA-ITALIANA.md">Guida italiana</a>
 · <a href="docs/ESITO-COLLAUDO-v1.1.1.md">Esito dei controlli</a>
 </p>
