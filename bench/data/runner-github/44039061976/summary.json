@@ -1,0 +1,11 @@
+{
+  "baseline": {
+    "cpu_pct_of_core": 1.225,
+    "registrazione_cpu_pct": 3.465
+  },
+  "candidate": {
+    "cpu_pct_of_core": 1.275,
+    "registrazione_cpu_pct": 3.4400000000000004
+  },
+  "threshold_downgrades": []
+}
