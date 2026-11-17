@@ -1,0 +1,170 @@
+[
+  {
+    "pair": 0,
+    "kind": "baseline",
+    "registrazione_cpu_pct": 3.88,
+    "eventi_registrati": 7604,
+    "window_s": 60.0,
+    "skin": "bambola",
+    "dpi": 96
+  },
+  {
+    "pair": 0,
+    "kind": "baseline",
+    "phase": "idle",
+    "stats_calls_ms": {
+      "msg 0x113 id1": [
+        548,
+        57.6
+      ],
+      "msg 0x113 id2": [
+        2343,
+        90.3
+      ],
+      "msg 0xF": [
+        1440,
+        559.7
+      ],
+      "paint": [
+        1440,
+        553.0
+      ],
+      "render": [
+        548,
+        27.4
+      ]
+    },
+    "cpu_pct_of_core": 1.25,
+    "window_s": 60.0,
+    "shown": true,
+    "animating": true,
+    "skin": "bambola",
+    "dpi": 96
+  },
+  {
+    "pair": 0,
+    "kind": "candidate",
+    "registrazione_cpu_pct": 3.91,
+    "eventi_registrati": 7583,
+    "window_s": 60.0,
+    "skin": "bambola",
+    "dpi": 96
+  },
+  {
+    "pair": 0,
+    "kind": "candidate",
+    "phase": "idle",
+    "stats_calls_ms": {
+      "msg 0x113 id1": [
+        547,
+        57.8
+      ],
+      "msg 0x113 id2": [
+        2348,
+        95.8
+      ],
+      "msg 0xF": [
+        1440,
+        583.8
+      ],
+      "paint": [
+        1440,
+        576.9
+      ],
+      "render": [
+        547,
+        27.6
+      ]
+    },
+    "cpu_pct_of_core": 1.33,
+    "window_s": 60.0,
+    "shown": true,
+    "animating": true,
+    "skin": "bambola",
+    "dpi": 96
+  },
+  {
+    "pair": 1,
+    "kind": "candidate",
+    "registrazione_cpu_pct": 2.97,
+    "eventi_registrati": 7605,
+    "window_s": 60.0,
+    "skin": "bambola",
+    "dpi": 96
+  },
+  {
+    "pair": 1,
+    "kind": "candidate",
+    "phase": "idle",
+    "stats_calls_ms": {
+      "msg 0x113 id1": [
+        547,
+        58.6
+      ],
+      "msg 0x113 id2": [
+        2355,
+        90.2
+      ],
+      "msg 0xF": [
+        1440,
+        565.4
+      ],
+      "paint": [
+        1440,
+        559.1
+      ],
+      "render": [
+        547,
+        27.7
+      ]
+    },
+    "cpu_pct_of_core": 1.22,
+    "window_s": 60.0,
+    "shown": true,
+    "animating": true,
+    "skin": "bambola",
+    "dpi": 96
+  },
+  {
+    "pair": 1,
+    "kind": "baseline",
+    "registrazione_cpu_pct": 3.05,
+    "eventi_registrati": 7602,
+    "window_s": 60.0,
+    "skin": "bambola",
+    "dpi": 96
+  },
+  {
+    "pair": 1,
+    "kind": "baseline",
+    "phase": "idle",
+    "stats_calls_ms": {
+      "msg 0x113 id1": [
+        547,
+        59.2
+      ],
+      "msg 0x113 id2": [
+        2322,
+        94.2
+      ],
+      "msg 0xF": [
+        1440,
+        571.2
+      ],
+      "paint": [
+        1440,
+        564.5
+      ],
+      "render": [
+        547,
+        27.6
+      ]
+    },
+    "cpu_pct_of_core": 1.2,
+    "window_s": 60.0,
+    "shown": true,
+    "animating": true,
+    "skin": "bambola",
+    "dpi": 96
+  }
+]
