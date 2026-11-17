@@ -20,7 +20,7 @@ jobs:
         with:
           name: windows-portable-candidate
           path: candidate
-          run-id: 43960296764
+          run-id: 43977864481
           github-token: ${{ github.token }}
       - name: Tre coppie alternate, stesso schermo e stesso host
         shell: python
@@ -29,9 +29,9 @@ jobs:
           root=pathlib.Path.cwd();out=root/'paired';out.mkdir()
           baseline=root/'baseline.zip'
           baseline.write_bytes(urllib.request.urlopen('https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.5/MouseMacroStocazzSuperpower-Windows-v1.2.5.zip').read())
-          candidate=root/'candidate/MouseMacroStocazzSuperpower-Windows-v1.2.5.zip'
+          candidate=root/'candidate/MouseMacroStocazzSuperpower-Windows-v1.2.6.zip'
           roots={}
-          for kind,archive,digest in [('baseline',baseline,'def843426d25dc0d12a5344c750a156e81f3b5567390df816337908c09174975'),('candidate',candidate,'1bfeecda34a77dc8ca2e79ee3f2c7843107cbcd4cf6bac79396fcd9729b9b80f')]:
+          for kind,archive,digest in [('baseline',baseline,'def843426d25dc0d12a5344c750a156e81f3b5567390df816337908c09174975'),('candidate',candidate,'4ba5d0221b6b45adf79684706067dada255f2fdf7a8f856847cbdd4c73ddef8c')]:
               assert hashlib.sha256(archive.read_bytes()).hexdigest()==digest
               with zipfile.ZipFile(archive) as z:
                   z.extractall(root/kind/'extracted')
@@ -41,10 +41,10 @@ jobs:
           w,h=run_tool.set_display()
           macro=out/'reference.mmr';macro.write_text(json.dumps(reference_macro.to_mmr(reference_macro.build(w,h),w,h,0,0)))
           results=[]
-          for i in range(3):
+          for i in range(2):
               for kind in (('baseline','candidate') if i%2==0 else ('candidate','baseline')):
                   app=roots[kind]
-                  cmd=[str(app/'runtime/python.exe'),str(root/'bench/ci/profile_idle.py'),'--app-root',str(app/'app'),'--mode','active','--warm','8','--window','15','--macro',str(macro)]
+                  cmd=[str(app/'runtime/python.exe'),str(root/'bench/ci/profile_idle.py'),'--app-root',str(app/'app'),'--mode','active','--warm','8','--window','60','--record-only','--macro',str(macro)]
                   p=subprocess.run(cmd,capture_output=True,text=True,timeout=180)
                   (out/f'{i}-{kind}.txt').write_text(p.stdout+p.stderr)
                   assert p.returncode==0,p.stderr
@@ -53,6 +53,15 @@ jobs:
                   results.append(dict(pair=i,kind=kind,**records[0]))
                   (out/'paired.json').write_text(json.dumps(results,indent=2))
                   print('PAIRED',json.dumps(results[-1]),flush=True)
+                  idle_cmd=[str(app/'runtime/python.exe'),str(root/'bench/ci/profile_idle.py'),'--app-root',str(app/'app'),'--mode','cpu','--warm','10','--window','60']
+                  q=subprocess.run(idle_cmd,capture_output=True,text=True,timeout=150)
+                  (out/f'{i}-{kind}-idle.txt').write_text(q.stdout+q.stderr)
+                  assert q.returncode==0,q.stderr
+                  idle=[json.loads(l.split(' ',1)[1]) for l in q.stdout.splitlines() if l.startswith('RISULTATO ')]
+                  assert len(idle)==1 and 'cpu_pct_of_core' in idle[0]
+                  results.append(dict(pair=i,kind=kind,phase='idle',**idle[0]))
+                  (out/'paired.json').write_text(json.dumps(results,indent=2))
+                  print('IDLE_PAIRED',json.dumps(results[-1]),flush=True)
           import platform
           (out/'host.json').write_text(json.dumps(dict(processor=platform.processor(),platform=platform.platform())))
       - uses: actions/upload-artifact@v4
