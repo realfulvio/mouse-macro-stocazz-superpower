@@ -1,0 +1,48 @@
+name: Confronto appaiato con la release pubblicata
+# Builds the candidate ZIP of this commit and compares it with the published
+# v1.2.7 ZIP on the same runner, alternating ABBA (bench/ci/paired_compare.py).
+on:
+  pull_request:
+    paths:
+      - 'windows_*.py'
+      - 'macro/**'
+      - 'build_native_windows.py'
+      - 'launcher.cs'
+      - 'bench/ci/paired_compare.py'
+      - 'bench/ci/profile_idle.py'
+      - '.github/workflows/paired.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  paired:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13.16'
+      - run: python -m pip install -r requirements-windows.txt -r requirements.txt
+      - name: Build del candidato
+        run: |
+          python build_native_windows.py
+          python qa/check_package.py
+      - name: ZIP pubblicato della release precedente
+        shell: pwsh
+        run: |
+          Invoke-WebRequest 'https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.7/MouseMacroStocazzSuperpower-Windows-v1.2.7.zip' -OutFile baseline.zip
+          if ((Get-FileHash baseline.zip -Algorithm SHA256).Hash.ToLower() -ne '20d02c8db8999720e67554469e8a7c7000e43a820111535a44c76562359357f9') { throw 'Hash baseline diverso' }
+      - name: Avvio, riposo, registrazione e riproduzione (stesso host, ABBA)
+        shell: pwsh
+        run: |
+          $candidate = Get-ChildItem dist/windows/MouseMacroStocazzSuperpower-Windows-v*.zip | Select-Object -First 1
+          python bench/ci/paired_compare.py --baseline baseline.zip --candidate $candidate.FullName --out paired
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: paired-compare
+          path: |
+            paired/paired.json
+            paired/paired.md
