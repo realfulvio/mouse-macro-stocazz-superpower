@@ -47,6 +47,32 @@ def validate_gestures(events):
         raise ValueError('Nessun clic o rotella nella macro. Registra i gesti del mouse.')
 
 
+class _Validity:
+    """Last answer of gestures_valid(): the panels ask ten times a second."""
+    events = None
+    length = -1
+    valid = False
+
+
+def gestures_valid(events) -> bool:
+    """validate_gestures() as a bool, cached on the event list.
+
+    The panels re-check the loaded macro on every refresh (ten times a second on
+    Windows, and while recording or playing on Linux). Validation walks every
+    event, so with a long recording (150k moves, about 9 ms per check) idle CPU
+    grew with the macro length. A Macro's event list is never changed in place
+    once built, so the same list with the same length has the same answer."""
+    cache = _Validity
+    if cache.events is not events or cache.length != len(events):
+        try:
+            validate_gestures(events)
+            valid = True
+        except ValueError:
+            valid = False
+        cache.events, cache.length, cache.valid = events, len(events), valid
+    return cache.valid
+
+
 class Session:
     def __init__(self, recorder_factory, player_factory, notify=lambda: None, screen=lambda: [], platform='windows'):
         if platform not in ('windows', 'linux'):
