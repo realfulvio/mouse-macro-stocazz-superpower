@@ -35,6 +35,9 @@
   </screenshots>
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="1.2.1" date="2026-11-18">
+      <url type="details">https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.2.1</url>
+    </release>
     <release version="1.2.0" date="2026-11-01">
       <url type="details">https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.2.0</url>
     </release>
