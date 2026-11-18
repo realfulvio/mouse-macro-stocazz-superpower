@@ -94,6 +94,18 @@ class SettingsWindowTests(unittest.TestCase):
         ws.U.SendMessageW(window.hwnd, 0x2E0, 96 | 96 << 16, ctypes.addressof(wintypes.RECT(100, 50, 680, 610)))
         self.assertEqual(self.control_size(window.controls[ws.ID_CLOSE]), (120, 40))
 
+    def test_every_window_instance_gets_its_own_messages(self):
+        """The window class is registered once: a later SettingsWindow must not be served
+        by the procedure of the first one (its WM_DESTROY never reached it)."""
+        _, first = self.open_window()
+        ws.U.DestroyWindow(first.hwnd)
+        self.assertIsNone(first.hwnd)
+        _, second = self.open_window()
+        ws.U.DestroyWindow(second.hwnd)
+        self.assertIsNone(second.hwnd)
+        self.assertEqual(second.gdi, {})
+        self.assertEqual(ws._WINDOWS, {})
+
     def test_switches_follow_changes_made_from_the_tray_menu(self):
         panel, window = self.open_window()
         panel.settings['close_to_tray'] = False  # «Chiudi nel tray» unchecked from the tray menu
