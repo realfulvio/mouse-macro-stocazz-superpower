@@ -55,6 +55,11 @@ def should_hide_on_close(close_to_tray: bool, quitting: bool, tray_ok: bool) -> 
     return close_to_tray and tray_ok and not quitting
 
 
+def icon_size(width: int, height: int):
+    """Tray icon size from the system metrics, 16x16 when they are missing."""
+    return (width if width > 0 else 16, height if height > 0 else 16)
+
+
 class _NOTIFYICONDATA(ctypes.Structure):
     _fields_ = [('cbSize', wintypes.DWORD), ('hWnd', wintypes.HWND), ('uID', wintypes.UINT),
                 ('uFlags', wintypes.UINT), ('uCallbackMessage', wintypes.UINT),
@@ -80,7 +85,10 @@ class Tray:
         user.LoadImageW.restype = wintypes.HANDLE
         user.LoadImageW.argtypes = [wintypes.HINSTANCE, wintypes.LPCWSTR, wintypes.UINT,
                                     ctypes.c_int, ctypes.c_int, wintypes.UINT]
-        self.icon = user.LoadImageW(None, str(icon_path), 1, 16, 16, 0x10)  # IMAGE_ICON, LR_LOADFROMFILE
+        # Small-icon size of the current scale (20 px at 125%, 24 px at 150%): a fixed
+        # 16x16 image was stretched by the taskbar and looked blurred.
+        size = icon_size(user.GetSystemMetrics(49), user.GetSystemMetrics(50))  # SM_CXSMICON, SM_CYSMICON
+        self.icon = user.LoadImageW(None, str(icon_path), 1, size[0], size[1], 0x10)  # IMAGE_ICON, LR_LOADFROMFILE
         self.add()
 
     def _data(self):

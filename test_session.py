@@ -3,7 +3,7 @@ import time
 import tempfile
 from pathlib import Path
 import unittest
-from macro.session import Session, State, validate_gestures
+from macro.session import Session, State, validate_gestures, gestures_valid
 from macro.events import Macro, MacroEvent, LEFT_DOWN, LEFT_UP, MOVE_ABS
 from macro.engine import PlaybackOptions, play
 
@@ -38,6 +38,32 @@ class Player:
     def release_held(self, held): self.released.append(set(held))
     def next_tab(self, stop): self.tabs += 1
     def close(self): self.closed += 1
+
+
+class GesturesValidTests(unittest.TestCase):
+    def test_answer_is_cached_per_event_list_and_follows_a_new_macro(self):
+        from unittest.mock import patch
+        import macro.session as session_module
+        events = gesture()
+        with patch.object(session_module, 'validate_gestures', wraps=validate_gestures) as check:
+            self.assertTrue(gestures_valid(events))
+            self.assertTrue(gestures_valid(events))
+            self.assertEqual(check.call_count, 1)  # the panels ask ten times a second
+            broken = gesture()[:1]
+            self.assertFalse(gestures_valid(broken))  # another list: checked again
+            self.assertEqual(check.call_count, 2)
+            broken.append(MacroEvent(.01, LEFT_UP, x=10, y=20))
+            self.assertTrue(gestures_valid(broken))  # same list, new length: checked again
+            self.assertEqual(check.call_count, 3)
+        self.assertFalse(gestures_valid([]))
+
+    def test_long_macro_check_costs_nothing_after_the_first_refresh(self):
+        events = [MacroEvent(i * .002, MOVE_ABS, x=i % 500, y=3) for i in range(150_000)] + gesture()
+        gestures_valid(events)
+        start = time.perf_counter()
+        for _ in range(100):
+            gestures_valid(events)
+        self.assertLess(time.perf_counter() - start, .01)
 
 
 class SessionTests(unittest.TestCase):
