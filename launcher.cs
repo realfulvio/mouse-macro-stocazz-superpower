@@ -13,10 +13,10 @@ using System.Windows.Forms;
 using Microsoft.Win32;
 [assembly: AssemblyTitle("Mouse Macro Stocazz Superpower")]
 [assembly: AssemblyCompany("hcok")]
-[assembly: AssemblyVersion("1.2.6.0")]
-[assembly: AssemblyFileVersion("1.2.6.0")]
+[assembly: AssemblyVersion("1.2.7.0")]
+[assembly: AssemblyFileVersion("1.2.7.0")]
 class Launcher {
-    const string Version = "1.2.6";
+    const string Version = "1.2.7";
     const string Name = "Mouse Macro Stocazz Superpower";
     const string Prefix = "MouseMacroStocazzSuperpower-Windows-v";
     const string UninstallKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\MouseMacroStocazzSuperpower";
