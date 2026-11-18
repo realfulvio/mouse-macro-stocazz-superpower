@@ -67,6 +67,40 @@ class SettingsWindowTests(unittest.TestCase):
         self.assertIsNone(window.hwnd)
         self.assertEqual(window.gdi, {})
 
+    def open_window(self):
+        temp = tempfile.TemporaryDirectory()
+        self.addCleanup(temp.cleanup)
+        panel = SimpleNamespace(settings={'close_to_tray': True}, session=SimpleNamespace(message='ok'),
+                                dialog_open=False, write_settings=lambda: None)
+        window = ws.SettingsWindow(panel, Path(temp.name) / 'mods')
+        window.show()
+        self.addCleanup(lambda: window.hwnd and ws.U.DestroyWindow(window.hwnd))
+        return panel, window
+
+    def control_size(self, handle):
+        rect = wintypes.RECT()
+        ctypes.windll.user32.GetWindowRect(handle, ctypes.byref(rect))
+        return rect.right - rect.left, rect.bottom - rect.top
+
+    def test_moving_to_a_monitor_with_another_scale_rescales_the_window(self):
+        panel, window = self.open_window()
+        old_font = window.gdi['font']
+        target = wintypes.RECT(100, 50, 100 + 870, 50 + 840)  # what Windows suggests for 150%
+        ws.U.SendMessageW(window.hwnd, 0x2E0, 144 | 144 << 16, ctypes.addressof(target))  # WM_DPICHANGED
+        self.assertEqual(window.scale, 1.5)
+        self.assertEqual(self.control_size(window.controls[ws.ID_CLOSE]), (180, 60))
+        self.assertNotEqual(window.gdi['font'], old_font)
+        self.assertEqual(panel.session.message, 'ok')
+        ws.U.SendMessageW(window.hwnd, 0x2E0, 96 | 96 << 16, ctypes.addressof(wintypes.RECT(100, 50, 680, 610)))
+        self.assertEqual(self.control_size(window.controls[ws.ID_CLOSE]), (120, 40))
+
+    def test_switches_follow_changes_made_from_the_tray_menu(self):
+        panel, window = self.open_window()
+        panel.settings['close_to_tray'] = False  # «Chiudi nel tray» unchecked from the tray menu
+        self.assertFalse(window.toggles[ws.ID_TRAY])
+        window.command(ws.ID_TRAY)
+        self.assertIs(panel.settings['close_to_tray'], True)  # turned on, not written back as off
+
 
 if __name__ == '__main__':
     unittest.main()

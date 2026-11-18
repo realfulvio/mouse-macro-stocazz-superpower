@@ -239,6 +239,54 @@ class Launcher(unittest.TestCase):
             self.assertIn('x.cmd', session.message)
 
 
+class LauncherPicksNewestVersion(unittest.TestCase):
+    def test_versions_are_compared_as_numbers(self):
+        text = launcher_text('m', 1, 1)
+        self.assertIn('call :consider', text)
+        self.assertIn('set /a "KEY=MAJOR*1000000+MINOR*1000+PATCH"', text)
+        self.assertNotIn('/o:n', text)  # alphabetical order put v1.2.10 before v1.2.9
+
+    @unittest.skipUnless(os.name == 'nt', 'runs the real .cmd')
+    def test_cmd_starts_the_newest_installed_version(self):
+        import shutil
+        import subprocess
+        import sys
+        import time
+        home = Path(sys.base_prefix)
+        # The started pythonw may still hold its files for a moment when the test ends.
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp:
+            root = Path(temp)
+            base = root / 'MouseMacroStocazzSuperpower' / 'Portable'
+            marker = root / 'started.txt'
+            for version, runner in (('1.2.9', True), ('1.2.10', True), ('1.3.0', False)):
+                package = base / f'MouseMacroStocazzSuperpower-Windows-v{version}'
+                (package / 'runtime').mkdir(parents=True)
+                (package / 'app' / 'macro').mkdir(parents=True)
+                for item in home.iterdir():
+                    if item.name.lower() == 'pythonw.exe' or item.suffix.lower() == '.dll':
+                        shutil.copy2(item, package / 'runtime' / item.name)
+                if runner:  # 1.3.0 is too old/incomplete for --run: never chosen
+                    (package / 'app' / 'macro' / 'runner.py').write_text('', 'utf-8')
+                (package / 'app' / 'windows_main.py').write_text(
+                    'import os, pathlib, sys\n'
+                    'pathlib.Path(os.environ["MMSS_MARKER"]).write_text('
+                    'pathlib.Path(__file__).resolve().parents[1].name + "|" + " ".join(sys.argv[1:]))\n', 'utf-8')
+            macro = Macro('windows', typed([65]), [])
+            cmd, _ = export_launcher(macro, root / 'prova.cmd', 3, 1)
+            env = dict(os.environ, LOCALAPPDATA=str(root), MMSS_MARKER=str(marker), PYTHONHOME=str(home))
+            subprocess.run(['cmd.exe', '/c', str(cmd)], env=env, check=True, timeout=30,
+                           stdin=subprocess.DEVNULL, capture_output=True)
+            deadline = time.monotonic() + 30
+            while not marker.exists() and time.monotonic() < deadline:
+                time.sleep(.2)
+            time.sleep(.5)  # let the writer finish and exit
+            folder, args = marker.read_text('utf-8').split('|')
+            self.assertEqual(folder, 'MouseMacroStocazzSuperpower-Windows-v1.2.10')
+            self.assertIn('--run', args)
+            self.assertIn('prova.mmr', args)
+            self.assertIn('--repeat 3', args)
+
+
 class InfiniteAndLinuxLauncher(unittest.TestCase):
     def test_infinite_replaces_the_repeat_count(self):
         text = launcher_text('m', 5, 1, infinite=True)
