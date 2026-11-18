@@ -1,6 +1,7 @@
 # Builds the project website (site/) and publishes it on GitHub Pages.
 # Versions and download links are read from the releases API at build time,
-# so the site is rebuilt after every published release.
+# so the site is rebuilt after every published release. It builds two static
+# pages (Italian and English) plus sitemap.xml, robots.txt and 404.html.
 name: Website
 on:
   push:
@@ -32,21 +33,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python site/build.py --out _site
-      - name: Check page
-        run: |
-          python - <<'EOF'
-          from pathlib import Path
-          import re
-          root = Path('_site')
-          html = (root / 'index.html').read_text(encoding='utf-8').replace('<html lang="it">', '<html>', 1)
-          refs = set(re.findall(r'(?:src|href)="(assets/[^"]+)"', html))
-          missing = [r for r in refs if not (root / r).is_file()]
-          assert not missing, f'missing assets: {missing}'
-          it, en = html.count('lang="it"'), html.count('lang="en"')
-          assert it == en, f'IT/EN blocks differ: {it} vs {en}'
-          size = sum(p.stat().st_size for p in root.rglob('*') if p.is_file())
-          print(f'{len(refs)} assets ok, {it} IT/EN pairs, site {size / 1024:.0f} KiB')
-          EOF
+      - name: Check pages
+        run: python site/build.py --check _site
       - if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v5
         with:
