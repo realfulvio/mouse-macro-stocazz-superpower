@@ -138,12 +138,32 @@ def confirm_text(info):
             f'SHA-256: {info.sha256[:16]}…\n\nInstalla solo mod di cui ti fidi.')
 
 
+_WINDOWS = {}      # hwnd -> SettingsWindow
+_CREATING = []     # the window whose CreateWindowEx is running: messages arrive before its hwnd is known
+
+
+def _dispatch(hwnd, msg, wp, lp):
+    """The class is registered once, so its window procedure cannot be a bound method of
+    one SettingsWindow: RegisterClassW keeps the first procedure and a later window would
+    send its messages to a stale instance."""
+    window = _WINDOWS.get(hwnd) or (_CREATING[-1] if _CREATING else None)
+    if window is None:
+        return U.DefWindowProcW(hwnd, msg, wp, lp)
+    try:
+        return window.wndproc(hwnd, msg, wp, lp)
+    finally:
+        if msg == WM_DESTROY:
+            _WINDOWS.pop(hwnd, None)
+
+
+_PROC = WNDPROC(_dispatch)
+
+
 class SettingsWindow:
     """Una sola finestra alla volta; `panel` è il Panel di windows_main."""
 
     def __init__(self, panel, mods_dir):
         self.panel, self.mods_dir, self.hwnd, self.items = panel, mods_dir, None, []
-        self.proc = WNDPROC(self.wndproc)  # va tenuto vivo finché la finestra esiste
         self.gdi, self.handles, self.scale = {}, [], 1.0
 
     @property
@@ -199,7 +219,7 @@ class SettingsWindow:
             U.SetForegroundWindow(self.hwnd)
             return
         instance = _gmh(None)
-        wc = WNDCLASS(0, self.proc, 0, 0, instance, None, U.LoadCursorW(None, C.c_void_p(32512)),
+        wc = WNDCLASS(0, _PROC, 0, 0, instance, None, U.LoadCursorW(None, C.c_void_p(32512)),
                       None, None, CLASS)  # lo sfondo lo disegna WM_ERASEBKGND
         U.RegisterClassW(C.byref(wc))  # 0 se già registrata: va bene
         s = _dpi_scale()
@@ -211,10 +231,15 @@ class SettingsWindow:
             work = W.RECT(0, 0, 100000, 100000)
         x, y, w, h = fit_to_work_area(px(160), px(120), px(WINDOW_SIZE[0]), px(WINDOW_SIZE[1]),
                                       (work.left, work.top, work.right, work.bottom))
-        self.hwnd = U.CreateWindowExW(0x8, CLASS, 'Impostazioni · Mouse Macro Stocazz Superpower',
-                                      0x10C80000, x, y, w, h, None, None, instance, None)
+        _CREATING.append(self)
+        try:
+            self.hwnd = U.CreateWindowExW(0x8, CLASS, 'Impostazioni · Mouse Macro Stocazz Superpower',
+                                          0x10C80000, x, y, w, h, None, None, instance, None)
+        finally:
+            _CREATING.pop()
         if not self.hwnd:
             raise C.WinError()
+        _WINDOWS[self.hwnd] = self
         self.controls, self.handles = {}, []
         for cid, cls, text, style, *_ in SPEC:
             handle = U.CreateWindowExW(0, cls, text, 0x50000000 | style, 0, 0, 0, 0, self.hwnd, W.HMENU(cid),
