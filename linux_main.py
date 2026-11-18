@@ -24,7 +24,7 @@ from macro.panel_model import (LINUX_VERSION, BAMBOLA, SKINS, MOD_SKINS, DEFAULT
                                register_mod_skins, UPDATE_DOT, parse_repeats, playback_options,
                                settings_path, read_settings, write_settings, save_replay_trace,
                                save_error_log)
-from macro.session import Session, State, validate_gestures
+from macro.session import Session, State, gestures_valid
 
 ACTIVE = (State.RECORDING, State.PLAYING, State.STOPPING)
 NORMAL_SIZE = (440, 800)
@@ -438,11 +438,7 @@ class LinuxPanel:
         return self.tr(mouse_label([]))
 
     def valid_macro(self):
-        try:
-            validate_gestures(self.session.macro.events)
-            return True
-        except ValueError:
-            return False
+        return gestures_valid(self.session.macro.events)
 
     def set_active_view(self, active):
         if active == self.active_view:

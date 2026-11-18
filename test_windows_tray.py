@@ -33,6 +33,10 @@ class TrayLogicTests(unittest.TestCase):
         self.assertFalse(t.should_hide_on_close(True, True, True))    # Esci / aggiornamento
         self.assertFalse(t.should_hide_on_close(True, False, False))  # icona non creata: la X chiude
 
+    def test_icon_follows_the_small_icon_size_of_the_scale(self):
+        self.assertEqual(t.icon_size(24, 24), (24, 24))  # 150%
+        self.assertEqual(t.icon_size(0, 0), (16, 16))    # metric not available
+
     def test_panel_is_wired_to_the_tray(self):
         self.assertIn('win_tray.Tray(', SOURCE)
         self.assertIn('self.tray.remove()', SOURCE)

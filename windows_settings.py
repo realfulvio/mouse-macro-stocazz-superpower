@@ -43,6 +43,9 @@ for _name, _res, _args in [
         ('FillRect', C.c_int, [W.HDC, C.POINTER(W.RECT), C.c_void_p]),
         ('GetClientRect', W.BOOL, [W.HWND, C.POINTER(W.RECT)]),
         ('SystemParametersInfoW', W.BOOL, [W.UINT, W.UINT, C.c_void_p, W.UINT]),
+        ('SetWindowPos', W.BOOL, [W.HWND, W.HWND, C.c_int, C.c_int, C.c_int, C.c_int, W.UINT]),
+        ('MonitorFromPoint', W.HANDLE, [W.POINT, W.DWORD]),
+        ('GetMonitorInfoW', W.BOOL, [W.HANDLE, C.c_void_p]),
         ('DrawTextW', C.c_int, [W.HDC, W.LPCWSTR, C.c_int, C.POINTER(W.RECT), W.UINT])]:
     _fn = getattr(U, _name)
     _fn.restype, _fn.argtypes = _res, _args
@@ -86,6 +89,36 @@ def _dpi_scale():
         return 1.0
 
 
+class MONITORINFO(C.Structure):
+    _fields_ = [('cbSize', W.DWORD), ('rcMonitor', W.RECT), ('rcWork', W.RECT), ('dwFlags', W.DWORD)]
+
+
+def work_area_at(x, y):
+    """(left, top, right, bottom) of the work area of the monitor containing (x, y)."""
+    info = MONITORINFO(C.sizeof(MONITORINFO))
+    if U.GetMonitorInfoW(U.MonitorFromPoint(W.POINT(x, y), 2), C.byref(info)):  # MONITOR_DEFAULTTONEAREST
+        r = info.rcWork
+        return r.left, r.top, r.right, r.bottom
+    return 0, 0, 100000, 100000
+
+
+WINDOW_SIZE = (580, 560)  # logical outer size; the Chiudi button (bottom at 486) stays inside
+# (id, class, text, style, x, y, w, h) in logical pixels at 100%.
+OWNER = 0x10000 | 0xB  # TABSTOP | BS_OWNERDRAW
+SPEC = [(ID_TITLE, 'STATIC', 'Impostazioni', 0, 24, 16, 520, 40),
+        (ID_TRAY, 'BUTTON', 'Chiudi nel tray (la X nasconde il pannello)', OWNER, 24, 66, 520, 36),
+        (ID_UPDATES, 'BUTTON', 'Controlla gli aggiornamenti all’avvio', OWNER, 24, 106, 520, 36),
+        (0, 'STATIC', 'Mod installate: pacchetti .mmmod di soli dati (temi e macro), senza codice', 0, 24, 156, 520, 22),
+        (ID_LIST, 'LISTBOX', '', 0x800000 + 0x200000 + 0x10000 + 0x141, 24, 184, 520, 150),
+        (ID_INSTALL, 'BUTTON', 'Installa da file…', OWNER, 24, 346, 170, 40),
+        (ID_USE, 'BUTTON', 'Usa tema', OWNER, 204, 346, 100, 40),
+        (ID_REMOVE, 'BUTTON', 'Rimuovi', OWNER, 314, 346, 100, 40),
+        (ID_FOLDER, 'BUTTON', 'Cartella mod', OWNER, 424, 346, 120, 40),
+        (0, 'STATIC', 'Le macro delle raccolte sono in «Cartella mod» → nome mod → macros: caricale con Carica.', 0, 24, 398, 520, 40),
+        (ID_CLOSE, 'BUTTON', 'Chiudi', OWNER, 424, 446, 120, 40)]
+TOGGLE_KEYS = {ID_TRAY: ('close_to_tray', False), ID_UPDATES: ('check_updates', True)}
+
+
 def fit_to_work_area(x, y, w, h, work):
     """Window rectangle moved up and, if still too tall, shrunk to stay inside `work` (left, top, right, bottom)."""
     left, top, right, bottom = work
@@ -111,12 +144,20 @@ class SettingsWindow:
     def __init__(self, panel, mods_dir):
         self.panel, self.mods_dir, self.hwnd, self.items = panel, mods_dir, None, []
         self.proc = WNDPROC(self.wndproc)  # va tenuto vivo finché la finestra esiste
-        self.toggles, self.gdi = {}, {}
+        self.gdi, self.handles, self.scale = {}, [], 1.0
+
+    @property
+    def toggles(self):
+        """Read live from the panel settings: the tray menu can change «Chiudi nel tray»
+        while this window is open, and a cached copy would then write the opposite."""
+        settings = self.panel.settings
+        return {cid: bool(settings.get(key, default)) for cid, (key, default) in TOGGLE_KEYS.items()}
 
     def make_gdi(self, s):
-        """Colori della skin in uso, pennelli e font; rifatti a ogni apertura."""
+        """Colori della skin in uso, pennelli e font; rifatti a ogni apertura e a ogni cambio DPI."""
         from windows_visual import COLORS
-        self.drop_gdi()
+        old, self.gdi = self.gdi, {}
+        self.drop_gdi(old)  # controls get the new fonts right after, before any repaint
         c = {k: colorref(COLORS[k]) for k in ('background', 'surface', 'border', 'text', 'muted', 'play',
                                               'button', 'button_hover', 'on_accent')}
         self.gdi = {'c': c, 'bg': G.CreateSolidBrush(c['background']), 'surface': G.CreateSolidBrush(c['surface']),
@@ -125,11 +166,32 @@ class SettingsWindow:
                     'title': G.CreateFontW(-round(26 * s), 0, 0, 0, 700, 0, 0, 0, 1, 0, 0, 5, 0, 'Segoe UI'),
                     'dark': is_dark(COLORS['background'])}
 
-    def drop_gdi(self):
+    def drop_gdi(self, gdi=None):
+        gdi = self.gdi if gdi is None else gdi
         for key in ('bg', 'surface', 'font', 'bold', 'title'):
-            if self.gdi.get(key):
-                G.DeleteObject(self.gdi[key])
-        self.gdi = {}
+            if gdi.get(key):
+                G.DeleteObject(gdi[key])
+        if gdi is self.gdi:
+            self.gdi = {}
+
+    def window_dpi(self):
+        try:
+            return U.GetDpiForWindow(self.hwnd) or 96
+        except AttributeError:
+            return round(_dpi_scale() * 96)
+
+    def apply_scale(self, s, rect=None):
+        """Fonts, control positions and (with `rect`) the window for scale `s`."""
+        self.scale = s
+        px = lambda n: round(n * s)
+        if rect is not None:
+            x, y, w, h = fit_to_work_area(*rect, work_area_at(rect[0] + rect[2] // 2, rect[1] + rect[3] // 2))
+            U.SetWindowPos(self.hwnd, None, x, y, w, h, 0x14)  # NOZORDER | NOACTIVATE
+        self.make_gdi(s)
+        for (cid, cls, text, style, x, y, w, h), handle in zip(SPEC, self.handles):
+            U.SetWindowPos(handle, None, px(x), px(y), px(w), px(h), 0x14)
+            U.SendMessageW(handle, 0x30, self.gdi['title'] if cid == ID_TITLE else self.gdi['font'], 1)  # WM_SETFONT
+        U.InvalidateRect(self.hwnd, None, True)
 
     def show(self):
         if self.hwnd and U.IsWindow(self.hwnd):
@@ -142,52 +204,39 @@ class SettingsWindow:
         U.RegisterClassW(C.byref(wc))  # 0 se già registrata: va bene
         s = _dpi_scale()
         px = lambda n: round(n * s)
-        self.make_gdi(s)
         # WS_EX_TOPMOST: the panel is always on top, so without it this window opens behind it.
-        # 560 px (outer) leaves the Chiudi button (bottom at 488) inside the client area; the
-        # window is also kept inside the work area, so it fits 768 px screens at 125%.
+        # The window is kept inside the work area, so it fits 768 px screens at 125%.
         work = W.RECT()
         if not U.SystemParametersInfoW(0x30, 0, C.byref(work), 0):  # SPI_GETWORKAREA
             work = W.RECT(0, 0, 100000, 100000)
-        x, y, w, h = fit_to_work_area(px(160), px(120), px(580), px(560), (work.left, work.top, work.right, work.bottom))
+        x, y, w, h = fit_to_work_area(px(160), px(120), px(WINDOW_SIZE[0]), px(WINDOW_SIZE[1]),
+                                      (work.left, work.top, work.right, work.bottom))
         self.hwnd = U.CreateWindowExW(0x8, CLASS, 'Impostazioni · Mouse Macro Stocazz Superpower',
                                       0x10C80000, x, y, w, h, None, None, instance, None)
         if not self.hwnd:
             raise C.WinError()
+        self.controls, self.handles = {}, []
+        for cid, cls, text, style, *_ in SPEC:
+            handle = U.CreateWindowExW(0, cls, text, 0x50000000 | style, 0, 0, 0, 0, self.hwnd, W.HMENU(cid),
+                                       instance, None)
+            self.handles.append(handle)
+            if cid:
+                self.controls[cid] = handle
+        # The process is per-monitor DPI aware: the window takes the DPI of the monitor it
+        # opens on, which may differ from the system DPI used for the first guess above.
+        dpi = self.window_dpi()
+        self.apply_scale(dpi / 96, None if dpi == round(s * 96) else
+                         (x, y, round(WINDOW_SIZE[0] * dpi / 96), round(WINDOW_SIZE[1] * dpi / 96)))
         if self.gdi['dark']:  # barra del titolo scura (Windows 10 20H1+ / 11); ignorato altrove
             try:
                 C.windll.dwmapi.DwmSetWindowAttribute(self.hwnd, 20, C.byref(C.c_int(1)), 4)
             except (OSError, AttributeError):
                 pass
-        make = lambda cls, text, style, x, y, w, h, cid: U.CreateWindowExW(
-            0, cls, text, 0x50000000 | style, px(x), px(y), px(w), px(h), self.hwnd, W.HMENU(cid), instance, None)
-        owner = 0x10000 | 0xB  # TABSTOP | BS_OWNERDRAW
-        spec = [(ID_TITLE, 'STATIC', 'Impostazioni', 0, 24, 16, 520, 40),
-                (ID_TRAY, 'BUTTON', 'Chiudi nel tray (la X nasconde il pannello)', owner, 24, 66, 520, 36),
-                (ID_UPDATES, 'BUTTON', 'Controlla gli aggiornamenti all’avvio', owner, 24, 106, 520, 36),
-                (0, 'STATIC', 'Mod installate: pacchetti .mmmod di soli dati (temi e macro), senza codice', 0, 24, 156, 520, 22),
-                (ID_LIST, 'LISTBOX', '', 0x800000 + 0x200000 + 0x10000 + 0x141, 24, 184, 520, 150),
-                (ID_INSTALL, 'BUTTON', 'Installa da file…', owner, 24, 346, 170, 40),
-                (ID_USE, 'BUTTON', 'Usa tema', owner, 204, 346, 100, 40),
-                (ID_REMOVE, 'BUTTON', 'Rimuovi', owner, 314, 346, 100, 40),
-                (ID_FOLDER, 'BUTTON', 'Cartella mod', owner, 424, 346, 120, 40),
-                (0, 'STATIC', 'Le macro delle raccolte sono in «Cartella mod» → nome mod → macros: caricale con Carica.', 0, 24, 398, 520, 40),
-                (ID_CLOSE, 'BUTTON', 'Chiudi', owner, 424, 446, 120, 40)]
-        self.controls = {}
-        for cid, cls, text, style, x, y, w, h in spec:
-            handle = make(cls, text, style, x, y, w, h, cid)
-            if cid:
-                self.controls[cid] = handle
-            font = self.gdi['title'] if cid == ID_TITLE else self.gdi['font']
-            U.SendMessageW(handle, 0x30, font, 1)  # WM_SETFONT
         self.refresh()
         U.ShowWindow(self.hwnd, 5)
         U.SetForegroundWindow(self.hwnd)
 
     def refresh(self):
-        settings = self.panel.settings
-        self.toggles = {ID_TRAY: bool(settings.get('close_to_tray', False)),
-                        ID_UPDATES: bool(settings.get('check_updates', True))}
         for cid in TOGGLES:
             U.InvalidateRect(self.controls[cid], None, True)
         self.items = mods.installed(self.mods_dir)
@@ -249,9 +298,8 @@ class SettingsWindow:
         cid, code = wp & 0xFFFF, wp >> 16
         settings = self.panel.settings
         if cid in TOGGLES and code == 0:  # BN_CLICKED
-            self.toggles[cid] = not self.toggles.get(cid, False)
+            settings[TOGGLE_KEYS[cid][0]] = not self.toggles[cid]
             U.InvalidateRect(self.controls[cid], None, True)
-            settings['close_to_tray' if cid == ID_TRAY else 'check_updates'] = self.toggles[cid]
             self.panel.write_settings()
         elif cid == ID_INSTALL:
             self.install()
@@ -272,7 +320,7 @@ class SettingsWindow:
         cid, pressed = di.CtlID, bool(di.itemState & 1)
         U.FillRect(dc, C.byref(rect), self.gdi['bg'])
         G.SetBkMode(dc, 1)  # TRANSPARENT
-        s = _dpi_scale()
+        s = self.scale
         if cid in TOGGLES:
             label = C.create_unicode_buffer(128)
             U.GetWindowTextW(di.hwndItem, label, 128)
@@ -330,6 +378,10 @@ class SettingsWindow:
                     return self.gdi['surface']
                 G.SetBkMode(wp, 1)
                 return self.gdi['bg']
+            if msg == 0x2E0 and self.hwnd and self.handles:  # WM_DPICHANGED: moved to a monitor with another scale
+                r = C.cast(lp, C.POINTER(W.RECT)).contents
+                self.apply_scale((wp & 0xFFFF) / 96, (r.left, r.top, r.right - r.left, r.bottom - r.top))
+                return 0
             if msg == WM_CLOSE:
                 U.DestroyWindow(hwnd)
                 return 0
