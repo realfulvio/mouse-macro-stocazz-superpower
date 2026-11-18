@@ -339,6 +339,69 @@ class PanelTests(unittest.TestCase):
                 p.preflight(Macro('windows',events))
             u.SetWindowPos.assert_not_called()
 
+    def test_fit_dpi_keeps_the_panel_inside_the_work_area(self):
+        self.assertEqual(ui.fit_dpi(96, (340, 648), (1920, 1040)), 96)      # fits: unchanged
+        self.assertEqual(ui.fit_dpi(144, (340, 648), (2560, 1400)), 144)
+        fitted = ui.fit_dpi(120, (340, 648), (1024, 708))                     # 1024x768 at 125%
+        self.assertLess(fitted, 120)
+        self.assertLessEqual(round(648 * fitted / 96), 708)
+        self.assertGreater(round(648 * (fitted + 1) / 96), 708)               # the largest that fits
+        self.assertEqual(ui.fit_dpi(120, (340, 648), (300, 300)), ui.MIN_FIT_DPI)  # never unreadable
+
+    def test_layout_scales_bambola_panel_down_on_1024x768_at_125_percent(self):
+        ui.apply_skin('bambola')
+        self.addCleanup(ui.apply_skin, ui.DEFAULT_SKIN)
+        p = self.panel()
+        del p.layout, p.clamp  # the real ones
+        p.repeat_font = None
+        p.controls = {22: 222, 202: 1202}
+        work = SimpleNamespace(left=0, top=0, right=1024, bottom=708)
+        with patch.object(ui, 'window_rect', return_value=[600, 20, 1000, 700]), \
+                patch.object(ui.Panel, 'work_area', staticmethod(lambda x, y: work)), \
+                patch.object(ui, 'U') as u, patch.object(ui, 'G'):
+            p.layout(120)
+            x, y, w, h = u.SetWindowPos.call_args_list[0][0][2:6]
+        self.assertEqual(p.monitor_dpi, 120)
+        self.assertLess(p.dpi, 120)
+        self.assertLessEqual(y + h, 708)
+        self.assertGreaterEqual(y, 0)
+        self.assertLessEqual(x + w, 1024)
+        p.active_view = True  # the micro bar always fits: drawn at the monitor scale
+        with patch.object(ui, 'window_rect', return_value=[600, 20, 1000, 700]), \
+                patch.object(ui.Panel, 'work_area', staticmethod(lambda x, y: work)), \
+                patch.object(ui, 'U'), patch.object(ui, 'G'):
+            p.layout(p.monitor_dpi)
+        self.assertEqual(p.dpi, 120)
+
+    def test_downloaded_update_waits_for_the_end_of_a_recording(self):
+        p = self.update_panel(ui.State.RECORDING)
+        p.update = {'state': 'installing', 'latest': '9.0.0', 'release': {'version': '9.0.0'}}
+        p.session.message = ''
+        target = ui.Path('C:/x/MouseMacroStocazzSuperpower-Windows-v9.0.0')
+        with patch.object(ui.subprocess, 'Popen') as popen, patch.object(ui, 'U') as u:
+            p.worker_result('update_installed', str(target))
+            popen.assert_not_called()  # closing now would throw the recording away
+            self.assertIn('si riavvia appena finisci', p.session.message)
+            self.assertFalse(p.install_update.called)
+            p.session.state = ui.State.READY
+            self.assertTrue(p.restart_if_idle())
+            popen.assert_called_once()
+            self.assertEqual(popen.call_args[0][0][0], str(target / 'runtime' / 'pythonw.exe'))
+            u.PostMessageW.assert_called_once_with(p.hwnd, ui.WM_CLOSE, 0, 0)
+            self.assertFalse(p.restart_if_idle())  # only once
+
+    def test_no_second_check_or_download_while_downloading(self):
+        p = self.update_panel()
+        p.update = {'state': 'installing', 'latest': '9.0.0', 'release': {'version': '9.0.0'}}
+        with patch.object(ui.threading, 'Thread') as thread:
+            p.check_updates(manual=True)
+            thread.assert_not_called()
+        self.assertEqual(p.update['state'], 'installing')
+        del p.install_update  # the real one
+        with patch.object(ui, 'U') as u:
+            self.assertFalse(p.install_update())
+            u.MessageBoxW.assert_not_called()
+
     def test_screen_change_prevents_start(self):
         p=self.panel()
         with patch.object(ui,'screen_geometry',return_value=[[0,0,1920,1080]]):

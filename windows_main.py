@@ -16,7 +16,7 @@ from windows_visual import Theme, Canvas, Layer, COLORS, Paint, DrawItem, SKINS,
 
 from macro.windows_backend import (WindowsRecorder, WindowsPlayer, GlobalHotkeys,
     HOTKEY_RECORD, HOTKEY_PLAY, HOTKEY_EMERGENCY, screen_geometry, window_rect)
-from macro.session import Session, State, VERSION, validate_gestures
+from macro.session import Session, State, VERSION, gestures_valid
 from macro.windows_integrity import ensure_input_integrity
 from macro.engine import LoopMode, PlaybackOptions
 from macro import updater, win_tray, mods
@@ -129,6 +129,21 @@ def window_size(active, expanded):
     return (640, 608 + extra) if expanded else (340, 600 + extra)
 
 
+MIN_FIT_DPI = 72  # 75%: below this the panel text stops being readable
+
+
+def fit_dpi(dpi, size, work):
+    """Largest DPI not above `dpi` at which the logical `size` fits the `work` area
+    (width, height) in physical pixels. At 125% on a 1024x768 screen the Bambola panel
+    (340x648 logical) would be 810 px tall on a work area of about 720 px; drawing it
+    at a slightly smaller scale keeps every control on screen."""
+    width, height = size
+    fit = dpi
+    while fit > MIN_FIT_DPI and (round(width*fit/96) > work[0] or round(height*fit/96) > work[1]):
+        fit -= 1
+    return fit
+
+
 FOLDER = Path(os.environ.get('LOCALAPPDATA', Path.home())) / 'MouseMacroStocazzSuperpower'
 MODS_DIR = FOLDER / 'mods'
 
@@ -150,6 +165,9 @@ def migrate_default_skin(settings):
 
 
 class Panel:
+    pending_restart = None  # Path of a downloaded update waiting for an idle moment
+    monitor_dpi = None      # DPI of the monitor; self.dpi may be lower so the panel fits its work area
+
     def __init__(self):
         self.hwnd = None
         self.tray = None  # i messaggi arrivano già durante CreateWindowEx
@@ -267,15 +285,31 @@ class Panel:
     def detect_mouse(self):
         self.post(('mouse_devices', mouse_names()))
 
-    def clamp(self, x, y, w, h):
+    @staticmethod
+    def work_area(x, y):
         monitor = U.MonitorFromPoint(W.POINT(x, y), 2)
         mi = MONITORINFO(C.sizeof(MONITORINFO))
         U.GetMonitorInfoW(monitor, C.byref(mi))
-        work = mi.rcWork
+        return mi.rcWork
+
+    def fitted_dpi(self, dpi):
+        """`dpi` reduced, if needed, so the current view fits the work area of its monitor."""
+        r = window_rect(self.hwnd)
+        work = self.work_area(r[0], r[1])
+        return fit_dpi(dpi, window_size(self.active_view, self.expanded),
+                       (work.right-work.left, work.bottom-work.top))
+
+    def clamp(self, x, y, w, h):
+        work = self.work_area(x, y)
         return max(work.left, min(x, work.right-w)), max(work.top, min(y, work.bottom-h))
 
-    def layout(self, dpi):
-        self.dpi = dpi
+    def layout(self, dpi=None):
+        """Size and place the panel and its controls. `dpi` is the monitor's DPI (only
+        at start and on WM_DPICHANGED); the panel is drawn at self.dpi, which is lower
+        when the view would not fit the work area at the monitor's scale."""
+        if dpi:
+            self.monitor_dpi = dpi
+        dpi = self.dpi = self.fitted_dpi(self.monitor_dpi or self.dpi)
         scale = dpi / 96
         width,height = window_size(self.active_view,self.expanded)
         self.width,self.height = width,height
@@ -333,7 +367,7 @@ class Panel:
             self.normal_position = window_rect(self.hwnd)[:2]
             work = self.active_work_area()
             self.active_view = True
-            self.layout(self.dpi)
+            self.layout(self.monitor_dpi)
             w,h = (round(n*self.dpi/96) for n in active_size())
             x,y = self.active_position or ((work.left+work.right-w)//2, (work.top+work.bottom-h)//2)
             x,y = self.clamp(x,y,w,h)
@@ -349,7 +383,7 @@ class Panel:
             U.SetLayeredWindowAttributes(self.hwnd,0,255,2)
             U.SetWindowLongPtrW(self.hwnd,-20,self.exstyle)
             self.active_view = False
-            self.layout(self.dpi)
+            self.layout(self.monitor_dpi)
             x,y = self.clamp(*(self.normal_position or [20,20]),
                              round(self.width*self.dpi/96),round(self.height*self.dpi/96))
             U.SetWindowPos(self.hwnd,None,x,y,0,0,0x15)
@@ -521,7 +555,7 @@ class Panel:
                 for dx,dy in ((10,10),(15,10),(12.5,16)):c.ellipse(dx-1.5,dy-1.5,3,3,color)
             elif cid==205:
                 if hover:c.rounded(0,0,w,h,7,COLORS['chrome_hover'])
-                dot={'current':COLORS['dot_ok'],'available':COLORS['dot_new']}.get(self.update['state'],COLORS['dot_off'])
+                dot={'current':COLORS['dot_ok'],'available':COLORS['dot_new'],'installing':COLORS['dot_new']}.get(self.update['state'],COLORS['dot_off'])
                 c.ellipse(8,8,12,12,dot)
                 if self.update['state']=='available':c.ellipse(5,5,18,18,dot,True)
             elif cid in (201,202,203):
@@ -660,10 +694,7 @@ class Panel:
         self.set_text(10, 'FERMA  F9' if state == State.RECORDING else 'Registra  F9')
         self.set_text(11, 'FERMA  F10' if state in (State.PLAYING, State.STOPPING) else 'Riproduci  F10')
         self.set_enabled(10, state not in (State.PLAYING, State.STOPPING))
-        try:
-            validate_gestures(self.session.macro.events)
-            valid = True
-        except ValueError: valid = False
+        valid = gestures_valid(self.session.macro.events)
         self.set_enabled(11, state != State.RECORDING and valid)
         for cid in (21,22,23,24,25,31,32,40,41,42,102,104,202,204,205):
             self.set_enabled(cid, not active)
@@ -713,6 +744,8 @@ class Panel:
                 self.session.toggle_play(self.options(), self.next_tab, self.preflight)
             elif action == 'emergency' and self.session.state == State.RECORDING:
                 self.session.toggle_record()
+        if self.pending_restart is not None and self.session.state in (State.READY, State.ERROR):
+            self.restart_if_idle()
         self.render()
 
     def sync_animation_timer(self):
@@ -748,7 +781,7 @@ class Panel:
         self.write_settings()
         self.last_view = None
         self.sync_animation_timer()
-        self.layout(self.dpi)  # window size and control boxes depend on the skin
+        self.layout(self.monitor_dpi)  # window size and control boxes depend on the skin
         U.InvalidateRect(self.hwnd,None,True)
         for hwnd in self.controls.values():U.InvalidateRect(hwnd,None,True)
 
@@ -800,8 +833,10 @@ class Panel:
         state, latest = self.update['state'], self.update['latest']
         status = {'current': f'Aggiornato · versione {VERSION}',
                   'available': f'Disponibile la versione {latest} (hai la {VERSION})',
-                  'checking': 'Controllo in corso…'}.get(state, 'Stato aggiornamenti sconosciuto')
-        items = [(1, status, 3), (2, None, 0), (3, 'Controlla ora', 0),
+                  'checking': 'Controllo in corso…',
+                  'installing': f'Scarico e installo la versione {latest}…'}.get(state, 'Stato aggiornamenti sconosciuto')
+        busy = 3 if state in ('checking', 'installing') else 0
+        items = [(1, status, 3), (2, None, 0), (3, 'Controlla ora', busy),
                  (4, f'Scarica e installa la versione {latest}' if state == 'available' else 'Nessun aggiornamento da installare',
                   0 if state == 'available' else 3),
                  (5, 'Controlla all’avvio', 8 if self.settings.get('check_updates', True) else 0)]
@@ -885,8 +920,8 @@ class Panel:
 
     def check_updates(self, manual=False):
         """Anonymous read of the latest GitHub release, off the UI thread."""
-        if self.update['state'] == 'checking':
-            return
+        if self.update['state'] in ('checking', 'installing'):
+            return  # a check during a download would re-enable "install" and start a second one
         previous = self.update['state']
         self.update['state'] = 'checking'
         if manual:
@@ -904,7 +939,7 @@ class Panel:
     def install_update(self, startup=False):
         """Ask, then update; return False when the user says no."""
         release = self.update.get('release')
-        if self.update['state'] != 'available' or not release:
+        if self.update['state'] != 'available' or not release or self.pending_restart:
             return False
         if startup:
             question = (f'È disponibile la versione {release["version"]} (hai la {VERSION}).\n\n'
@@ -921,6 +956,7 @@ class Panel:
             self.dialog_open = False
         if answer != 6:
             return False
+        self.update['state'] = 'installing'
         self.session.message = f'Scarico la versione {release["version"]}…'
         current = Path(__file__).resolve().parent.parent
         def work():
@@ -955,11 +991,25 @@ class Panel:
             if manual:
                 self.session.message = message
         elif kind == 'update_installed':
-            target = Path(args[0])
-            subprocess.Popen([str(target/'runtime'/'pythonw.exe'), '-B', str(target/'app'/'windows_main.py'), '--wait-for-exit'],
-                             cwd=str(target), creationflags=0x00000008|0x00000200, close_fds=True)
-            self.quitting = True
-            U.PostMessageW(self.hwnd, WM_CLOSE, 0, 0)
+            self.pending_restart = Path(args[0])
+            self.restart_if_idle()
+
+    def restart_if_idle(self):
+        """Start the downloaded version and close, but never in the middle of a recording,
+        a replay or an open dialog: the download can end while the user is already
+        recording again, and closing then would throw the recording away."""
+        target = self.pending_restart
+        if target is None:
+            return False
+        if self.session.state not in (State.READY, State.ERROR) or self.dialog_open:
+            self.session.message = 'Aggiornamento pronto: il programma si riavvia appena finisci.'
+            return False
+        self.pending_restart = None
+        subprocess.Popen([str(target/'runtime'/'pythonw.exe'), '-B', str(target/'app'/'windows_main.py'), '--wait-for-exit'],
+                         cwd=str(target), creationflags=0x00000008|0x00000200, close_fds=True)
+        self.quitting = True
+        U.PostMessageW(self.hwnd, WM_CLOSE, 0, 0)
+        return True
 
     def read_repeats(self):
         text = C.create_unicode_buffer(16)
@@ -1102,7 +1152,7 @@ class Panel:
                 if cid == 203: U.PostMessageW(hwnd,WM_CLOSE,0,0)
                 elif cid == 201: U.ShowWindow(hwnd,6)
                 elif cid in (24,202) and self.session.state in (State.READY,State.ERROR):
-                    self.expanded=not self.expanded;self.layout(self.dpi)
+                    self.expanded=not self.expanded;self.layout(self.monitor_dpi)
                 elif cid == 204 and self.session.state in (State.READY,State.ERROR):self.skin_menu()
                 elif cid == 205 and self.session.state in (State.READY,State.ERROR):self.update_menu()
                 elif cid == 104:self.action(104)
@@ -1137,6 +1187,8 @@ class Panel:
                 self.save_position()
                 return 0
             if msg == 0x232 and self.hwnd:  # WM_EXITSIZEMOVE
+                if self.monitor_dpi and self.fitted_dpi(self.monitor_dpi) != self.dpi:
+                    self.layout(self.monitor_dpi)  # moved to a monitor with a different work area
                 self.save_position()
             if self.tray and msg == self.tray.created_message:  # Explorer riavviato: rimetti l'icona
                 self.tray.add()
