@@ -99,7 +99,8 @@ def install(release, root, opener=None, keep=()):
             parts = line.split()
             if len(parts) == 2 and parts[1].lstrip('*') == zip_name:
                 expected = parts[0].lower()
-        digest = hashlib.sha256((work / zip_name).read_bytes()).hexdigest()
+        with open(work / zip_name, 'rb') as stream:  # streamed: never the whole ZIP in memory
+            digest = hashlib.file_digest(stream, 'sha256').hexdigest()
         if expected is None or digest != expected:
             raise UpdateError('SHA-256 diverso dall’atteso: download scartato.')
         staging = work / 'extract'
