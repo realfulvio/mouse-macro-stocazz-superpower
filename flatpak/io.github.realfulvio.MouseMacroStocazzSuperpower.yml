@@ -27,8 +27,8 @@ modules:
       - install -Dm644 io.github.realfulvio.MouseMacroStocazzSuperpower.metainfo.xml -t /app/share/metainfo
     sources:
       - type: archive
-        url: https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/linux-v1.2.0/MouseMacroStocazzSuperpower-Linux-v1.2.0.tar.gz
-        sha256: 806accf405b1da52c8269ebeece3138a56319dba2764ef35a742c7dd8b3a72f6
+        url: https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/linux-v1.2.1/MouseMacroStocazzSuperpower-Linux-v1.2.1.tar.gz
+        sha256: 970e7f54d7ede01aa4f6a9b9c18c4a537d7c2216addca7ac686ae0916c47a9e2
       - type: file
         path: launcher.sh
       - type: file
