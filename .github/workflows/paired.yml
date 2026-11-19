@@ -1,6 +1,6 @@
 name: Confronto appaiato con la release pubblicata
 # Builds the candidate ZIP of this commit and compares it with the published
-# v1.2.7 ZIP on the same runner, alternating ABBA (bench/ci/paired_compare.py).
+# v1.2.8 ZIP on the same runner, alternating ABBA (bench/ci/paired_compare.py).
 on:
   pull_request:
     paths:
@@ -31,8 +31,8 @@ jobs:
       - name: ZIP pubblicato della release precedente
         shell: pwsh
         run: |
-          Invoke-WebRequest 'https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.7/MouseMacroStocazzSuperpower-Windows-v1.2.7.zip' -OutFile baseline.zip
-          if ((Get-FileHash baseline.zip -Algorithm SHA256).Hash.ToLower() -ne '20d02c8db8999720e67554469e8a7c7000e43a820111535a44c76562359357f9') { throw 'Hash baseline diverso' }
+          Invoke-WebRequest 'https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.8/MouseMacroStocazzSuperpower-Windows-v1.2.8.zip' -OutFile baseline.zip
+          if ((Get-FileHash baseline.zip -Algorithm SHA256).Hash.ToLower() -ne '5b38242d35eface6a8aa6fdadc437176178ee311c638364f2334d93a4ddd9c62') { throw 'Hash baseline diverso' }
       - name: Avvio, riposo, registrazione e riproduzione (stesso host, ABBA)
         shell: pwsh
         run: |
