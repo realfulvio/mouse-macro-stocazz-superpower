@@ -1,7 +1,7 @@
 """Reproducible Windows build procedure: official embed + pinned pure Python wheels."""
 from pathlib import Path, PurePosixPath
 import argparse, hashlib, importlib.util, io, json, py_compile, shutil, subprocess, sys, urllib.request, zipfile
-VERSION = '1.2.7'
+VERSION = '1.2.8'
 ROOT = Path(__file__).resolve().parent
 PACKAGE = f'MouseMacroStocazzSuperpower-Windows-v{VERSION}'
 # Linux-only assets (the animated WebP of the Linux panel): about 4 MB the Windows panel never reads.
