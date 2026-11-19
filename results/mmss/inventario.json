@@ -1,0 +1,15 @@
+{
+ "tool": "mmss",
+ "url": "https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.3/MouseMacroStocazzSuperpower-Windows-v1.2.3.zip",
+ "bytes": 19049731,
+ "sha256": "3b9e795f25bc4c8b4d46ee2cfe481521c1f5e432d71cf7630198c70f7e25a45e",
+ "expected": "3b9e795f25bc4c8b4d46ee2cfe481521c1f5e432d71cf7630198c70f7e25a45e",
+ "hash_ok": true,
+ "hash_source": "digest della release GitHub v1.2.3 e SHA256SUMS-v1.2.3.txt",
+ "screen": [
+  1920,
+  1080
+ ],
+ "os": "win32",
+ "cpu": "AMD64 Family 25 Model 1 Stepping 1, AuthenticAMD"
+}
