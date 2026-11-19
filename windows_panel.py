@@ -196,7 +196,7 @@ class Panel:
     title_at = 0.0          # when render() last changed the window title (see set_title)
     title_state = None      # session state shown by the title at that moment
     detail_shown = None     # detail line of the compact bar as last invalidated by render()
-    error_logged = None     # last traceback written to errore.log (a repeating failure is written once)
+    error_logged = None     # where the failure last written to errore.log was raised (see wndproc)
 
     def __init__(self):
         self.hwnd = None
@@ -1303,11 +1303,14 @@ class Panel:
                 U.PostQuitMessage(0)
                 return 0
         except Exception as error:
-            details = traceback.format_exc()
-            if details != self.error_logged:  # the same failure repeating (a paint, a timer) is written once
-                self.error_logged = details
+            # The same failure repeating (a paint, a timer: up to 60 times a second) is written
+            # once; it is the same when raised from the same lines, whatever its message says.
+            where = (type(error).__name__,
+                     tuple((f.filename, f.lineno) for f in traceback.extract_tb(error.__traceback__)))
+            if where != self.error_logged:
+                self.error_logged = where
                 try:
-                    (FOLDER/'errore.log').write_text(details, 'utf-8')
+                    (FOLDER/'errore.log').write_text(traceback.format_exc(), 'utf-8')
                 except OSError:
                     pass
             if hasattr(self,'session'):

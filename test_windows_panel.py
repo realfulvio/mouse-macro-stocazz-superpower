@@ -256,16 +256,20 @@ class PanelTests(unittest.TestCase):
         p = self.panel()
         p.width = 100
         p.session = SimpleNamespace(request_stop=MagicMock(), error=MagicMock(), state=ui.State.READY)
-        p.paint = MagicMock(side_effect=RuntimeError('GDI+ 3'))
+        def gdi(hwnd, n=iter(range(100))):
+            raise RuntimeError(f'GDI+ 3 ({next(n)})')  # a new exception at every paint, as in real life
+        def other(hwnd):
+            raise ValueError('altro')
+        p.paint = gdi
         with tempfile.TemporaryDirectory() as folder, patch.object(ui, 'FOLDER', Path(folder)), \
                 patch.object(ui.U, 'DefWindowProcW', return_value=0):
             log = Path(folder) / 'errore.log'
             p.wndproc(123, 0xF, 0, 0)
-            self.assertIn('GDI+ 3', log.read_text('utf-8'))
+            self.assertIn('GDI+ 3 (0)', log.read_text('utf-8'))
             log.unlink()
-            p.wndproc(123, 0xF, 0, 0)  # same failure again: not rewritten
+            p.wndproc(123, 0xF, 0, 0)  # same failure from the same place again: not rewritten
             self.assertFalse(log.exists())
-            p.paint.side_effect = RuntimeError('altro')
+            p.paint = other
             p.wndproc(123, 0xF, 0, 0)  # a different one is
             self.assertIn('altro', log.read_text('utf-8'))
             self.assertEqual(p.session.error.call_count, 3)
