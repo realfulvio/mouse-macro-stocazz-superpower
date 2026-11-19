@@ -1,9 +1,34 @@
 """Reproducible Windows build procedure: official embed + pinned pure Python wheels."""
-from pathlib import Path
-import argparse, hashlib, json, shutil, subprocess, sys, urllib.request, zipfile
-VERSION = '1.2.7'
+from pathlib import Path, PurePosixPath
+import argparse, hashlib, importlib.util, io, json, py_compile, shutil, subprocess, sys, urllib.request, zipfile
+VERSION = '1.2.8'
 ROOT = Path(__file__).resolve().parent
 PACKAGE = f'MouseMacroStocazzSuperpower-Windows-v{VERSION}'
+# Linux-only assets (the animated WebP of the Linux panel): about 4 MB the Windows panel never reads.
+LINUX_ONLY_SUFFIXES = ('.webp',)
+
+
+def compile_bytecode(stage, embed):
+    """Checked-hash .pyc (PEP 552) next to every module of the app and of runtime/Lib.
+
+    The launchers start pythonw.exe -B, which never writes bytecode, and the ZIP had none:
+    every start compiled the whole app and pynput from source again. A checked-hash .pyc is
+    used only while the hash of its .py matches, whatever the file dates (ZIP extraction and
+    the updater do not keep them); a changed .py is simply compiled again, as before.
+    The bytecode must be the embedded runtime's: same magic number, same cache tag."""
+    with zipfile.ZipFile(embed) as z, zipfile.ZipFile(io.BytesIO(z.read('python313.zip'))) as stdlib:
+        magic = stdlib.read(next(n for n in stdlib.namelist() if n.endswith('.pyc')))[:4]
+    if magic != importlib.util.MAGIC_NUMBER or sys.implementation.cache_tag != 'cpython-313':
+        raise SystemExit('Bytecode: serve Python 3.13 (lo stesso del runtime incorporato) per compilare.')
+    count = 0
+    for folder in (stage/'app', stage/'runtime'/'Lib'):
+        for source in sorted(folder.rglob('*.py')):
+            # dfile: a package-relative name, never the build machine's path.
+            py_compile.compile(str(source), cfile=importlib.util.cache_from_source(str(source)),
+                               dfile=str(PurePosixPath(source.relative_to(stage).as_posix())), doraise=True,
+                               invalidation_mode=py_compile.PycInvalidationMode.CHECKED_HASH)
+            count += 1
+    return count
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
@@ -38,13 +63,16 @@ def main():
         *(['--no-index','--find-links',str(cache)] if args.offline else []),
         '--only-binary=:all:','--no-compile','--no-deps','--target',str(runtime/'Lib'),
         '-r',str(ROOT/'requirements-windows.txt')],check=True)
-    shutil.copy2(ROOT/'windows_main.py',app/'windows_main.py')
+    shutil.copy2(ROOT/'windows_main.py',app/'windows_main.py')  # launcher entry: a few lines, see the file
+    shutil.copy2(ROOT/'windows_panel.py',app/'windows_panel.py')
     shutil.copy2(ROOT/'windows_visual.py',app/'windows_visual.py')
     shutil.copy2(ROOT/'windows_settings.py',app/'windows_settings.py')
     for folder in ('horses','icons','fonts','skins'):
         target_assets = app/'assets'/folder
         target_assets.mkdir(parents=True)
         for asset in (ROOT/'assets'/folder).iterdir():
+            if asset.suffix.lower() in LINUX_ONLY_SUFFIXES:
+                continue
             if folder != 'fonts' or asset.name in ('Outfit-Regular.ttf','Outfit-Bold.ttf','Outfit-OFL.txt'):
                 shutil.copy2(asset,target_assets/asset.name)
     shutil.copy2(ROOT/'assets'/'icon.ico',app/'assets'/'icon.ico')
@@ -52,6 +80,7 @@ def main():
     macro.mkdir()
     for name in ('__init__.py','events.py','engine.py','session.py','windows_backend.py','windows_integrity.py','win_dialogs.py','updater.py','mouse_devices.py','win_tray.py','mods.py','keys.py','export.py','runner.py'):
         shutil.copy2(ROOT/'macro'/name,macro/name)
+    compile_bytecode(stage, embed)
     for name in ('LICENSE','THIRD-PARTY-NOTICES.md','GUIDA-ITALIANA.md'):
         if (ROOT/name).exists():
             shutil.copy2(ROOT/name,stage/name)

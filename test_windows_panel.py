@@ -185,6 +185,133 @@ class PanelTests(unittest.TestCase):
             self.assertGreater(text.call_count, first[0] + 1)
             self.assertGreater(enable.call_count, first[1])
 
+    def render_panel(self, state):
+        p = self.panel()
+        p.hwnd = 7
+        p.controls = {cid: 1000 + cid for cid in (1,2,3,4,10,11,12,21,22,23,24,25,31,32,40,41,42,101,102,104,202,204,205)}
+        p.session = SimpleNamespace(state=state, message='ok', macro=SimpleNamespace(events=[]), last_trace=None, completed=0)
+        p.record_started = p.play_started = None
+        p.speed, p.next_tab, p.slow, p.human, p.infinite = 1.0, False, False, False, False
+        p.update = {'state': 'unknown', 'latest': None, 'release': None}
+        return p
+
+    def test_compact_bar_repaints_only_its_detail_line_when_counters_change(self):
+        """While recording the count changes ten times a second: the bar and its mascot stay."""
+        p = self.render_panel(ui.State.RECORDING)
+        p.active_view = True
+        p.session.recorder = SimpleNamespace(current_event_count=1)
+        counts = iter(range(1, 100))
+        p.metrics = lambda: (str(next(counts)), '00:01.250')
+        with patch.object(ui.U, 'SetWindowTextW'), patch.object(ui.U, 'EnableWindow'), \
+                patch.object(ui.U, 'InvalidateRect') as invalidate:
+            p.render()  # first view: everything
+            self.assertIsNone(invalidate.call_args_list[0][0][1])
+            invalidate.reset_mock()
+            p.render()  # new count only: one rectangle, the detail line, and no control
+            self.assertEqual(invalidate.call_count, 1)
+            hwnd, ref, erase = invalidate.call_args[0]
+            box = ref._obj
+            self.assertEqual((hwnd, erase), (7, False))
+            self.assertEqual((box.left, box.top, box.right, box.bottom), p.detail_box())
+            x, y, w, h = 48, 28, 154, 19  # the detail line of paint_active() for this skin, at 100%
+            self.assertTrue(box.left <= x and box.top <= y and box.right >= x + w and box.bottom >= y + h)
+            invalidate.reset_mock()
+            p.session.state = ui.State.STOPPING  # a new state redraws the whole bar
+            p.render()
+            self.assertIsNone(invalidate.call_args_list[0][0][1])
+
+    def test_title_follows_state_at_once_and_counters_at_most_once_a_second(self):
+        p = self.render_panel(ui.State.RECORDING)
+        p.active_view = True
+        p.session.recorder = SimpleNamespace(current_event_count=1)
+        counts = iter(range(1, 100))
+        p.metrics = lambda: (str(next(counts)), '00:01.250')
+        titles = []
+        with patch.object(ui.U, 'SetWindowTextW', side_effect=lambda h, t: titles.append(t) if h == 7 else None), \
+                patch.object(ui.U, 'EnableWindow'), patch.object(ui.U, 'InvalidateRect'), \
+                patch.object(ui.time, 'monotonic', return_value=100.0) as clock:
+            p.render(); p.render(); p.render()
+            self.assertEqual(len(titles), 1)  # same second: the count waits
+            self.assertNotIn('.250', titles[0])  # no milliseconds in the title
+            clock.return_value = 101.0
+            p.render()
+            self.assertEqual(len(titles), 2)
+            p.session.state = ui.State.STOPPING
+            p.render()  # a new state: at once
+            self.assertEqual(len(titles), 3)
+            self.assertIn(ui.State.STOPPING.value, titles[-1])
+
+    def test_paint_always_ends_even_when_drawing_fails(self):
+        """Without EndPaint the window stays invalid and Windows sends WM_PAINT again at once, forever."""
+        p = self.panel()
+        p.paint_dc = MagicMock(side_effect=RuntimeError('GDI+ 3'))
+        with patch.object(ui.U, 'BeginPaint', return_value=55), patch.object(ui.U, 'EndPaint') as end:
+            with self.assertRaises(RuntimeError):
+                p.paint(123)
+            end.assert_called_once()
+
+    def test_repeating_failure_is_written_to_the_log_once(self):
+        import tempfile
+        from pathlib import Path
+        p = self.panel()
+        p.width = 100
+        p.session = SimpleNamespace(request_stop=MagicMock(), error=MagicMock(), state=ui.State.READY)
+        def gdi(hwnd, n=iter(range(100))):
+            raise RuntimeError(f'GDI+ 3 ({next(n)})')  # a new exception at every paint, as in real life
+        def other(hwnd):
+            raise ValueError('altro')
+        p.paint = gdi
+        with tempfile.TemporaryDirectory() as folder, patch.object(ui, 'FOLDER', Path(folder)), \
+                patch.object(ui.U, 'DefWindowProcW', return_value=0):
+            log = Path(folder) / 'errore.log'
+            p.wndproc(123, 0xF, 0, 0)
+            self.assertIn('GDI+ 3 (0)', log.read_text('utf-8'))
+            log.unlink()
+            p.wndproc(123, 0xF, 0, 0)  # same failure from the same place again: not rewritten
+            self.assertFalse(log.exists())
+            p.paint = other
+            p.wndproc(123, 0xF, 0, 0)  # a different one is
+            self.assertIn('altro', log.read_text('utf-8'))
+            self.assertEqual(p.session.error.call_count, 3)
+
+    def test_settings_are_replaced_whole(self):
+        import json, tempfile
+        from pathlib import Path
+        p = self.panel()
+        with tempfile.TemporaryDirectory() as folder, patch.object(ui, 'FOLDER', Path(folder)):
+            target = Path(folder) / 'panel-v016.json'
+            target.write_text('{"skin": "vecchia"}', 'utf-8')
+            p.settings = {'skin': 'bambola', 'position': [10, 20]}
+            p.write_settings()
+            self.assertEqual(json.loads(target.read_text('utf-8')), p.settings)
+            self.assertEqual(sorted(x.name for x in Path(folder).iterdir()), ['panel-v016.json'])
+            with patch.object(ui.os, 'replace', side_effect=PermissionError('in uso')):
+                p.settings['skin'] = 'unicorno'
+                p.write_settings()  # swap refused: plain write, as before
+            self.assertEqual(json.loads(target.read_text('utf-8'))['skin'], 'unicorno')
+            self.assertEqual(sorted(x.name for x in Path(folder).iterdir()), ['panel-v016.json'])
+
+    def test_replay_trace_file_is_valid_json_with_every_record(self):
+        import json, tempfile
+        from pathlib import Path
+        records = [{'type': 'playback_start', 'elapsed_seconds': 0.0, 'cycle': 1},
+                   {'type': 'input_sent', 'click': [1, 2], 'kind': 'left_down', 'message': 'perché'}]
+        header = {'version': ui.VERSION, 'options': {'speed': 1.0, 'mode': 'repeat_count'}, 'outcome': 'pronto'}
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / 'ultimo-replay.json'
+            ui.save_replay_trace(path, header, records)
+            self.assertEqual(json.loads(path.read_text('utf-8')), dict(header, records=records))
+            self.assertEqual([x.name for x in Path(folder).iterdir()], ['ultimo-replay.json'])
+
+    def test_mascot_layer_survives_a_paint_beside_it(self):
+        layer = ui.Layer()
+        layer.set_box((0, 0, 87, 75))
+        self.assertFalse(layer.overlaps((87, 24, 150, 22)))  # the bar's detail line, right of the head
+        self.assertTrue(layer.overlaps((86, 24, 150, 22)))
+        self.assertTrue(layer.overlaps((0, 0, 300, 72)))
+        layer.set_box(None)
+        self.assertFalse(layer.overlaps((0, 0, 300, 72)))
+
     def test_mascot_layer_only_matches_its_own_box_and_forgets_on_change(self):
         layer = ui.Layer()
         self.assertFalse(layer.matches((1, 2, 3, 4)))  # no box yet

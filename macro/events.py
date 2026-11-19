@@ -3,9 +3,10 @@ from __future__ import annotations
 
 import json
 import math
+from operator import attrgetter
 import os
-import tempfile
-from dataclasses import asdict, dataclass, field
+import sys
+from dataclasses import dataclass, field, fields
 from pathlib import Path
 
 # Tipi di evento supportati (indipendenti dal backend)
@@ -39,7 +40,9 @@ def valid_key_name(name, platform: str = "windows") -> bool:
     return digits.isdigit() and len(digits) <= 3 and 1 <= int(digits) <= maximum
 
 
-@dataclass
+# __slots__ (Python 3.10+): a long recording holds hundreds of thousands of events;
+# without a per-instance __dict__ each one takes about half the memory.
+@dataclass(**({"slots": True} if sys.version_info >= (3, 10) else {}))
 class MacroEvent:
     t: float                # secondi trascorsi dall'inizio della registrazione
     kind: str
@@ -53,6 +56,15 @@ class MacroEvent:
     snap: str = ""
     # Tasto della tastiera ("vk:NN") per KEY_DOWN / KEY_UP, altrimenti vuoto.
     key: str = ""
+
+
+EVENT_FIELDS = tuple(f.name for f in fields(MacroEvent))
+_event_values = attrgetter(*EVENT_FIELDS)
+
+
+def event_dict(event: MacroEvent) -> dict:
+    """Same dict as dataclasses.asdict(event), same key order, without its recursive deep copy."""
+    return dict(zip(EVENT_FIELDS, _event_values(event)))
 
 
 @dataclass
@@ -70,8 +82,12 @@ class Macro:
             "platform": self.platform,
             "screen": self.screen,
             "layout": self.layout,
-            "events": [asdict(e) for e in self.events],
+            "events": [event_dict(e) for e in self.events],
         }
+        # One-shot json.dumps uses the C encoder; json.dump(data, f) streams small
+        # chunks through the Python encoder loop. The file content is identical.
+        text = json.dumps(data)
+        import tempfile  # only when saving: keeps it out of the panel's startup imports
         target = Path(path)
         temporary = None
         try:
@@ -80,7 +96,7 @@ class Macro:
                 prefix=".macro-", suffix=".tmp", delete=False,
             ) as f:
                 temporary = Path(f.name)
-                json.dump(data, f)
+                f.write(text)
             # Sostituisce il file solo dopo aver completato la scrittura.
             os.replace(temporary, target)
         finally:

@@ -21,6 +21,24 @@ class MacroFileTests(unittest.TestCase):
         self.assertEqual(Macro.load(str(self.path)),self.macro)
         self.assertEqual(json.loads(self.path.read_text(encoding='utf-8'))['platform'],'windows')
 
+    def test_saved_file_is_byte_for_byte_the_previous_format(self):
+        """Faster save (no dataclasses.asdict deep copy, one-shot C encoder): same bytes as before."""
+        import dataclasses
+        self.macro.save(str(self.path))
+        previous=json.dumps({'platform':self.macro.platform,'screen':self.macro.screen,'layout':self.macro.layout,
+                             'events':[dataclasses.asdict(e) for e in self.macro.events]})
+        self.assertEqual(self.path.read_text(encoding='utf-8'),previous)
+
+    def test_events_have_no_instance_dict(self):
+        """__slots__: a long recording holds hundreds of thousands of events."""
+        import sys
+        event=MacroEvent(0,LEFT_DOWN)
+        if sys.version_info>=(3,10):
+            self.assertFalse(hasattr(event,'__dict__'))
+            with self.assertRaises(AttributeError):
+                event.unknown=1
+        self.assertEqual(MacroEvent(**{'t':1,'kind':LEFT_UP,'x':3}),MacroEvent(1,LEFT_UP,x=3))
+
     def test_legacy_json_without_screen_or_optional_event_fields_is_readable(self):
         self.path.write_text(json.dumps({'platform':'windows','events':[{'t':0,'kind':LEFT_DOWN}]}),encoding='utf-8')
         self.assertEqual(Macro.load(str(self.path)),Macro('windows',[MacroEvent(0,LEFT_DOWN)]))
@@ -55,7 +73,13 @@ class MacroFileTests(unittest.TestCase):
     def test_failed_write_preserves_previous_file_and_cleans_temporary_file(self):
         self.macro.save(str(self.path))
         before=self.path.read_bytes()
-        with patch('macro.events.json.dump',side_effect=OSError('Disk full')):
+        real=tempfile.NamedTemporaryFile
+        class DiskFull:  # the temporary file exists, then the write fails
+            def __init__(self,**options):self.file=real(**options);self.name=self.file.name
+            def __enter__(self):return self
+            def __exit__(self,*exc):self.file.close()
+            def write(self,text):raise OSError('Disk full')
+        with patch('tempfile.NamedTemporaryFile',DiskFull):
             with self.assertRaises(OSError):
                 Macro('windows',[]).save(str(self.path))
         self.assertEqual(self.path.read_bytes(),before)

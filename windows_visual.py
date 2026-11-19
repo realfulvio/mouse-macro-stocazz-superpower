@@ -151,6 +151,8 @@ def ptrcall(fn,*args):
     return p
 
 class Theme:
+    sheet_file = None  # path of the current skin's sprite sheets, with {state}
+    sheet_frames = 0   # frames per sheet; 0: no sheet to release
     def __init__(self):
         self.token=C.c_size_t();D.GdiplusStartup(C.byref(self.token),C.byref(Startup(1,None,False,False)),None)
         self.collection=ptrcall(D.GdipNewPrivateFontCollection)
@@ -176,6 +178,7 @@ class Theme:
         self.images,self.sizes=images,sizes
         sheets={}
         sheet=skin.get('sheet')
+        self.sheet_file,self.sheet_frames=(sheet['file'],sheet['frames']) if sheet else (None,0)
         if sheet:
             try:
                 sheets={state:ptrcall(D.GdipLoadImageFromFile,str(ROOT/sheet['file'].format(state=state))) for state in STATES}
@@ -183,30 +186,42 @@ class Theme:
                 for p in sheets.values():D.GdipDisposeImage(p)
                 sheets={}  # without sheets the still image is shown
         self.drop_frames()
-        for p in self.sheets.values():D.GdipDisposeImage(p)
+        for p in self.sheets.values():
+            if p:D.GdipDisposeImage(p)
         self.sheets=sheets
     def frame(self,state,i,bw,bh,src):
         """Animation frame already scaled to its on-screen size (premultiplied ARGB bitmap), cached:
-        every later repaint is a 1:1 copy, with no interpolation."""
+        every later repaint is a 1:1 copy, with no interpolation.
+        Once every frame of a sheet is cached at the size on screen, the decoded sheet (2800x2000
+        pixels, about 22 MB) is given back; it is loaded again only if a frame is ever missing."""
         key=(state,i,bw,bh,tuple(round(v,2) for v in src))
         bitmap=self.frames.get(key)
         if bitmap is None:
             if len(self.frames)>=600:self.drop_frames()
+            sheet=self.sheets[state]
+            if sheet is None:  # released earlier: a size or a frame not cached yet
+                sheet=self.sheets[state]=ptrcall(D.GdipLoadImageFromFile,str(ROOT/self.sheet_file.format(state=state)))
             bitmap=ptrcall(D.GdipCreateBitmapFromScan0,bw,bh,0,0xE200B,None)  # 32bppPARGB
             g=ptrcall(D.GdipGetImageGraphicsContext,bitmap)
             D.GdipSetInterpolationMode(g,7)  # best quality, paid once per cached frame
-            D.GdipDrawImageRectRect(g,self.sheets[state],0,0,bw,bh,*src,2,None,None,None)
+            D.GdipDrawImageRectRect(g,sheet,0,0,bw,bh,*src,2,None,None,None)
             D.GdipDeleteGraphics(g)
             self.frames[key]=bitmap
+            if self.sheet_frames:
+                group=self.cached.setdefault((state,bw,bh,key[4][2],key[4][3]),set())
+                group.add(i)
+                if len(group)>=self.sheet_frames:
+                    D.GdipDisposeImage(sheet);self.sheets[state]=None
         return bitmap
     def drop_frames(self):
         for p in self.frames.values():D.GdipDisposeImage(p)
-        self.frames={}
+        self.frames={};self.cached={}
     def close(self):
         self.drop_frames()
         for p in self.fonts.values():D.GdipDeleteFont(p)
         for p in self.images.values():D.GdipDisposeImage(p)
-        for p in self.sheets.values():D.GdipDisposeImage(p)
+        for p in self.sheets.values():
+            if p:D.GdipDisposeImage(p)
         D.GdipDeleteFontFamily(self.body_family)
         D.GdipDeleteFontFamily(self.family);D.GdipDeletePrivateFontCollection(C.byref(self.collection))
         D.GdiplusShutdown(self.token)
@@ -227,7 +242,10 @@ class Canvas:
         bw,bh=(clip[2],clip[3]) if clip else (width,height)
         self.view=(clip[0]/scale-4,clip[1]/scale-4,(clip[0]+clip[2])/scale+4,(clip[1]+clip[3])/scale+4) if clip else None
         self.dc=G.CreateCompatibleDC(hdc);self.bmp=G.CreateCompatibleBitmap(hdc,bw,bh)
-        self.old=G.SelectObject(self.dc,self.bmp);self.g=ptrcall(D.GdipCreateFromHDC,self.dc)
+        self.old=G.SelectObject(self.dc,self.bmp)
+        try:self.g=ptrcall(D.GdipCreateFromHDC,self.dc)
+        except Exception:  # e.g. out of GDI resources: give back what this paint took, or each retry leaks more
+            G.SelectObject(self.dc,self.old);G.DeleteObject(self.bmp);G.DeleteDC(self.dc);raise
         D.GdipSetSmoothingMode(self.g,4);D.GdipSetInterpolationMode(self.g,7)
         # Work in physical bitmap pixels and apply logical DPI scaling once.
         D.GdipSetPageUnit(self.g,2)  # UnitPixel
@@ -361,6 +379,11 @@ class Layer:
         b=self.box
         return b is not None and clip==(b[0],b[1],b[2]-b[0],b[3]-b[1])
     takes=matches
+    def overlaps(self,clip):
+        """True when the device rectangle clip=(x,y,w,h) touches the mascot box: only such a paint
+        can change what lies under the mascot (the detail line of the bar does not)."""
+        b=self.box
+        return b is not None and clip[0]<b[2] and b[0]<clip[0]+clip[2] and clip[1]<b[3] and b[1]<clip[1]+clip[3]
     def release(self):
         for dc,bmp,old in (self.bg,self.work) if self.bg else ():
             G.SelectObject(dc,old);G.DeleteObject(bmp);G.DeleteDC(dc)

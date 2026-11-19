@@ -1,13 +1,40 @@
 """Serialized recording/playback lifecycle shared by the native panel and tests."""
 from __future__ import annotations
 
+from collections import deque
 import threading
 from enum import Enum
 from .events import Macro, BUTTON_OF_DOWN, BUTTON_OF_UP, KEY_DOWN, KEY_UP, LEFT_DOWN, MOVE_REL
 from .engine import play, PlaybackEnd, PlaybackOptions, LoopMode
 import math
 
-VERSION = '1.2.7'
+VERSION = '1.2.8'
+
+
+class TraceBuffer:
+    """Records of one replay, bounded: the first `head` and the last `tail` ones.
+    The engine adds a record per input sent, so an infinite loop of a dense macro
+    used to grow the trace (and ultimo-replay.json) without limit, hundreds of MB
+    after a few hours. What is in the middle is only counted."""
+    __slots__ = ('head', 'tail', 'limit', 'dropped')
+
+    def __init__(self, head=2000, tail=8000):
+        self.head, self.limit = [], head
+        self.tail = deque(maxlen=tail)
+        self.dropped = 0
+
+    def append(self, record):
+        if len(self.head) < self.limit:
+            self.head.append(record)
+        else:
+            if len(self.tail) == self.tail.maxlen:
+                self.dropped += 1
+            self.tail.append(record)
+
+    def records(self):
+        """A new list: first records, a marker with the dropped count (if any), last records."""
+        marker = [{'type': 'records_dropped', 'count': self.dropped}] if self.dropped else []
+        return self.head + marker + list(self.tail)
 
 
 class State(Enum):
@@ -193,6 +220,7 @@ class Session:
     def _run(self, events, options, next_tab):
         end, error = PlaybackEnd.STOPPED, None
         player, stop = self.player, self.stop_event
+        trace = TraceBuffer()
         def progress(status):
             with self.lock:
                 self.completed = status.completed_loops
@@ -203,10 +231,10 @@ class Session:
         try:
             end = play(events, options, player.apply_event, player.release_held, progress, stop,
                        between_cycles=(lambda: player.next_tab(stop)) if next_tab else None,
-                       trace=self.last_trace.append)
+                       trace=trace.append)
         except Exception as caught:
             error = caught
-            self.last_trace.append({'type':'error', 'exception':type(caught).__name__, 'message':str(caught)})
+            trace.append({'type':'error', 'exception':type(caught).__name__, 'message':str(caught)})
         finally:
             try:
                 player.close()
@@ -214,6 +242,9 @@ class Session:
                 error = error or caught
             with self.lock:
                 self.player = None
+                # Published once, complete, together with the final state: the panel
+                # saves ultimo-replay.json when it sees a new list and a final state.
+                self.last_trace = trace.records()
                 if self.state != State.CLOSED:
                     self.state = State.ERROR if error else State.READY
                     self.message = (str(error) if error else

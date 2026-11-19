@@ -3,7 +3,7 @@ from pathlib import Path
 
 from macro import win_tray as t
 
-SOURCE = (Path(__file__).resolve().parent / 'windows_main.py').read_text(encoding='utf-8')
+SOURCE = (Path(__file__).resolve().parent / 'windows_panel.py').read_text(encoding='utf-8')
 
 
 class TrayLogicTests(unittest.TestCase):

@@ -71,9 +71,9 @@ jobs:
           PACKAGE_KIND: ${{ matrix.package }}
         run: |
           if ($env:PACKAGE_KIND -eq 'baseline') {
-            $archive = Join-Path $pwd 'baseline-v1.2.6.zip'
-            Invoke-WebRequest 'https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.6/MouseMacroStocazzSuperpower-Windows-v1.2.6.zip' -OutFile $archive
-            $digest = '4ba5d0221b6b45adf79684706067dada255f2fdf7a8f856847cbdd4c73ddef8c'
+            $archive = Join-Path $pwd 'baseline-v1.2.7.zip'
+            Invoke-WebRequest 'https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.7/MouseMacroStocazzSuperpower-Windows-v1.2.7.zip' -OutFile $archive
+            $digest = '20d02c8db8999720e67554469e8a7c7000e43a820111535a44c76562359357f9'
           } else {
             $version = python -c "from macro.session import VERSION; print(VERSION)"
             $archive = Join-Path $pwd "candidate/MouseMacroStocazzSuperpower-Windows-v$version.zip"
@@ -88,8 +88,8 @@ jobs:
         if: matrix.package == 'candidate'
         shell: pwsh
         run: |
-          Invoke-WebRequest 'https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.6/MouseMacroStocazzSuperpower-Windows-v1.2.6.zip' -OutFile before.zip
-          if ((Get-FileHash before.zip -Algorithm SHA256).Hash.ToLower() -ne '4ba5d0221b6b45adf79684706067dada255f2fdf7a8f856847cbdd4c73ddef8c') { throw 'Hash baseline diverso' }
+          Invoke-WebRequest 'https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/download/v1.2.7/MouseMacroStocazzSuperpower-Windows-v1.2.7.zip' -OutFile before.zip
+          if ((Get-FileHash before.zip -Algorithm SHA256).Hash.ToLower() -ne '20d02c8db8999720e67554469e8a7c7000e43a820111535a44c76562359357f9') { throw 'Hash baseline diverso' }
           python bench/ci/wait_probe.py --baseline before.zip --candidate $env:PACKAGE_ARCHIVE --out wait-probe
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Launcher, installazione, pixel, CPU e UIPI del pacchetto

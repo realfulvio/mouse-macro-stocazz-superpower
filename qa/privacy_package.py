@@ -40,7 +40,9 @@ with zipfile.ZipFile(archive) as z:
             metadata=json.dumps(Image.open(io.BytesIO(content)).info,default=str).lower()
             for term in forbidden:
                 assert term not in metadata,(name,term)
-        assert not name.endswith(('.pyc','.pdb')),name
+        # Bytecode only as the checked-hash cache of a shipped source (qa/check_package.py checks
+        # it); its embedded file name is package-relative, so the deny list above covers it.
+        assert not name.endswith('.pdb') and (not name.endswith('.pyc') or '/__pycache__/' in name),name
         assert '/sitecustomize.py' not in name,name
 portable=root/'dist/windows/MouseMacroStocazzSuperpower-Windows-Portable.zip'
 assert hashlib.sha256(portable.read_bytes()).digest()==hashlib.sha256(archive.read_bytes()).digest()
