@@ -227,7 +227,10 @@ class Canvas:
         bw,bh=(clip[2],clip[3]) if clip else (width,height)
         self.view=(clip[0]/scale-4,clip[1]/scale-4,(clip[0]+clip[2])/scale+4,(clip[1]+clip[3])/scale+4) if clip else None
         self.dc=G.CreateCompatibleDC(hdc);self.bmp=G.CreateCompatibleBitmap(hdc,bw,bh)
-        self.old=G.SelectObject(self.dc,self.bmp);self.g=ptrcall(D.GdipCreateFromHDC,self.dc)
+        self.old=G.SelectObject(self.dc,self.bmp)
+        try:self.g=ptrcall(D.GdipCreateFromHDC,self.dc)
+        except Exception:  # e.g. out of GDI resources: give back what this paint took, or each retry leaks more
+            G.SelectObject(self.dc,self.old);G.DeleteObject(self.bmp);G.DeleteDC(self.dc);raise
         D.GdipSetSmoothingMode(self.g,4);D.GdipSetInterpolationMode(self.g,7)
         # Work in physical bitmap pixels and apply logical DPI scaling once.
         D.GdipSetPageUnit(self.g,2)  # UnitPixel
@@ -361,6 +364,11 @@ class Layer:
         b=self.box
         return b is not None and clip==(b[0],b[1],b[2]-b[0],b[3]-b[1])
     takes=matches
+    def overlaps(self,clip):
+        """True when the device rectangle clip=(x,y,w,h) touches the mascot box: only such a paint
+        can change what lies under the mascot (the detail line of the bar does not)."""
+        b=self.box
+        return b is not None and clip[0]<b[2] and b[0]<clip[0]+clip[2] and clip[1]<b[3] and b[1]<clip[1]+clip[3]
     def release(self):
         for dc,bmp,old in (self.bg,self.work) if self.bg else ():
             G.SelectObject(dc,old);G.DeleteObject(bmp);G.DeleteDC(dc)

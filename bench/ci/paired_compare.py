@@ -210,17 +210,19 @@ def import_profile(package):
     rows = []
     for line in p.stderr.splitlines():
         if line.startswith('import time:') and '|' in line and 'self [us]' not in line:
-            self_us, cumulative, name = (part.strip() for part in line[len('import time:'):].split('|'))
-            rows.append((int(cumulative), int(self_us), name))
-    top = [r for r in rows if not r[2].startswith(' ')]
+            self_us, cumulative, name = line[len('import time:'):].split('|')
+            rows.append((int(cumulative), int(self_us), name.rstrip()[1:]))  # nesting = leading spaces after one
+    top = [r for r in rows if not r[2].startswith(' ')]  # top level: their cumulative times add up
+    # The launch script is compiled at every start (Python never caches __main__'s bytecode).
     script = subprocess.run([str(python), '-B', '-c',
                              "import time;s=open('windows_main.py','rb').read();t=time.perf_counter();"
                              "compile(s,'windows_main.py','exec');print(time.perf_counter()-t)"],
                             cwd=package / 'app', capture_output=True, text=True, timeout=60)
     return {'total_ms': round(sum(r[0] for r in top) / 1000, 1),
+            'windows_main_ms': next((round(c / 1000, 1) for c, s, n in top if n == 'windows_main'), None),
             'top': [{'module': n.strip(), 'cumulative_ms': round(c / 1000, 2), 'self_ms': round(s / 1000, 2)}
                     for c, s, n in sorted(rows, reverse=True)[:30]],
-            'compile_windows_main_ms': round(float(script.stdout.strip() or 'nan') * 1000, 2),
+            'compile_launch_script_ms': round(float(script.stdout.strip() or 'nan') * 1000, 2),
             'returncode': p.returncode}
 
 
@@ -239,11 +241,12 @@ def main():
     ap.add_argument('--candidate', required=True)
     ap.add_argument('--out', required=True)
     ap.add_argument('--startups', type=int, default=20, help='per package')
-    ap.add_argument('--idle-rounds', type=int, default=4, help='per package')
+    ap.add_argument('--idle-rounds', type=int, default=6, help='per package')
     ap.add_argument('--idle-warm', type=float, default=10)
     ap.add_argument('--idle-window', type=float, default=20)
-    ap.add_argument('--active-rounds', type=int, default=2, help='per package')
+    ap.add_argument('--active-rounds', type=int, default=4, help='per package')
     a = ap.parse_args()
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')  # the runner's console is cp1252
     out = Path(a.out).resolve(); out.mkdir(parents=True, exist_ok=True)
     u.SetProcessDpiAwarenessContext(ctypes.c_void_p(-4))
     import run_tool, reference_macro
@@ -308,9 +311,14 @@ def main():
         {'metric': 'Pacchetto ZIP', 'unit': 'MB', 'baseline': round(info['baseline']['zip_bytes'] / 1e6, 3),
          'candidate': round(info['candidate']['zip_bytes'] / 1e6, 3),
          'candidate_over_baseline': ratio(info['baseline']['zip_bytes'], info['candidate']['zip_bytes'])},
-        {'metric': 'Tempo di import di windows_main (1 prova)', 'unit': 'ms',
-         'baseline': result['imports']['baseline']['total_ms'], 'candidate': result['imports']['candidate']['total_ms'],
-         'candidate_over_baseline': ratio(result['imports']['baseline']['total_ms'], result['imports']['candidate']['total_ms'])},
+        {'metric': 'Import di windows_main con -X importtime (1 prova)', 'unit': 'ms',
+         'baseline': result['imports']['baseline']['windows_main_ms'], 'candidate': result['imports']['candidate']['windows_main_ms'],
+         'candidate_over_baseline': ratio(result['imports']['baseline']['windows_main_ms'], result['imports']['candidate']['windows_main_ms'])},
+        {'metric': 'Compilazione dello script di avvio a ogni lancio', 'unit': 'ms',
+         'baseline': result['imports']['baseline']['compile_launch_script_ms'],
+         'candidate': result['imports']['candidate']['compile_launch_script_ms'],
+         'candidate_over_baseline': ratio(result['imports']['baseline']['compile_launch_script_ms'],
+                                          result['imports']['candidate']['compile_launch_script_ms'])},
     ]
     result['summary'] = table
     save()
@@ -321,13 +329,13 @@ def main():
         lines.append(f"| {r['metric']} | {r['unit']} | {r['baseline']} | {r['candidate']} | {r['candidate_over_baseline']} |")
     summary = '\n'.join(lines) + '\n'
     (out / 'paired.md').write_text(summary, 'utf-8')
+    if os.environ.get('GITHUB_STEP_SUMMARY'):
+        with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as f:
+            f.write(summary)
     print(summary, flush=True)
     print('PAIRED', json.dumps(table), flush=True)
     for role in packages:
         print('IMPORTS', role, json.dumps(result['imports'][role]), flush=True)
-    if os.environ.get('GITHUB_STEP_SUMMARY'):
-        with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as f:
-            f.write(summary)
 
 
 if __name__ == '__main__':

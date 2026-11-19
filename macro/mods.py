@@ -9,15 +9,13 @@ nessuna dipendenza dal desktop.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-import hashlib
 import json
 import os
 from pathlib import Path
 import re
-import shutil
 import struct
-import tempfile
-import zipfile
+# zipfile, hashlib, shutil and tempfile only serve to install or remove a mod:
+# imported there, they stay out of the panel startup (installed() needs none).
 
 FORMAT = 1
 KINDS = ('theme', 'macros')
@@ -136,6 +134,7 @@ def _check_theme(files: dict):
 def _check_macros(files: dict):
     from .events import Macro
     from .session import validate_gestures
+    import tempfile
     names = [n for n in files if n != 'mod.json']
     if not names or len(names) > MAX_MACROS:
         raise ModError(f'Servono da 1 a {MAX_MACROS} macro.')
@@ -152,6 +151,7 @@ def _check_macros(files: dict):
 
 def read_package(package) -> tuple[ModInfo, dict]:
     """Legge e valida un .mmmod senza scrivere nulla. Restituisce (info, {nome: byte})."""
+    import hashlib, zipfile
     package = Path(package)
     try:
         size = package.stat().st_size
@@ -202,6 +202,7 @@ def inspect(package) -> ModInfo:
 
 def install(package, mods_dir) -> ModInfo:
     """Valida e installa in `mods_dir/<id>/`, sostituendo la stessa mod già presente."""
+    import shutil, tempfile
     info, files = read_package(package)
     mods_dir = Path(mods_dir)
     mods_dir.mkdir(parents=True, exist_ok=True)
@@ -255,6 +256,7 @@ def installed(mods_dir) -> list[ModInfo]:
 def remove(mods_dir, mod_id):
     if not ID_RE.fullmatch(mod_id or ''):
         raise ModError('Nome mod non valido.')
+    import shutil
     shutil.rmtree(Path(mods_dir) / mod_id, ignore_errors=True)
 
 

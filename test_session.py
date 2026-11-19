@@ -203,3 +203,48 @@ class ConcurrentRecoveryTests(unittest.TestCase):
         self.assertEqual(recorder.started,0)
         session.close()
         self.assertFalse(session.worker.is_alive())
+
+
+class TraceBufferTests(unittest.TestCase):
+    def test_keeps_first_and_last_records_and_counts_the_middle(self):
+        from macro.session import TraceBuffer
+        trace = TraceBuffer(head=3, tail=2)
+        for i in range(4):
+            trace.append({'i': i})
+        self.assertEqual(trace.records(), [{'i': 0}, {'i': 1}, {'i': 2}, {'i': 3}])  # nothing dropped yet
+        for i in range(4, 10):
+            trace.append({'i': i})
+        self.assertEqual(trace.records(), [{'i': 0}, {'i': 1}, {'i': 2},
+                                           {'type': 'records_dropped', 'count': 5}, {'i': 8}, {'i': 9}])
+
+    def test_long_infinite_replay_keeps_a_bounded_trace_published_at_the_end(self):
+        from macro.engine import LoopMode
+        player = Player(); session = Session(Recorder, lambda: player)
+        clicks = []  # a record per click sent: 1000 a loop
+        for i in range(500):
+            clicks += [MacroEvent(i * 1e-4, LEFT_DOWN, x=i, y=1), MacroEvent(i * 1e-4, LEFT_UP, x=i, y=1)]
+        session.macro = Macro('windows', clicks)
+        session.toggle_play(PlaybackOptions(mode=LoopMode.INFINITE, min_click_hold_seconds=0, min_action_gap_seconds=0,
+                                            double_click_seconds=0), False)
+        deadline = time.monotonic() + 10
+        while len(player.seen) < 30000 and time.monotonic() < deadline:
+            time.sleep(0.01)
+        self.assertEqual(session.last_trace, [])  # nothing published while the replay runs
+        session.request_stop(); session.worker.join(5)
+        self.assertGreaterEqual(len(player.seen), 30000)
+        trace = session.last_trace
+        self.assertLessEqual(len(trace), 10001)  # 2000 first + marker + 8000 last
+        self.assertEqual(trace[0]['type'], 'playback_start')
+        self.assertEqual(trace[-1]['type'], 'playback_end')
+        self.assertEqual(trace[2000]['type'], 'records_dropped')
+
+
+class StartupImportTests(unittest.TestCase):
+    def test_panel_modules_do_not_load_network_and_archive_modules(self):
+        """Network, archive and temporary-file modules load only when an update or a mod is installed."""
+        import subprocess, sys
+        code = ('import sys, macro.session, macro.mods, macro.updater, macro.events, macro.engine;'
+                "print(sorted({'urllib.request','http.client','ssl','zipfile','tempfile','hashlib','shutil'} & set(sys.modules)))")
+        out = subprocess.run([sys.executable, '-c', code], cwd=Path(__file__).resolve().parent,
+                             capture_output=True, text=True, timeout=60)
+        self.assertEqual(out.stdout.strip(), '[]', out.stderr)

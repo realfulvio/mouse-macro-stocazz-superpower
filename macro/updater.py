@@ -6,14 +6,12 @@ when the user asks. The ZIP is verified against the SHA256SUMS file published in
 the same release before anything is extracted.
 """
 from __future__ import annotations
-import hashlib
 import json
 import re
-import shutil
-import tempfile
-import urllib.request
-import zipfile
 from pathlib import Path
+# urllib.request (http.client, ssl, email), hashlib, zipfile, shutil and tempfile are
+# imported where they are used: this module is loaded by the panel, which only
+# needs them seconds after its window is up, in the update worker thread.
 
 REPO = 'realfulvio/mouse-macro-stocazz-superpower'
 API_URL = f'https://api.github.com/repos/{REPO}/releases/latest'
@@ -38,6 +36,7 @@ def is_newer(candidate, current):
 
 
 def _open(url, opener=None):
+    import urllib.request
     request = urllib.request.Request(url, headers={'User-Agent': 'MouseMacro-update-check',
                                                    'Accept': 'application/vnd.github+json'})
     return (opener or urllib.request.urlopen)(request, timeout=TIMEOUT)
@@ -77,6 +76,7 @@ def _download(url, target, opener=None):
 
 def install(release, root, opener=None, keep=()):
     """Download, verify and extract `release` under `root`; return the package folder."""
+    import hashlib, shutil, tempfile, zipfile
     version = release['version']
     package = PACKAGE.format(version)
     zip_name = package + '.zip'
@@ -127,6 +127,7 @@ def install(release, root, opener=None, keep=()):
 
 def prune(root, keep=()):
     """Remove older package folders created by this updater; never touch `keep`."""
+    import shutil
     keep = {Path(k).resolve() for k in keep}
     for folder in Path(root).glob(PACKAGE.format('*')):
         if folder.is_dir() and folder.resolve() not in keep:

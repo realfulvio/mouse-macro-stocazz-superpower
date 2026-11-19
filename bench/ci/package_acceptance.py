@@ -127,7 +127,9 @@ def main():
                 assert len(records) == 1 and all(k in records[0] for k in required), (name, records)
                 provenance = [json.loads(line.split(' ', 1)[1]) for line in p.stdout.splitlines() if line.startswith('PROVENIENZA ')]
                 assert len(provenance) == 1, provenance
-                assert Path(provenance[0]['app']).resolve() == (package / 'app/windows_main.py').resolve(), provenance
+                # windows_main.py up to 1.2.7; from 1.2.8 it is the launcher entry and the panel module is windows_panel.py
+                assert Path(provenance[0]['app']).resolve() in {(package / 'app' / name).resolve()
+                                                               for name in ('windows_main.py', 'windows_panel.py')}, provenance
                 assert Path(provenance[0]['interprete']).resolve() == Path(python), provenance
             result['checks'][name] = records or {'passed': True}
         probe('pixels', base + ['--mode', 'verify'])
