@@ -78,6 +78,27 @@ class VisualTests(unittest.TestCase):
             self.assertEqual(theme.frames, {})
             self.assertEqual(d.GdipDisposeImage.call_count, 2)
 
+    def test_decoded_sheet_is_released_once_all_its_frames_are_cached(self):
+        """A decoded 2800x2000 sheet is about 22 MB: kept only while frames are still missing."""
+        theme = visual.Theme.__new__(visual.Theme)
+        theme.frames, theme.sheets, theme.cached = {}, {'pronto': 'sheet'}, {}
+        theme.sheet_file, theme.sheet_frames = 'horses/x_{state}_sheet.png', 3
+        made = []
+        def ptrcall(fn, *args):
+            made.append((fn, args))
+            return object() if args[:1] != (str(visual.ROOT / 'horses/x_pronto_sheet.png'),) else 'reloaded'
+        with patch.object(visual, 'D') as d, patch.object(visual, 'ptrcall', side_effect=ptrcall):
+            for i in range(3):
+                theme.frame('pronto', i, 210, 150, (280 * i, 0, 280, 200))
+                self.assertEqual(d.GdipDrawImageRectRect.call_args[0][1], 'sheet')
+            d.GdipDisposeImage.assert_called_once_with('sheet')  # all three cached: sheet given back
+            self.assertIsNone(theme.sheets['pronto'])
+            theme.frame('pronto', 1, 210, 150, (280, 0, 280, 200))  # cached: no reload
+            self.assertIsNone(theme.sheets['pronto'])
+            theme.frame('pronto', 0, 105, 75, (0, 0, 280, 200))  # a new size: loaded again
+            self.assertEqual(theme.sheets['pronto'], 'reloaded')
+            self.assertEqual(d.GdipDrawImageRectRect.call_args[0][1], 'reloaded')
+
     def test_clipped_canvas_skips_what_is_outside_the_repainted_area(self):
         canvas = visual.Canvas.__new__(visual.Canvas)
         canvas.scale, canvas.view = 1.25, (10, 20, 140, 90)
