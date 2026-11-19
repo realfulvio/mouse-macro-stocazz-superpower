@@ -1,0 +1,15 @@
+{
+ "tool": "tinytask",
+ "url": "https://dl.tinytask.net/with-editor.exe",
+ "bytes": 5678424,
+ "sha256": "4ef4cae28ca3cfe2c1571c6ba074351a1ad410fddb53bdda1a299f2b6578bbb5",
+ "expected": null,
+ "hash_ok": true,
+ "hash_source": "nessun hash pubblicato dall'autore: registrato qui",
+ "screen": [
+  1920,
+  1080
+ ],
+ "os": "win32",
+ "cpu": "AMD64 Family 26 Model 2 Stepping 1, AuthenticAMD"
+}
