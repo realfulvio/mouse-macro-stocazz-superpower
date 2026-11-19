@@ -10,7 +10,7 @@ A small always-on-top panel for Windows and Linux: Python is bundled, nothing to
 <p align="center">
 <a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/v1.2.8"><b>⬇ Download for Windows</b></a>
 · <a href="https://github.com/realfulvio/mouse-macro-stocazz-superpower/releases/tag/linux-v1.2.1"><b>⬇ Download for Linux</b></a>
-· <a href="https://realfulvio.github.io/mouse-macro-stocazz-superpower/?lang=en">Website</a>
+· <a href="https://realhcok.com/mouse-macro-stocazz-superpower/?lang=en">Website</a>
 · <a href="GUIDA-ITALIANA.md">Italian guide</a>
 · <a href="docs/ESITO-COLLAUDO-v1.1.1.md">Test report</a>
 </p>

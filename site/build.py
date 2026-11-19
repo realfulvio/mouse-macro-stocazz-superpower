@@ -29,7 +29,7 @@ from pathlib import Path
 
 REPO = 'realfulvio/mouse-macro-stocazz-superpower'
 BASE = f'https://github.com/{REPO}/releases'
-SITE_URL = 'https://realfulvio.github.io/mouse-macro-stocazz-superpower/'
+SITE_URL = 'https://realhcok.com/mouse-macro-stocazz-superpower/'
 FALLBACK = {'windows': 'v1.2.5', 'linux': 'linux-v1.2.0'}
 SITE = Path(__file__).resolve().parent
 LANGS = ('it', 'en')
